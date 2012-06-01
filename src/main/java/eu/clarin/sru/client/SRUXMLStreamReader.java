@@ -72,7 +72,7 @@ class SRUXMLStreamReader implements XMLStreamReader {
         reader.close();
     }
 
-    
+
     @Override
     public int getAttributeCount() {
         return reader.getAttributeCount();
@@ -338,12 +338,12 @@ class SRUXMLStreamReader implements XMLStreamReader {
         return reader.standaloneSet();
     }
 
-    
+
     long getByteCount() {
         return stream.count;
     }
 
-    
+
     boolean readStart(String namespaceURI, String localName, boolean required)
             throws XMLStreamException {
         return readStart(namespaceURI, localName, required, false);
@@ -473,7 +473,7 @@ class SRUXMLStreamReader implements XMLStreamReader {
         return defaultValue;
     }
 
-    
+
     String readString(boolean required) throws XMLStreamException {
         // System.err.println("readString @ " + toReadable(reader));
         String s = null;
@@ -550,7 +550,7 @@ class SRUXMLStreamReader implements XMLStreamReader {
         } while (reader.getDepth() >= depth);
     }
 
-    
+
     String dumpState() {
         StringBuilder sb = new StringBuilder();
         switch (reader.getEventType()) {
@@ -658,6 +658,7 @@ class SRUXMLStreamReader implements XMLStreamReader {
                 from.getEventType());
     }
 
+
     private static void copyStartElement(XMLStreamReader from,
             XMLStreamWriter to) throws XMLStreamException {
         final int nsCount = from.getNamespaceCount();
@@ -672,7 +673,7 @@ class SRUXMLStreamReader implements XMLStreamReader {
                 }
             }
         }
-        
+
         final String prefix             = from.getPrefix();
         final NamespaceContext from_ctx = from.getNamespaceContext();
         final NamespaceContext to_ctx   = to.getNamespaceContext();
@@ -681,7 +682,7 @@ class SRUXMLStreamReader implements XMLStreamReader {
             repair_prefix_namespace = true;
             to.setPrefix(prefix, from_ctx.getNamespaceURI(prefix));
         }
-        
+
         to.writeStartElement(prefix, from.getLocalName(),
                 from.getNamespaceURI());
 
@@ -713,9 +714,9 @@ class SRUXMLStreamReader implements XMLStreamReader {
         }
     }
 
-    
+
     static {
-        factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
+        factory = (XMLInputFactory2) XMLInputFactory.newInstance();
         // Stax settings
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
 
