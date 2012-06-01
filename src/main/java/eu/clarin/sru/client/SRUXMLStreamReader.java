@@ -660,34 +660,48 @@ class SRUXMLStreamReader implements XMLStreamReader {
 
     private static void copyStartElement(XMLStreamReader from,
             XMLStreamWriter to) throws XMLStreamException {
-        int nsCount = from.getNamespaceCount();
+        final int nsCount = from.getNamespaceCount();
         if (nsCount > 0) { // yup, got some...
             for (int i = 0; i < nsCount; ++i) {
-                String prefix = from.getNamespacePrefix(i);
+                String pfx = from.getNamespacePrefix(i);
                 String uri = from.getNamespaceURI(i);
-                if (prefix == null || prefix.length() == 0) { // default NS
+                if ((pfx == null) || pfx.isEmpty()) { // default NS
                     to.setDefaultNamespace(uri);
                 } else {
-                    to.setPrefix(prefix, uri);
+                    to.setPrefix(pfx, uri);
                 }
             }
         }
-        to.writeStartElement(from.getPrefix(), from.getLocalName(),
+        
+        final String prefix             = from.getPrefix();
+        final NamespaceContext from_ctx = from.getNamespaceContext();
+        final NamespaceContext to_ctx   = to.getNamespaceContext();
+        boolean repair_prefix_namespace = false;
+        if ((prefix != null) && (to_ctx.getNamespaceURI(prefix) == null)) {
+            repair_prefix_namespace = true;
+            to.setPrefix(prefix, from_ctx.getNamespaceURI(prefix));
+        }
+        
+        to.writeStartElement(prefix, from.getLocalName(),
                 from.getNamespaceURI());
 
         if (nsCount > 0) {
             // write namespace declarations
             for (int i = 0; i < nsCount; ++i) {
-                String prefix = from.getNamespacePrefix(i);
-                String uri = from.getNamespaceURI(i);
+                String pfx = from.getNamespacePrefix(i);
+                String uri    = from.getNamespaceURI(i);
 
-                if (prefix == null || prefix.length() == 0) { // default NS
+                if ((pfx == null) || pfx.isEmpty()) { // default NS
                     to.writeDefaultNamespace(uri);
                 } else {
-                    to.writeNamespace(prefix, uri);
+                    to.writeNamespace(pfx, uri);
                 }
             }
         }
+        if (repair_prefix_namespace) {
+            to.writeNamespace(prefix, from_ctx.getNamespaceURI(prefix));
+        }
+
         int attrCount = from.getAttributeCount();
         if (attrCount > 0) {
             for (int i = 0; i < attrCount; ++i) {
@@ -704,6 +718,10 @@ class SRUXMLStreamReader implements XMLStreamReader {
         factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
         // Stax settings
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
+
+        // Stax2 settings
+        factory.setProperty(XMLInputFactory2.P_INTERN_NS_URIS, Boolean.TRUE);
+        factory.setProperty(XMLInputFactory2.P_LAZY_PARSING, Boolean.FALSE);
 
         // Woodstox settings
         factory.setProperty(WstxInputProperties.P_NORMALIZE_LFS, Boolean.TRUE);
