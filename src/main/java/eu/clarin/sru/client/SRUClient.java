@@ -526,103 +526,112 @@ public class SRUClient {
                                 resultSetIdleTime });
 
                 // searchRetrieveResponse/results
-                reader.readStart(SRU_NS, "records", true);
+                if (numberOfRecords > 0) {
+                    reader.readStart(SRU_NS, "records", true);
 
-                // searchRetrieveResponse/records/record
-                boolean first = true;
-                while (reader.readStart(SRU_NS, "record", first)) {
-                    if (first) {
-                        first = false;
-                        handler.onStartRecords(numberOfRecords, resultSetId, resultSetIdleTime);
-                    }
+                    // searchRetrieveResponse/records/record
+                    boolean first = true;
+                    while (reader.readStart(SRU_NS, "record", first)) {
+                        if (first) {
+                            first = false;
+                            handler.onStartRecords(numberOfRecords,
+                                    resultSetId, resultSetIdleTime);
+                        }
 
-                    String schema = reader.readContent(SRU_NS,
-                            "recordSchema", true);
+                        String schema = reader.readContent(SRU_NS,
+                                "recordSchema", true);
 
-                    SRURecordPacking packing = parseRecordPacking(reader);
+                        SRURecordPacking packing = parseRecordPacking(reader);
 
-                    logger.debug("schema = {}, packing = {}", schema, packing);
+                        logger.debug("schema = {}, packing = {}",
+                                schema, packing);
 
-                    /* FIXME: bail on non-XML record packing */
-                    if (packing != SRURecordPacking.XML) {
-                        throw new SRUClientException("record packing '" +
-                                packing + "' is not supported");
-                    }
+                        /* FIXME: bail on non-XML record packing */
+                        if (packing != SRURecordPacking.XML) {
+                            throw new SRUClientException("record packing '" +
+                                    packing + "' is not supported");
+                        }
 
-                    // searchRetrieveResponse/record/recordData
-                    reader.readStart(SRU_NS, "recordData", true);
-                    reader.consumeWhitespace();
+                        // searchRetrieveResponse/record/recordData
+                        reader.readStart(SRU_NS, "recordData", true);
+                        reader.consumeWhitespace();
 
-                    SRURecordData recordData = null;
-                    SRUDiagnostic surrogate = null;
+                        SRURecordData recordData = null;
+                        SRUDiagnostic surrogate = null;
 
-                    if (SRU_DIAGNOSTIC_RECORD_SCHEMA.equals(schema)) {
-                        surrogate = parseDiagnostic(reader, true);
-                    } else {
-                        SRURecordDataParser parser = parsers.get(schema);
-                        if (parser != null) {
-                            try {
-                                proxy.reset(reader);
-                                recordData = parser.parse(proxy);
-                            } catch (XMLStreamException e) {
-                                throw new SRUClientException(
-                                        "error parsing record", e);
-                            }
+                        if (SRU_DIAGNOSTIC_RECORD_SCHEMA.equals(schema)) {
+                            surrogate = parseDiagnostic(reader, true);
                         } else {
-                            // FIXME: handle this better?
-                            logger.debug(
-                                    "no record parser found for schema '{}'",
-                                    schema);
-                        }
-                    }
-                    reader.consumeWhitespace();
-                    reader.readEnd(SRU_NS, "recordData", true);
-
-                    String identifier = null;
-                    if (version == SRUVersion.VERSION_1_2) {
-                        identifier = reader.readContent(SRU_NS,
-                                "recordIdentifier", false);
-                    }
-
-                    int position = reader.readContent(SRU_NS,
-                            "recordPosition", false, -1);
-                    logger.debug("recordIdentifier = {}, recordPosition = {}",
-                            identifier, position);
-
-                    // notify handler
-                    if (surrogate != null) {
-                        handler.onSurrogateRecord(identifier,
-                                position, surrogate);
-                    } else {
-                        if (recordData != null) {
-                            handler.onRecord(identifier, position, recordData);
-                        }
-                    }
-
-                    if (reader.readStart(SRU_NS, "extraRecordData", false)) {
-                        reader.consumeWhitespace();
-                        proxy.reset(reader);
-                        try {
-                            handler.onExtraRecordData(identifier,
-                                    position, proxy);
-                        } catch (XMLStreamException e) {
-                            throw new SRUClientException("handler triggered " +
-                                    "error while parsing 'extraRecordData'", e);
+                            SRURecordDataParser parser = parsers.get(schema);
+                            if (parser != null) {
+                                try {
+                                    proxy.reset(reader);
+                                    recordData = parser.parse(proxy);
+                                } catch (XMLStreamException e) {
+                                    throw new SRUClientException(
+                                            "error parsing record", e);
+                                }
+                            } else {
+                                // FIXME: handle this better?
+                                logger.debug(
+                                        "no record parser found for schema '{}'",
+                                        schema);
+                            }
                         }
                         reader.consumeWhitespace();
-                        reader.readEnd(SRU_NS, "extraRecordData", true);
-                    }
+                        reader.readEnd(SRU_NS, "recordData", true);
 
-                    reader.readEnd(SRU_NS, "record");
-                } // while
+                        String identifier = null;
+                        if (version == SRUVersion.VERSION_1_2) {
+                            identifier = reader.readContent(SRU_NS,
+                                    "recordIdentifier", false);
+                        }
 
-                reader.readEnd(SRU_NS, "records");
+                        int position = reader.readContent(SRU_NS,
+                                "recordPosition", false, -1);
 
-                int nextRecordPosition = reader.readContent(SRU_NS,
-                        "nextRecordPosition", false, -1);
-                logger.debug("nextRecordPosition = {}", nextRecordPosition);
-                handler.onFinishRecords(nextRecordPosition);
+                        logger.debug("recordIdentifier = {}, recordPosition = {}",
+                                identifier, position);
 
+                        // notify handler
+                        if (surrogate != null) {
+                            handler.onSurrogateRecord(identifier,
+                                    position, surrogate);
+                        } else {
+                            if (recordData != null) {
+                                handler.onRecord(identifier,
+                                        position, recordData);
+                            }
+                        }
+
+                        if (reader.readStart(SRU_NS, "extraRecordData", false)) {
+                            reader.consumeWhitespace();
+                            proxy.reset(reader);
+                            try {
+                                handler.onExtraRecordData(identifier,
+                                        position, proxy);
+                            } catch (XMLStreamException e) {
+                                throw new SRUClientException("handler " +
+                                        "triggered error while parsing " +
+                                        "'extraRecordData'", e);
+                            }
+                            reader.consumeWhitespace();
+                            reader.readEnd(SRU_NS, "extraRecordData", true);
+                        }
+
+                        reader.readEnd(SRU_NS, "record");
+                    } // while
+
+                    reader.readEnd(SRU_NS, "records");
+                    int nextRecordPosition = reader.readContent(SRU_NS,
+                            "nextRecordPosition", false, -1);
+                    logger.debug("nextRecordPosition = {}", nextRecordPosition);
+                    handler.onFinishRecords(nextRecordPosition);
+                } else {
+                    handler.onStartRecords(numberOfRecords,
+                            resultSetId, resultSetIdleTime);
+                    handler.onFinishRecords(-1);
+                }
 
                 // searchRetrieveResponse/echoedSearchRetrieveResponse
                 if (reader.readStart(SRU_NS, "echoedSearchRetrieveRequest", false)) {
