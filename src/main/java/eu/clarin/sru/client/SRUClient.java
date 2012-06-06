@@ -41,7 +41,6 @@ public class SRUClient {
     }
     private static final Logger logger =
             LoggerFactory.getLogger(SRUClient.class);
-    private final String endpointURI;
     private final SRUVersion defaultVersion;
     private final HttpClient httpClient;
     private final Map<String, SRURecordDataParser> parsers =
@@ -49,15 +48,11 @@ public class SRUClient {
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
 
 
-    public SRUClient(String endpointURI, SRUVersion version) {
-        if (endpointURI == null) {
-            throw new NullPointerException("endpointURI == null");
-        }
-        this.endpointURI = endpointURI;
-        if (version == null) {
+    public SRUClient(SRUVersion defaultVersion) {
+        if (defaultVersion == null) {
             throw new NullPointerException("version == null");
         }
-        this.defaultVersion = version;
+        this.defaultVersion = defaultVersion;
         this.httpClient = new DefaultHttpClient();
         this.httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT,
                     "eu.clarin.sru.client/0.0.1");
@@ -86,17 +81,12 @@ public class SRUClient {
         } // synchronized (parsers)
     }
 
-    /*
-     * TODO: Make Request Object and pass to methods
-     *  AbstractRequest,
-     *  ExplainRequest,
-     *  SearchRetrieveRequest,
-     *  ScanRequest
-     *
-     *  setVersion();
-     *  setExtrarequestParams(), etc
-     */
-    public void explain(SRUExplainHandler handler) throws SRUClientException {
+    
+    public void explain(SRUExplainRequest request, SRUExplainHandler handler)
+            throws SRUClientException {
+        if (request == null) {
+            throw new NullPointerException("request == null");
+        }
         if (handler == null) {
             throw new NullArgumentException("handler == null");
         }
@@ -108,6 +98,9 @@ public class SRUClient {
         URI uri = makeURI(Operation.OP_EXPLAIN, null);
         HttpResponse response = executeRequest(uri);
         HttpEntity entity = response.getEntity();
+        if (entity == null) {
+            throw new SRUClientException("cannot get entity");
+        }
 
         InputStream stream = null;
         SRUXMLStreamReader reader = null;
@@ -152,26 +145,29 @@ public class SRUClient {
     }
 
 
-    public void scan(SRUScanHandler handler, String scanClause)
+    public void scan(SRUScanRequest request, SRUScanHandler handler)
             throws SRUClientException {
+        if (request == null) {
+            throw new NullPointerException("request == null");
+        }
         if (handler == null) {
             throw new NullArgumentException("handler == null");
         }
-        if (scanClause == null) {
-            throw new NullPointerException("scanClause == null");
-        }
-        logger.debug("searchRetrieve: scanClause = {}", scanClause);
+        logger.debug("searchRetrieve: scanClause = {}", request.getScanClause());
 
         final long ts_start = System.nanoTime();
 
         // prepare arguments
         Map<String, String> arguments = new HashMap<String, String>();
-        arguments.put(PARAM_SCAN_CLAUSE, scanClause);
+        arguments.put(PARAM_SCAN_CLAUSE, request.getScanClause());
 
         // create URI and perform request
         URI uri = makeURI(Operation.OP_SCAN, arguments);
         HttpResponse response = executeRequest(uri);
         HttpEntity entity = response.getEntity();
+        if (entity == null) {
+            throw new SRUClientException("cannot get entity");
+        }
 
         InputStream stream = null;
         SRUXMLStreamReader reader = null;
@@ -216,27 +212,30 @@ public class SRUClient {
     }
 
 
-    public void searchRetrieve(SRUSearchRetrieveHandler handler, String query)
-            throws SRUClientException {
+    public void searchRetrieve(SRUSearchRetrieveRequest request,
+            SRUSearchRetrieveHandler handler) throws SRUClientException {
+        if (request == null) {
+            throw new NullPointerException("request == null");
+        }
         if (handler == null) {
             throw new NullArgumentException("handler == null");
         }
-        if (query == null) {
-            throw new NullPointerException("query == null");
-        }
-        logger.debug("searchRetrieve: query = {}", query);
+        logger.debug("searchRetrieve: query = {}", request.getQuery());
 
         final long ts_start = System.nanoTime();
 
         // prepare arguments
         Map<String, String> arguments = new HashMap<String, String>();
-        arguments.put(PARAM_QUERY, query);
+        arguments.put(PARAM_QUERY, request.getQuery());
         arguments.put("x-indent-response", Integer.toString(4));
 
         // create URI and perform request
         URI uri = makeURI(Operation.OP_SEARCH_RETRIEVE, arguments);
         HttpResponse response = executeRequest(uri);
         HttpEntity entity = response.getEntity();
+        if (entity == null) {
+            throw new SRUClientException("cannot get entity");
+        }
 
         InputStream stream = null;
         SRUXMLStreamReader reader = null;
@@ -666,7 +665,8 @@ public class SRUClient {
 
     private final URI makeURI(Operation operation,
             Map<String, String> arguments) {
-        StringBuilder uri = new StringBuilder(endpointURI);
+        // FIXME: broken
+        StringBuilder uri = null; //new StringBuilder(endpointURI);
         uri.append("?operation=");
         switch (operation) {
         case OP_EXPLAIN:

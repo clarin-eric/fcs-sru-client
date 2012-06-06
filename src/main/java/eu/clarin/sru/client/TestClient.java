@@ -20,8 +20,7 @@ public class TestClient {
         if (args.length > 0) {
             try {
                 logger.info("initializing client ...");
-                SRUClient client =
-                        new SRUClient(args[0], SRUVersion.VERSION_1_2);
+                SRUClient client = new SRUClient(SRUVersion.VERSION_1_2);
                 client.registerRecordParser(new ClarinFederatedContentSearchRecordParser());
 
                 SRUDefaultHandlerAdapter handler = new SRUDefaultHandlerAdapter() {
@@ -97,13 +96,19 @@ public class TestClient {
                 };
 
                 logger.info("performing 'explain' request ...");
-                client.explain(handler);
+                SRUExplainRequest r1 = new SRUExplainRequest(args[0]);
+                client.explain(r1, handler);
 
                 logger.info("performing 'scan' request ...");
-                client.scan(handler, "cmd.collections");
+                SRUScanRequest r2 = new SRUScanRequest(args[0]);
+                r2.setScanClause("cmd.collections");
+                client.scan(r2, handler);
 
                 logger.info("performing 'scan' request ...");
-                client.searchRetrieve(handler, "Gott");
+                SRUSearchRetrieveRequest r3 =
+                        new SRUSearchRetrieveRequest(args[0]);
+                r3.setQuery("Gott");
+                client.searchRetrieve(r3, handler);
             } catch (SRUClientException e) {
                 logger.error("some error occured", e);
             }
