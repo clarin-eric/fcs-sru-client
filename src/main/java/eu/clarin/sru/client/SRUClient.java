@@ -72,11 +72,11 @@ public class SRUClient {
             throw new IllegalArgumentException(
                     "parser.getRecordSchema() returns empty string");
         }
-        
+
         SRURecordDataParser old = parsers.putIfAbsent(recordSchema, parser);
         if (old != null) {
             throw new SRUClientException(
-                    "record data parser already registred: " + recordSchema);
+                    "record data parser already registered: " + recordSchema);
         }
     }
 
@@ -111,14 +111,17 @@ public class SRUClient {
             parseExplainResponse(reader, handler);
             final long ts_end = System.nanoTime();
 
-            final long delta_total = ts_end - ts_start;
-            final long delta_network = ts_parsing - ts_start;
-            final long delta_parsing = ts_end - ts_parsing;
+            final long millisTotal =
+                    TimeUnit.NANOSECONDS.toMillis(ts_end - ts_start);
+            final long millisNetwork =
+                    TimeUnit.NANOSECONDS.toMillis(ts_parsing - ts_start);
+            final long millisParsing =
+                    TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
             logger.debug("{} byte(s) in {} milli(s) ({} milli(s) network / {} milli(s) parsing)",
                     new Object[] { reader.getByteCount(),
-                            TimeUnit.NANOSECONDS.toMillis(delta_total),
-                            TimeUnit.NANOSECONDS.toMillis(delta_network),
-                            TimeUnit.NANOSECONDS.toMillis(delta_parsing) });
+                            millisTotal, millisNetwork, millisParsing });
+            handler.onRequestStatistics((int) reader.getByteCount(),
+                    millisTotal, millisNetwork, millisParsing);
         } catch (IllegalStateException e) {
             throw new SRUClientException("error reading response", e);
         } catch (IOException e) {
@@ -174,14 +177,17 @@ public class SRUClient {
             parseScanResponse(reader, handler);
             final long ts_end = System.nanoTime();
 
-            final long delta_total = ts_end - ts_start;
-            final long delta_network = ts_parsing - ts_start;
-            final long delta_parsing = ts_end - ts_parsing;
+            final long millisTotal =
+                    TimeUnit.NANOSECONDS.toMillis(ts_end - ts_start);
+            final long millisNetwork =
+                    TimeUnit.NANOSECONDS.toMillis(ts_parsing - ts_start);
+            final long millisParsing =
+                    TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
             logger.debug("{} byte(s) in {} milli(s) ({} milli(s) network / {} milli(s) parsing)",
                     new Object[] { reader.getByteCount(),
-                            TimeUnit.NANOSECONDS.toMillis(delta_total),
-                            TimeUnit.NANOSECONDS.toMillis(delta_network),
-                            TimeUnit.NANOSECONDS.toMillis(delta_parsing) });
+                            millisTotal, millisNetwork, millisParsing });
+            handler.onRequestStatistics((int) reader.getByteCount(),
+                    millisTotal, millisNetwork, millisParsing);
         } catch (IllegalStateException e) {
             throw new SRUClientException("error reading response", e);
         } catch (IOException e) {
@@ -237,14 +243,17 @@ public class SRUClient {
             parseSearchRetrieveResponse(reader, handler);
             final long ts_end = System.nanoTime();
 
-            final long delta_total = ts_end - ts_start;
-            final long delta_network = ts_parsing - ts_start;
-            final long delta_parsing = ts_end - ts_parsing;
+            final long millisTotal =
+                    TimeUnit.NANOSECONDS.toMillis(ts_end - ts_start);
+            final long millisNetwork =
+                    TimeUnit.NANOSECONDS.toMillis(ts_parsing - ts_start);
+            final long millisParsing =
+                    TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
             logger.debug("{} byte(s) in {} milli(s) ({} milli(s) network / {} milli(s) parsing)",
                     new Object[] { reader.getByteCount(),
-                            TimeUnit.NANOSECONDS.toMillis(delta_total),
-                            TimeUnit.NANOSECONDS.toMillis(delta_network),
-                            TimeUnit.NANOSECONDS.toMillis(delta_parsing) });
+                            millisTotal, millisNetwork, millisParsing });
+            handler.onRequestStatistics((int) reader.getByteCount(),
+                    millisTotal, millisNetwork, millisParsing);
         } catch (IllegalStateException e) {
             throw new SRUClientException("error reading response", e);
         } catch (IOException e) {
@@ -314,6 +323,7 @@ public class SRUClient {
             } else {
                 // explainResponse/record
                 reader.readStart(SRU_NS, "record", true);
+
                 String schema =
                         reader.readContent(SRU_NS, "recordSchema", true);
 
@@ -347,6 +357,15 @@ public class SRUClient {
 
                 // explainResponse/extraResponseData
                 if (reader.readStart(SRU_NS, "extraResponseData", false)) {
+                    reader.consumeWhitespace();
+                    proxy.reset(reader);
+                    try {
+                        handler.onExtraResponseData(proxy);
+                    } catch (XMLStreamException e) {
+                        throw new SRUClientException("handler triggered " +
+                                "error while parsing 'extraResponseData'", e);
+                    }
+                    reader.consumeWhitespace();
                     reader.readEnd(SRU_NS, "extraResponseData", true);
                 }
 
@@ -424,7 +443,13 @@ public class SRUClient {
                         if (reader.readStart(SRU_NS, "extraTermData", first)) {
                             reader.consumeWhitespace();
                             proxy.reset(reader);
-                            handler.onExtraTermData(value, proxy);
+                            try {
+                                handler.onExtraTermData(value, proxy);
+                            } catch (XMLStreamException e) {
+                                throw new SRUClientException("handler " +
+                                        "triggered error while parsing " +
+                                        "'extraTermData'", e);
+                            }
                             reader.consumeWhitespace();
                             reader.readEnd(SRU_NS, "extraTermData", true);
                         }
@@ -445,6 +470,15 @@ public class SRUClient {
 
                 // scanResponse/extraResponseData
                 if (reader.readStart(SRU_NS, "extraResponseData", false)) {
+                    reader.consumeWhitespace();
+                    proxy.reset(reader);
+                    try {
+                        handler.onExtraResponseData(proxy);
+                    } catch (XMLStreamException e) {
+                        throw new SRUClientException("handler triggered " +
+                                "error while parsing 'extraResponseData'", e);
+                    }
+                    reader.consumeWhitespace();
                     reader.readEnd(SRU_NS, "extraResponseData", true);
                 }
 
@@ -475,16 +509,16 @@ public class SRUClient {
             } else {
 
                 // searchRetrieveResponse/numberOfRecords
-                String numberOfRecords =
-                        reader.readContent(SRU_NS, "numberOfRecords", true);
+                int numberOfRecords = reader.readContent(SRU_NS,
+                        "numberOfRecords", true, -1);
 
                 // searchRetrieveResponse/resultSetId
-                String resultSetId =
-                        reader.readContent(SRU_NS, "resultSetId", false);
+                int resultSetId = reader.readContent(SRU_NS, "resultSetId",
+                        false, -1);
 
                 // searchRetrieveResponse/resultSetIdleTime
-                String resultSetIdleTime =
-                        reader.readContent(SRU_NS, "resultSetIdleTime", false);
+                int resultSetIdleTime = reader.readContent(SRU_NS,
+                        "resultSetIdleTime", false, -1);
 
                 logger.debug("numberOfRecords = {}, resultSetId = {}, " +
                         "resultSetIdleTime = {}",
@@ -499,7 +533,7 @@ public class SRUClient {
                 while (reader.readStart(SRU_NS, "record", first)) {
                     if (first) {
                         first = false;
-                        handler.onStartRecords();
+                        handler.onStartRecords(numberOfRecords, resultSetId, resultSetIdleTime);
                     }
 
                     String schema = reader.readContent(SRU_NS,
@@ -568,7 +602,13 @@ public class SRUClient {
                     if (reader.readStart(SRU_NS, "extraRecordData", false)) {
                         reader.consumeWhitespace();
                         proxy.reset(reader);
-                        handler.onExtraRecordData(identifier, position, proxy);
+                        try {
+                            handler.onExtraRecordData(identifier,
+                                    position, proxy);
+                        } catch (XMLStreamException e) {
+                            throw new SRUClientException("handler triggered " +
+                                    "error while parsing 'extraRecordData'", e);
+                        }
                         reader.consumeWhitespace();
                         reader.readEnd(SRU_NS, "extraRecordData", true);
                     }
@@ -594,6 +634,15 @@ public class SRUClient {
 
                 // explainResponse/extraResponseData
                 if (reader.readStart(SRU_NS, "extraResponseData", false)) {
+                    reader.consumeWhitespace();
+                    proxy.reset(reader);
+                    try {
+                        handler.onExtraResponseData(proxy);
+                    } catch (XMLStreamException e) {
+                        throw new SRUClientException("handler triggered " +
+                                "error while parsing 'extraResponseData'", e);
+                    }
+                    reader.consumeWhitespace();
                     reader.readEnd(SRU_NS, "extraResponseData", true);
                 }
 
@@ -624,7 +673,7 @@ public class SRUClient {
             SRUClientException {
         if (reader.readStart(SRU_NS, "diagnostics", false)) {
             List<SRUDiagnostic> diagostics = null;
-            
+
             SRUDiagnostic diagnostic = null;
             while ((diagnostic = parseDiagnostic(reader,
                     (diagostics == null))) != null) {
@@ -664,7 +713,7 @@ public class SRUClient {
             return null;
         }
     }
-    
+
     private static SRURecordPacking parseRecordPacking(SRUXMLStreamReader reader)
             throws XMLStreamException, SRUClientException {
         final String v = reader.readContent(SRU_NS, "recordPacking", true);

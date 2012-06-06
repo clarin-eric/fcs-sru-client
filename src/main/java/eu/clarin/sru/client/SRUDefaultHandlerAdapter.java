@@ -12,7 +12,19 @@ public class SRUDefaultHandlerAdapter implements SRUDefaultHandler {
             throws SRUClientException {
     }
 
-    
+
+    @Override
+    public void onRequestStatistics(int bytes, long millisTotal,
+            long millisNetwork, long millisParsing) {
+    }
+
+
+    @Override
+    public void onExtraResponseData(XMLStreamReader reader)
+            throws XMLStreamException, SRUClientException {
+    }
+
+
     @Override
     public void onStartTerms() throws SRUClientException {
     }
@@ -36,14 +48,15 @@ public class SRUDefaultHandlerAdapter implements SRUDefaultHandler {
 
 
     @Override
-    public void onStartRecords() throws SRUClientException {
+    public void onStartRecords(int numberOfRecords, int resultSetId,
+            int resultSetIdleTime) throws SRUClientException {
     }
 
 
     @Override
-    public void onFinishRecords(int nextRecordPosition) throws SRUClientException {
+    public void onFinishRecords(int nextRecordPosition)
+            throws SRUClientException {
     }
-
 
     @Override
     public void onRecord(String schema, String identifier, int position,

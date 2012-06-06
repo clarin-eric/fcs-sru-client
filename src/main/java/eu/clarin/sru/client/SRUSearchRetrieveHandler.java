@@ -10,9 +10,17 @@ public interface SRUSearchRetrieveHandler {
     public void onFatalError(List<SRUDiagnostic> diagnistics)
             throws SRUClientException;
 
-    public void onStartRecords() throws SRUClientException;
-    
-    public void onFinishRecords(int nextRecordPosition) throws SRUClientException;
+    public void onRequestStatistics(int bytes, long millisTotal,
+            long millisNetwork, long millisParsing);
+
+    public void onExtraResponseData(XMLStreamReader reader)
+            throws XMLStreamException, SRUClientException;
+
+    public void onStartRecords(int numberOfRecords, int resultSetId,
+            int resultSetIdleTime) throws SRUClientException;
+
+    public void onFinishRecords(int nextRecordPosition)
+            throws SRUClientException;
 
     public void onRecord(String schema, String identifier, int position,
             XMLStreamReader reader) throws XMLStreamException,
@@ -23,7 +31,7 @@ public interface SRUSearchRetrieveHandler {
 
     public void onSurrogateRecord(String identifier, int position,
             SRUDiagnostic data) throws SRUClientException;
-    
+
     public void onExtraRecordData(String identifier, int position,
             XMLStreamReader reader) throws XMLStreamException,
             SRUClientException;

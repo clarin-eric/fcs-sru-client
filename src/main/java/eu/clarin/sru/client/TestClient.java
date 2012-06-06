@@ -37,6 +37,15 @@ public class TestClient {
                     }
 
                     @Override
+                    public void onRequestStatistics(int bytes,
+                            long millisTotal, long millisNetwork,
+                            long millisParsing) {
+                        logger.info(
+                                "onRequestStatistics(): {} bytes in {} millis",
+                                bytes, millisTotal);
+                    }
+
+                    @Override
                     public void onStartTerms() throws SRUClientException {
                         logger.info("onStartTerms()");
                     }
@@ -50,17 +59,18 @@ public class TestClient {
                     public void onTerm(String value, int numberOfRecords,
                             String displayTerm, WhereInList whereInList)
                             throws SRUClientException {
-                        logger.info("onTerm() value = {}, numberOfRecords = {}, displayTerm = {}, whereInList = {}",
+                        logger.info("onTerm(): value = {}, numberOfRecords = {}, displayTerm = {}, whereInList = {}",
                                 new Object[] { value, numberOfRecords,
                                         displayTerm, whereInList });
                     }
 
-
                     @Override
-                    public void onStartRecords() throws SRUClientException {
-                        logger.info("onStartRecords()");
+                    public void onStartRecords(int numberOfRecords,
+                            int resultSetId, int resultSetIdleTime)
+                            throws SRUClientException {
+                        logger.info("onStartRecords(): numberOfRecords = {}",
+                                numberOfRecords);
                     }
-
 
                     @Override
                     public void onFinishRecords(int nextRecordPosition)

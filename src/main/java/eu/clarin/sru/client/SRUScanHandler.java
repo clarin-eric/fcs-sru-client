@@ -7,11 +7,17 @@ import javax.xml.stream.XMLStreamReader;
 
 public interface SRUScanHandler {
     public enum WhereInList {
-        FIRST, LAST, ONLY, INNER; 
+        FIRST, LAST, ONLY, INNER;
     }
-    
+
     public void onFatalError(List<SRUDiagnostic> diagnistics)
             throws SRUClientException;
+
+    public void onRequestStatistics(int bytes, long millisTotal,
+            long millisNetwork, long millisParsing);
+
+    public void onExtraResponseData(XMLStreamReader reader)
+            throws XMLStreamException, SRUClientException;
 
     public void onStartTerms() throws SRUClientException;
 
@@ -19,7 +25,7 @@ public interface SRUScanHandler {
 
     public void onTerm(String value, int numberOfRecords, String displayTerm,
             WhereInList whereInList) throws SRUClientException;
-    
+
     public void onExtraTermData(String value, XMLStreamReader reader)
             throws XMLStreamException, SRUClientException;
 
