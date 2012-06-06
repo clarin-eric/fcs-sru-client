@@ -129,6 +129,7 @@ public class TestClient {
                 SRUSearchRetrieveRequest r3 =
                         new SRUSearchRetrieveRequest(args[0]);
                 r3.setQuery("Faustus");
+                r3.setRecordSchema(ClarinFederatedContentSearchRecordParser.FCS_RECORD_SCHEMA);
                 r3.setMaximumRecords(5);
                 r3.setExtraRequestData("x-indent-response", "4");
                 client.searchRetrieve(r3, handler);

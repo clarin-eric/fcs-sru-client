@@ -10,6 +10,7 @@ import eu.clarin.sru.client.XmlStreamReaderUtils;
 public class ClarinFederatedContentSearchRecordParser implements
         SRURecordDataParser {
     public static final String FCS_NS = "http://clarin.eu/fcs/1.0";
+    public static final String FCS_RECORD_SCHEMA = FCS_NS;
     public static final String FCS_KWIC_NS = "http://clarin.eu/fcs/1.0/kwic";
 
     
