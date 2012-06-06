@@ -20,8 +20,8 @@ import com.ctc.wstx.api.WstxInputProperties;
 
 
 class SRUXMLStreamReader implements XMLStreamReader {
-    private static final class CountingInputStream extends FilterInputStream {
-        private long count = 0;
+    private final class CountingInputStream extends FilterInputStream {
+        protected long count = 0;
 
         private CountingInputStream(InputStream stream) {
             super(stream);
@@ -30,7 +30,9 @@ class SRUXMLStreamReader implements XMLStreamReader {
         @Override
         public int read() throws IOException {
             final int result = super.read();
-            count += (result > 0) ? 1 : 0;
+            if (result != -1) {
+                count++;
+            }
             return result;
         }
 
@@ -38,21 +40,23 @@ class SRUXMLStreamReader implements XMLStreamReader {
         public int read(byte[] buffer, int offset, int length)
                 throws IOException {
             final int result = super.read(buffer, offset, length);
-            count += (result > 0) ? result : 0;
+            if (result > 0) {
+                count += result;
+            }
             return result;
         }
 
         @Override
         public int read(byte[] buffer) throws IOException {
-            final int result = super.read(buffer);
-            count += (result > 0) ? result : 0;
-            return result;
+            return this.read(buffer, 0, buffer.length);
         }
 
         @Override
         public long skip(long n) throws IOException {
             final long result = super.skip(n);
-            count += (result > 0) ? n : 0;
+            if (result > 0) {
+                count += result;
+            }
             return result;
         }
     } // class CountingInputStream

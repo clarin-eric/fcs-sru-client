@@ -1,10 +1,15 @@
 package eu.clarin.sru.client;
 
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordData;
+import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordParser;
 
 
 public class TestClient {
@@ -17,8 +22,21 @@ public class TestClient {
                 logger.info("initializing client ...");
                 SRUClient client =
                         new SRUClient(args[0], SRUVersion.VERSION_1_2);
+                client.registerRecordParser(new ClarinFederatedContentSearchRecordParser());
 
                 SRUDefaultHandlerAdapter handler = new SRUDefaultHandlerAdapter() {
+                    @Override
+                    public void onFatalError(List<SRUDiagnostic> diagnostics)
+                            throws SRUClientException {
+                        for (SRUDiagnostic diagnostic : diagnostics) {
+                            logger.info(
+                                    "onFatalError: uri={}, detail={}, message={}",
+                                    new Object[] { diagnostic.getURI(),
+                                            diagnostic.getDetails(),
+                                            diagnostic.getMessage() });
+                        }
+                    }
+
                     @Override
                     public void onStartTerms() throws SRUClientException {
                         logger.info("onStartTerms()");
@@ -38,7 +56,7 @@ public class TestClient {
                                         displayTerm, whereInList });
                     }
 
-                    
+
                     @Override
                     public void onStartRecords() throws SRUClientException {
                         logger.info("onStartRecords()");
@@ -63,16 +81,29 @@ public class TestClient {
                             reader.next();
                         }
                     }
+
+                    @Override
+                    public void onRecord(String identifier, int position,
+                            SRURecordData data) throws SRUClientException {
+                        logger.info("onRecord(): identifier = {}, position = {}, schema = {}",
+                                new Object[] { identifier, position,
+                                        data.getRecordSchema() });
+                        if (ClarinFederatedContentSearchRecordParser.FCS_NS
+                                .equals(data.getRecordSchema())) {
+                            ClarinFederatedContentSearchRecordData record = (ClarinFederatedContentSearchRecordData) data;
+                            logger.info("CLARIN-FCS: \"{}\"/\"{}\"/\"{}\"", new Object[] { record.getLeft(), record.getKeyword(), record.getRight() });
+                        }
+                    }
                 };
 
-//                logger.info("performing 'explain' request ...");
-//                client.explain(handler);
+                logger.info("performing 'explain' request ...");
+                client.explain(handler);
 
                 logger.info("performing 'scan' request ...");
-                client.scan("cmd.collections", handler);
+                client.scan(handler, "cmd.collections");
 
                 logger.info("performing 'scan' request ...");
-                client.searchRetrieve("Gott", handler);
+                client.searchRetrieve(handler, "Gott");
             } catch (SRUClientException e) {
                 logger.error("some error occured", e);
             }
