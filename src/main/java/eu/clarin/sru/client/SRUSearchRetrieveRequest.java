@@ -1,6 +1,6 @@
 package eu.clarin.sru.client;
 
-public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
+public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
     private String query;
     private int startRecord = -1;
     private int maximumRecords = -1;
@@ -86,6 +86,60 @@ public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     public void setResultSetTTL(int resultSetTTL) {
         this.resultSetTTL = resultSetTTL;
+    }
+
+
+    @Override
+    protected SRUOperation getOperation() {
+        return SRUOperation.SEARCH_RETRIEVE;
+    }
+
+
+    @Override
+    protected void addParametersToURI(StringBuilder uri)
+            throws SRUClientException {
+        // query
+        uri.append('&').append(PARAM_QUERY).append('=').append(query);
+        
+        // startRecord
+        if (startRecord > 0) {
+            uri.append('&').append(PARAM_START_RECORD)
+                .append('=').append(startRecord);
+        }
+        
+        // maximumRecords
+        if (maximumRecords > -1) {
+            uri.append('&').append(PARAM_MAXIMUM_RECORDS)
+                .append('=').append(maximumRecords);
+        }
+
+        // recordPacking
+        if (recordPacking != null) {
+            uri.append('&').append(PARAM_RECORD_PACKING).append('=');
+            switch (recordPacking) {
+            case XML:
+                uri.append(RECORD_PACKING_XML);
+                break;
+            case STRING:
+                uri.append(RECORD_PACKING_STRING);
+                break;
+            default:
+                throw new SRUClientException("unsupported record packing: " +
+                        recordPacking);
+            } // switch
+        }
+
+        // recordSchema
+        if (recordSchema != null) {
+            uri.append('&').append(PARAM_RECORD_SCHEMA)
+                .append('=').append(recordSchema);
+        }
+        
+        // resultSetTTL
+        if (resultSetTTL > -1) {
+            uri.append('&').append(PARAM_RESULT_SET_TTL)
+                .append('=').append(resultSetTTL);
+        }
     }
 
 } // class SRUSearchRetrieveRequest

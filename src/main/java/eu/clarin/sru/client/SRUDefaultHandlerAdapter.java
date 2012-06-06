@@ -57,4 +57,17 @@ public class SRUDefaultHandlerAdapter implements SRUDefaultHandler {
             throws SRUClientException {
     }
 
+
+    @Override
+    public void onSurrogateRecord(String identifier, int position,
+            SRUDiagnostic data) throws SRUClientException {
+    }
+
+
+    @Override
+    public void onExtraRecordData(String identifier, int position,
+            XMLStreamReader reader) throws XMLStreamException,
+            SRUClientException {
+    }
+
 } // class SRUDefaultHandler

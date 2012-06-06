@@ -1,6 +1,6 @@
 package eu.clarin.sru.client;
 
-public class SRUExplainRequest extends SRUAbstractRequest {
+public final class SRUExplainRequest extends SRUAbstractRequest {
     private SRURecordPacking recordPacking;
 
 
@@ -21,5 +21,31 @@ public class SRUExplainRequest extends SRUAbstractRequest {
         return recordPacking;
     }
 
-} // class SRUExplainRequest
 
+    @Override
+    protected SRUOperation getOperation() {
+        return SRUOperation.EXPLAIN;
+    }
+
+
+    @Override
+    protected void addParametersToURI(StringBuilder uri)
+            throws SRUClientException {
+        // recordPacking
+        if (recordPacking != null) {
+            uri.append('&').append(PARAM_RECORD_PACKING).append('=');
+            switch (recordPacking) {
+            case XML:
+                uri.append(RECORD_PACKING_XML);
+                break;
+            case STRING:
+                uri.append(RECORD_PACKING_STRING);
+                break;
+            default:
+                throw new SRUClientException("unsupported record packing: " +
+                        recordPacking);
+            } // switch
+        }
+    }
+
+} // class SRUExplainRequest

@@ -20,7 +20,6 @@ public interface SRUScanHandler {
     public void onTerm(String value, int numberOfRecords, String displayTerm,
             WhereInList whereInList) throws SRUClientException;
     
-    /* XXX: not yet implemented in client */
     public void onExtraTermData(String value, XMLStreamReader reader)
             throws XMLStreamException, SRUClientException;
 

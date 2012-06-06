@@ -93,6 +93,16 @@ public class TestClient {
                             logger.info("CLARIN-FCS: \"{}\"/\"{}\"/\"{}\"", new Object[] { record.getLeft(), record.getKeyword(), record.getRight() });
                         }
                     }
+
+                    @Override
+                    public void onSurrogateRecord(String identifier,
+                            int position, SRUDiagnostic data)
+                            throws SRUClientException {
+                        logger.info("onSurrogateRecord: identifier = {}, position = {}, uri={}, detail={}, message={}",
+                                new Object[] { identifier, position,
+                                        data.getURI(), data.getDetails(),
+                                        data.getMessage() });
+                    }
                 };
 
                 logger.info("performing 'explain' request ...");
@@ -102,12 +112,15 @@ public class TestClient {
                 logger.info("performing 'scan' request ...");
                 SRUScanRequest r2 = new SRUScanRequest(args[0]);
                 r2.setScanClause("cmd.collections");
+                r2.setMaximumTerms(2);
                 client.scan(r2, handler);
 
                 logger.info("performing 'scan' request ...");
                 SRUSearchRetrieveRequest r3 =
                         new SRUSearchRetrieveRequest(args[0]);
-                r3.setQuery("Gott");
+                r3.setQuery("Faustus");
+                r3.setMaximumRecords(5);
+                r3.setExtraRequestData("x-indent-response", "4");
                 client.searchRetrieve(r3, handler);
             } catch (SRUClientException e) {
                 logger.error("some error occured", e);

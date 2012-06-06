@@ -21,4 +21,11 @@ public interface SRUSearchRetrieveHandler {
     public void onRecord(String identifier, int position, SRURecordData data)
             throws SRUClientException;
 
+    public void onSurrogateRecord(String identifier, int position,
+            SRUDiagnostic data) throws SRUClientException;
+    
+    public void onExtraRecordData(String identifier, int position,
+            XMLStreamReader reader) throws XMLStreamException,
+            SRUClientException;
+
 } // interface SRUSearchRetrieveHandler
