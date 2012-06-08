@@ -52,7 +52,7 @@ public class ClarinFederatedContentSearchRecordParser implements
             logger.debug("found DataView @type = {}", type);
             if (DATAVIEW_KWIC.equals(type)) {
                 if (kwic) {
-                    throw new SRUClientException("only on KWIC dataview is allowed");
+                    throw new SRUClientException("only one KWIC dataview is allowed");
                 }
                 XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "kwic", true);
                 if (XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "c", false)) {
