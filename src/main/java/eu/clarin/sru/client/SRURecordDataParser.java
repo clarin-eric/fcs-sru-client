@@ -8,6 +8,6 @@ public interface SRURecordDataParser {
     public String getRecordSchema();
     
     public SRURecordData parse(XMLStreamReader reader)
-            throws XMLStreamException;
+            throws XMLStreamException, SRUClientException;
 
 } // interface SRURecordDataParser
