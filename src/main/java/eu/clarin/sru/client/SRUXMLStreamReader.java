@@ -455,7 +455,17 @@ class SRUXMLStreamReader implements XMLStreamReader {
             throws XMLStreamException {
         String result = null;
         if (readStart(namespaceURI, localName, required)) {
-            result = readString(true);
+            try {
+                result = readString(true);
+            } catch (XMLStreamException e) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("element '");
+                if (namespaceURI != null) {
+                    sb.append('{').append(namespaceURI).append('}');
+                }
+                sb.append(localName).append("' may not be empty");
+                throw new XMLStreamException(sb.toString(), e.getLocation());
+            }
             readEnd(namespaceURI, localName);
         }
         return result;
@@ -466,12 +476,29 @@ class SRUXMLStreamReader implements XMLStreamReader {
             int defaultValue) throws XMLStreamException {
         if (readStart(namespaceURI, localName, required)) {
             String s = readString(true);
-            readEnd(namespaceURI, localName);
+            try {
+                readEnd(namespaceURI, localName);
+            } catch (XMLStreamException e) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("element '");
+                if (namespaceURI != null) {
+                    sb.append('{').append(namespaceURI).append('}');
+                }
+                sb.append(localName).append("' may not be empty");
+                throw new XMLStreamException(sb.toString(), e.getLocation());
+            }
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException e) {
-                throw new XMLStreamException(
-                        "expected a xs:integer value: s", e);
+                StringBuilder sb = new StringBuilder();
+                sb.append("element '");
+                if (namespaceURI != null) {
+                    sb.append('{').append(namespaceURI).append('}');
+                }
+                sb.append(" was expected to be of type xs:integer; ");
+                sb.append("incompatible value was: ").append(s);
+                throw new XMLStreamException(sb.toString(),
+                        reader.getLocation(), e);
             }
         }
         return defaultValue;
@@ -490,7 +517,7 @@ class SRUXMLStreamReader implements XMLStreamReader {
         }
         if (required && ((s == null) || s.isEmpty())) {
             throw new XMLStreamException("expected character content "
-                    + "at position", reader.getLocation());
+                    + "at position ", reader.getLocation());
         }
         // System.err.println("--> ok @ " + toReadable(reader));
         return s;

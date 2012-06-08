@@ -372,7 +372,7 @@ public class SRUClient {
                 reader.readEnd(SRU_NS, "explainResponse");
             }
         } catch (XMLStreamException e) {
-            throw new SRUClientException("error parsing response", e);
+            throw new SRUClientException(e.getMessage(), e);
         }
     }
 
@@ -485,7 +485,7 @@ public class SRUClient {
                 reader.readEnd(SRU_NS, "scanResponse");
             }
         } catch (XMLStreamException e) {
-            throw new SRUClientException("error parsing response", e);
+            throw new SRUClientException(e.getMessage(), e);
         }
     }
 
@@ -658,7 +658,7 @@ public class SRUClient {
                 reader.readEnd(SRU_NS, "searchRetrieveResponse");
             }
         } catch (XMLStreamException e) {
-            throw new SRUClientException("error parsing response", e);
+            throw new SRUClientException(e.getMessage(), e);
         }
     }
 
