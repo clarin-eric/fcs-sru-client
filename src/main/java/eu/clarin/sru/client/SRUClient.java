@@ -671,8 +671,9 @@ public class SRUClient {
         } else if (VERSION_1_2.equals(v)) {
             return SRUVersion.VERSION_1_2;
         } else {
-            throw new SRUClientException(
-                    "response version is not supported: " + v);
+            throw new SRUClientException("invalid value '" + v +
+                    "' for version (valid values are: '" + VERSION_1_1 +
+                    "' and '" + VERSION_1_2 + "')");
         }
     }
 
@@ -726,13 +727,16 @@ public class SRUClient {
     private static SRURecordPacking parseRecordPacking(SRUXMLStreamReader reader)
             throws XMLStreamException, SRUClientException {
         final String v = reader.readContent(SRU_NS, "recordPacking", true);
+
         if (RECORD_PACKING_XML.equals(v)) {
             return SRURecordPacking.XML;
         } else if (RECORD_PACKING_STRING.equals(v)) {
             return SRURecordPacking.STRING;
         } else {
-            throw new SRUClientException("record packing not supported: " +
-                    v);
+            throw new SRUClientException("invalid value '" + v +
+                    "' for record packing (valid values are: '" +
+                    RECORD_PACKING_XML + "' and '" + RECORD_PACKING_STRING +
+                    "')");
         }
     }
 
