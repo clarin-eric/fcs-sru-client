@@ -1,5 +1,6 @@
 package eu.clarin.sru.client;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -107,8 +108,8 @@ public class SRUClient {
             stream = entity.getContent();
 
             final long ts_parsing = System.nanoTime();
-            reader = createReader(stream);
-            parseExplainResponse(reader, handler);
+            reader = createReader(stream, true);
+            parseExplainResponse(reader, request, handler);
             final long ts_end = System.nanoTime();
 
             final long millisTotal =
@@ -173,8 +174,8 @@ public class SRUClient {
             stream = entity.getContent();
 
             final long ts_parsing = System.nanoTime();
-            reader = createReader(stream);
-            parseScanResponse(reader, handler);
+            reader = createReader(stream, true);
+            parseScanResponse(reader, request, handler);
             final long ts_end = System.nanoTime();
 
             final long millisTotal =
@@ -239,8 +240,8 @@ public class SRUClient {
             stream = entity.getContent();
 
             final long ts_parsing = System.nanoTime();
-            reader = createReader(stream);
-            parseSearchRetrieveResponse(reader, handler);
+            reader = createReader(stream, true);
+            parseSearchRetrieveResponse(reader, request, handler);
             final long ts_end = System.nanoTime();
 
             final long millisTotal =
@@ -305,7 +306,8 @@ public class SRUClient {
 
 
     private void parseExplainResponse(SRUXMLStreamReader reader,
-            SRUExplainHandler handler) throws SRUClientException {
+            SRUExplainRequest request, SRUExplainHandler handler)
+            throws SRUClientException {
         logger.debug("parsing 'explain' response");
         try {
             // explainResponse
@@ -378,7 +380,8 @@ public class SRUClient {
 
 
     private void parseScanResponse(SRUXMLStreamReader reader,
-            SRUScanHandler handler) throws SRUClientException {
+            SRUScanRequest request, SRUScanHandler handler)
+            throws SRUClientException {
         logger.debug("parsing 'scanResponse' response");
         try {
             // scanResponse
@@ -491,7 +494,8 @@ public class SRUClient {
 
 
     private void parseSearchRetrieveResponse(SRUXMLStreamReader reader,
-            SRUSearchRetrieveHandler handler) throws SRUClientException {
+            SRUSearchRetrieveRequest request, SRUSearchRetrieveHandler handler)
+            throws SRUClientException {
         logger.debug("parsing 'serarchRetrieve' response");
         try {
             // searchRetrieveResponse
@@ -543,13 +547,20 @@ public class SRUClient {
 
                         SRURecordPacking packing = parseRecordPacking(reader);
 
-                        logger.debug("schema = {}, packing = {}",
-                                schema, packing);
+                        logger.debug("schema = {}, packing = {}, requested packing = {}",
+                                new Object[] { schema, packing,
+                                        request.getRecordPacking() });
 
-                        /* FIXME: bail on non-XML record packing */
-                        if (packing != SRURecordPacking.XML) {
-                            throw new SRUClientException("record packing '" +
-                                    packing + "' is not supported");
+                        if ((request.getRecordPacking() != null) &&
+                                (packing != request.getRecordPacking())) {
+                            logger.warn("requested '{}' record packing, but server responded with '{}' record packing",
+                                    request.getRecordPacking().toProtocolString(),
+                                    packing.toProtocolString());
+                            // XXX: only throw if client is pedantic?
+                            throw new SRUClientException("requested '" +
+                                    request.getRecordPacking().toProtocolString() +
+                                    "' record packing, but server responded with '" +
+                                    packing.toProtocolString() + "' record packing");
                         }
 
                         // searchRetrieveResponse/record/recordData
@@ -558,14 +569,29 @@ public class SRUClient {
 
                         SRURecordData recordData = null;
                         SRUDiagnostic surrogate = null;
+                        SRUXMLStreamReader recordReader = null;
+
+                        if (packing == SRURecordPacking.STRING) {
+                            /*
+                             * read content into temporary buffer and then use
+                             * a new XML reader to parse record data
+                             */
+                            final String data = reader.readString(true);
+                            InputStream in = new ByteArrayInputStream(
+                                    data.getBytes());
+                            // FIXME: namespace context?
+                            recordReader = createReader(in, false);
+                        } else {
+                            recordReader = reader;
+                        }
 
                         if (SRU_DIAGNOSTIC_RECORD_SCHEMA.equals(schema)) {
-                            surrogate = parseDiagnostic(reader, true);
+                            surrogate = parseDiagnostic(recordReader, true);
                         } else {
                             SRURecordDataParser parser = parsers.get(schema);
                             if (parser != null) {
                                 try {
-                                    proxy.reset(reader);
+                                    proxy.reset(recordReader);
                                     recordData = parser.parse(proxy);
                                 } catch (XMLStreamException e) {
                                     throw new SRUClientException(
@@ -578,6 +604,11 @@ public class SRUClient {
                                         schema);
                             }
                         }
+
+                        if (packing == SRURecordPacking.STRING) {
+                            recordReader.closeCompletly();
+                        }
+
                         reader.consumeWhitespace();
                         reader.readEnd(SRU_NS, "recordData", true);
 
@@ -741,9 +772,9 @@ public class SRUClient {
     }
 
 
-    private SRUXMLStreamReader createReader(InputStream in)
+    private SRUXMLStreamReader createReader(InputStream in, boolean wrap)
             throws XMLStreamException {
-        return new SRUXMLStreamReader(in);
+        return new SRUXMLStreamReader(in, wrap);
     }
 
 } // class SRUClient

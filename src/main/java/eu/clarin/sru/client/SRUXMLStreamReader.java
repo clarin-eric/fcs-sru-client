@@ -29,18 +29,18 @@ class SRUXMLStreamReader implements XMLStreamReader {
 
         @Override
         public int read() throws IOException {
-            final int result = super.read();
-            if (result != -1) {
+            final int value = super.read();
+            if (value != -1) {
                 count++;
             }
-            return result;
+            return value;
         }
 
         @Override
         public int read(byte[] buffer, int offset, int length)
                 throws IOException {
             final int result = super.read(buffer, offset, length);
-            if (result > 0) {
+            if (result >= 0) {
                 count += result;
             }
             return result;
@@ -61,11 +61,11 @@ class SRUXMLStreamReader implements XMLStreamReader {
         }
     } // class CountingInputStream
     private static final XMLInputFactory2 factory;
-    private final CountingInputStream stream;
+    private final InputStream stream;
     private final XMLStreamReader2 reader;
 
-    SRUXMLStreamReader(InputStream in) throws XMLStreamException {
-        this.stream = new CountingInputStream(in);
+    SRUXMLStreamReader(InputStream in, boolean wrap) throws XMLStreamException {
+        this.stream = wrap ? new CountingInputStream(in) : in;
         this.reader =
                 (XMLStreamReader2) factory.createXMLStreamReader(stream);
     }
@@ -343,8 +343,26 @@ class SRUXMLStreamReader implements XMLStreamReader {
     }
 
 
+    void closeCompletly() {
+        try {
+            reader.close();
+        } catch (XMLStreamException e) {
+            /* IGNORE */
+        }
+        try {
+            stream.close();
+        } catch (IOException e) {
+            /* IGNORE */
+        }
+    }
+
+
     long getByteCount() {
-        return stream.count;
+        if (stream instanceof CountingInputStream) {
+            return ((CountingInputStream) stream).count;
+        } else {
+            return -1;
+        }
     }
 
 
@@ -507,13 +525,17 @@ class SRUXMLStreamReader implements XMLStreamReader {
 
     String readString(boolean required) throws XMLStreamException {
         // System.err.println("readString @ " + toReadable(reader));
-        String s = null;
-        if (reader.isCharacters()) {
-            s = reader.getText();
+        StringBuilder sb = new StringBuilder();
+        while (reader.isCharacters()) {
+            String s = reader.getText();
             if (s != null) {
-                s = s.trim();
+                sb.append(s);
             }
             reader.next();
+        } // while
+        String s = null;
+        if (sb.length() > 0) {
+            s = sb.toString().trim();
         }
         if (required && ((s == null) || s.isEmpty())) {
             throw new XMLStreamException("expected character content "
