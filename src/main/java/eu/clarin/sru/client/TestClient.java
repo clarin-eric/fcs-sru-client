@@ -129,6 +129,12 @@ public class TestClient {
                 SRUScanRequest request = new SRUScanRequest(args[0]);
                 request.setScanClause("cmd.collections");
                 request.setMaximumTerms(2);
+//                request.setExtraRequestData(
+//                        SRUScanRequest.X_MALFORMED_OPERATION,
+//                        SRUScanRequest.MALFORMED_OMIT);
+//                request.setExtraRequestData(
+//                        SRUAbstractRequest.X_MALFORMED_VERSION,
+//                        SRUAbstractRequest.MALFORMED_OMIT);
                 client.scan(request, handler);
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'scan' request", e);
@@ -143,6 +149,12 @@ public class TestClient {
                 request.setMaximumRecords(5);
                 request.setRecordPacking(SRURecordPacking.XML);
                 request.setExtraRequestData("x-indent-response", "4");
+//                request.setExtraRequestData(
+//                        SRUScanRequest.X_MALFORMED_OPERATION,
+//                        "invalid");
+//                request.setExtraRequestData(
+//                        SRUScanRequest.X_MALFORMED_VERSION,
+//                        SRUScanRequest.MALFORMED_OMIT);
                 client.searchRetrieve(request, handler);
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'searchRetrieve' request", e);

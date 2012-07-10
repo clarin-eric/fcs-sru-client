@@ -60,22 +60,19 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
 
     @Override
-    protected void addParametersToURI(StringBuilder uri)
+    protected void addParametersToURI(URIBuilder uriBuilder)
             throws SRUClientException {
         // scanClause
-        uri.append('&').append(PARAM_SCAN_CLAUSE)
-            .append('=').append(scanClause);
-        
-        // reponsePosition
+        uriBuilder.append(PARAM_SCAN_CLAUSE, scanClause);
+
+        // responsePosition
         if (responsePosition > -1) {
-            uri.append('&').append(PARAM_RESPONSE_POSITION)
-                .append('=').append(responsePosition);
+            uriBuilder.append(PARAM_RESPONSE_POSITION, responsePosition);
         }
-        
+
         // maximumTerms
         if (maximumTerms > -1) {
-            uri.append('&').append(PARAM_MAXIMUM_TERMS)
-                .append('=').append(maximumTerms);
+            uriBuilder.append(PARAM_MAXIMUM_TERMS, maximumTerms);
         }
     }
 

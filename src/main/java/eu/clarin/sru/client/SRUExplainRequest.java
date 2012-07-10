@@ -29,17 +29,16 @@ public final class SRUExplainRequest extends SRUAbstractRequest {
 
 
     @Override
-    protected void addParametersToURI(StringBuilder uri)
+    protected void addParametersToURI(URIBuilder uriBuilder)
             throws SRUClientException {
         // recordPacking
         if (recordPacking != null) {
-            uri.append('&').append(PARAM_RECORD_PACKING).append('=');
             switch (recordPacking) {
             case XML:
-                uri.append(RECORD_PACKING_XML);
+                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
                 break;
             case STRING:
-                uri.append(RECORD_PACKING_STRING);
+                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_STRING);
                 break;
             default:
                 throw new SRUClientException("unsupported record packing: " +

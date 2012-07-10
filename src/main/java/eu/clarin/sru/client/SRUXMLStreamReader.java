@@ -469,6 +469,33 @@ class SRUXMLStreamReader implements XMLStreamReader {
     }
 
 
+    boolean peekStart(String namespaceURI, String localName)
+            throws XMLStreamException {
+        if (!reader.isEndElement()) {
+            while (reader.hasNext()) {
+                // System.err.println("  LOOP: " + dumpState());
+                if (reader.isWhiteSpace()) {
+                    reader.next();
+                    continue;
+                }
+                if (reader.isStartElement()) {
+                    if (namespaceURI.equals(reader.getNamespaceURI()) &&
+                            localName.equals(reader.getLocalName())) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                if (reader.isCharacters() || reader.isEndElement()) {
+                    break;
+                }
+                reader.next();
+            } // while
+        }
+        return false;
+    }
+
+
     String readContent(String namespaceURI, String localName, boolean required)
             throws XMLStreamException {
         String result = null;

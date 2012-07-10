@@ -96,32 +96,29 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
 
     @Override
-    protected void addParametersToURI(StringBuilder uri)
+    protected void addParametersToURI(URIBuilder uriBuilder)
             throws SRUClientException {
         // query
-        uri.append('&').append(PARAM_QUERY).append('=').append(query);
-        
+        uriBuilder.append(PARAM_QUERY, query);
+
         // startRecord
         if (startRecord > 0) {
-            uri.append('&').append(PARAM_START_RECORD)
-                .append('=').append(startRecord);
+            uriBuilder.append(PARAM_START_RECORD, startRecord);
         }
-        
+
         // maximumRecords
         if (maximumRecords > -1) {
-            uri.append('&').append(PARAM_MAXIMUM_RECORDS)
-                .append('=').append(maximumRecords);
+            uriBuilder.append(PARAM_MAXIMUM_RECORDS, maximumRecords);
         }
 
         // recordPacking
         if (recordPacking != null) {
-            uri.append('&').append(PARAM_RECORD_PACKING).append('=');
             switch (recordPacking) {
             case XML:
-                uri.append(RECORD_PACKING_XML);
+                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
                 break;
             case STRING:
-                uri.append(RECORD_PACKING_STRING);
+                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_STRING);
                 break;
             default:
                 throw new SRUClientException("unsupported record packing: " +
@@ -131,14 +128,12 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
         // recordSchema
         if (recordSchema != null) {
-            uri.append('&').append(PARAM_RECORD_SCHEMA)
-                .append('=').append(recordSchema);
+            uriBuilder.append(PARAM_RECORD_SCHEMA, recordSchema);
         }
-        
+
         // resultSetTTL
         if (resultSetTTL > -1) {
-            uri.append('&').append(PARAM_RESULT_SET_TTL)
-                .append('=').append(resultSetTTL);
+            uriBuilder.append(PARAM_RESULT_SET_TTL, resultSetTTL);
         }
     }
 
