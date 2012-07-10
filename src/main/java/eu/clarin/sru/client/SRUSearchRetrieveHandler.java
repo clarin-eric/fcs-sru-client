@@ -7,7 +7,7 @@ import javax.xml.stream.XMLStreamReader;
 
 public interface SRUSearchRetrieveHandler {
 
-    public void onFatalError(List<SRUDiagnostic> diagnistics)
+    public void onDiagnostics(List<SRUDiagnostic> diagnostics)
             throws SRUClientException;
 
     public void onRequestStatistics(int bytes, long millisTotal,

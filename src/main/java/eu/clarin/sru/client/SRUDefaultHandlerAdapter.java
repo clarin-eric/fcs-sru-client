@@ -6,12 +6,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 public class SRUDefaultHandlerAdapter implements SRUDefaultHandler {
-
+    
     @Override
-    public void onFatalError(List<SRUDiagnostic> diagnistics)
+    public void onDiagnostics(List<SRUDiagnostic> diagnostics)
             throws SRUClientException {
     }
-
 
     @Override
     public void onRequestStatistics(int bytes, long millisTotal,

@@ -29,10 +29,10 @@ public class TestClient {
 
             SRUDefaultHandlerAdapter handler = new SRUDefaultHandlerAdapter() {
                 @Override
-                public void onFatalError(List<SRUDiagnostic> diagnostics)
+                public void onDiagnostics(List<SRUDiagnostic> diagnostics)
                         throws SRUClientException {
                     for (SRUDiagnostic diagnostic : diagnostics) {
-                        logger.info("onFatalError: uri={}, detail={}, message={}",
+                        logger.info("onDiagnostics: uri={}, detail={}, message={}",
                                 new Object[] { diagnostic.getURI(),
                                         diagnostic.getDetails(),
                                         diagnostic.getMessage() });

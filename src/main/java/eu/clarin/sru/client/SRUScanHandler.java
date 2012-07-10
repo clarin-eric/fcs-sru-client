@@ -10,7 +10,7 @@ public interface SRUScanHandler {
         FIRST, LAST, ONLY, INNER;
     }
 
-    public void onFatalError(List<SRUDiagnostic> diagnistics)
+    public void onDiagnostics(List<SRUDiagnostic> diagnostics)
             throws SRUClientException;
 
     public void onRequestStatistics(int bytes, long millisTotal,
