@@ -99,6 +99,10 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
     protected void addParametersToURI(URIBuilder uriBuilder)
             throws SRUClientException {
         // query
+        if ((query == null) || query.isEmpty()) {
+            throw new SRUClientException(
+                    "mandatory argument 'query' not set or empty");
+        }
         uriBuilder.append(PARAM_QUERY, query);
 
         // startRecord

@@ -58,7 +58,7 @@ public abstract class SRUAbstractRequest {
                 throw new IllegalArgumentException("name is empty");
             }
             if (value == null) {
-                throw new NullPointerException("vale == null");
+                throw new NullPointerException("value == null");
             }
             if (value.isEmpty()) {
                 throw new IllegalArgumentException("value is empty");

@@ -63,6 +63,10 @@ public final class SRUScanRequest extends SRUAbstractRequest {
     protected void addParametersToURI(URIBuilder uriBuilder)
             throws SRUClientException {
         // scanClause
+        if ((scanClause == null) || scanClause.isEmpty()) {
+            throw new SRUClientException(
+                    "mandatory argument 'scanClause' not set or empty");
+        }
         uriBuilder.append(PARAM_SCAN_CLAUSE, scanClause);
 
         // responsePosition
