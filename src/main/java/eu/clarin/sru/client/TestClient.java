@@ -2,9 +2,6 @@ package eu.clarin.sru.client;
 
 import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,18 +75,6 @@ public class TestClient {
                         throws SRUClientException {
                     logger.info("onFinishRecords(): nextRecordPosition = {}",
                             nextRecordPosition);
-                }
-
-                @Override
-                public void onRecord(String schema, String identifier,
-                        int position, XMLStreamReader reader)
-                        throws XMLStreamException, SRUClientException {
-                    logger.info("onRecord(): schema = {}, identifier = {}, position = {}",
-                            new Object[] { schema, identifier, position });
-                    /* just try to read ... */
-                    while (reader.hasNext()) {
-                        reader.next();
-                    }
                 }
 
                 @Override

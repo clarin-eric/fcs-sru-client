@@ -57,12 +57,6 @@ public class SRUDefaultHandlerAdapter implements SRUDefaultHandler {
             throws SRUClientException {
     }
 
-    @Override
-    public void onRecord(String schema, String identifier, int position,
-            XMLStreamReader reader) throws XMLStreamException,
-            SRUClientException {
-    }
-
 
     @Override
     public void onRecord(String identifier, int position, SRURecordData data)
