@@ -1,3 +1,19 @@
+/**
+ * This software is copyright (c) 2011 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.client;
 
 import java.net.URI;
@@ -5,43 +21,45 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public abstract class SRUAbstractRequest {
-    protected static final String PARAM_OPERATION         = "operation";
-    protected static final String PARAM_VERSION           = "version";
-    protected static final String PARAM_RECORD_PACKING    = "recordPacking";
-    protected static final String PARAM_STYLESHEET        = "stylesheet";
-    protected static final String PARAM_QUERY             = "query";
-    protected static final String PARAM_START_RECORD      = "startRecord";
-    protected static final String PARAM_MAXIMUM_RECORDS   = "maximumRecords";
-    protected static final String PARAM_RECORD_SCHEMA     = "recordSchema";
-    protected static final String PARAM_RECORD_X_PATH     = "recordXPath";
-    protected static final String PARAM_RESULT_SET_TTL    = "resultSetTTL";
-    protected static final String PARAM_SORT_KEYS         = "sortKeys";
-    protected static final String PARAM_SCAN_CLAUSE       = "scanClause";
-    protected static final String PARAM_RESPONSE_POSITION = "responsePosition";
-    protected static final String PARAM_MAXIMUM_TERMS     = "maximumTerms";
-    protected static final String RECORD_PACKING_XML      = "xml";
-    protected static final String RECORD_PACKING_STRING   = "string";
-    private static final String OP_EXPLAIN                = "explain";
-    private static final String OP_SCAN                   = "scan";
-    private static final String OP_SEARCH_RETRIEVE        = "searchRetrieve";
-    private static final String VERSION_1_1               = "1.1";
-    private static final String VERSION_1_2               = "1.2";
-    private static final String PARAM_EXTENSION_PREFIX    = "x-";
-    /** for end-point conformance testing only. never use in production */
-    public static final String X_MALFORMED_VERSION       =
+abstract class SRUAbstractRequest {
+    static final String PARAM_OPERATION                = "operation";
+    static final String PARAM_VERSION                  = "version";
+    static final String PARAM_RECORD_PACKING           = "recordPacking";
+    static final String PARAM_STYLESHEET               = "stylesheet";
+    static final String PARAM_QUERY                    = "query";
+    static final String PARAM_START_RECORD             = "startRecord";
+    static final String PARAM_MAXIMUM_RECORDS          = "maximumRecords";
+    static final String PARAM_RECORD_SCHEMA            = "recordSchema";
+    static final String PARAM_RECORD_X_PATH            = "recordXPath";
+    static final String PARAM_RESULT_SET_TTL           = "resultSetTTL";
+    static final String PARAM_SORT_KEYS                = "sortKeys";
+    static final String PARAM_SCAN_CLAUSE              = "scanClause";
+    static final String PARAM_RESPONSE_POSITION        = "responsePosition";
+    static final String PARAM_MAXIMUM_TERMS            = "maximumTerms";
+    static final String RECORD_PACKING_XML             = "xml";
+    static final String RECORD_PACKING_STRING          = "string";
+    private static final String OP_EXPLAIN             = "explain";
+    private static final String OP_SCAN                = "scan";
+    private static final String OP_SEARCH_RETRIEVE     = "searchRetrieve";
+    private static final String VERSION_1_1            = "1.1";
+    private static final String VERSION_1_2            = "1.2";
+    private static final String PARAM_EXTENSION_PREFIX = "x-";
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_VERSION     =
             "x-malformed-version";
-    /** for end-point conformance testing only. never use in production */
-    public static final String X_MALFORMED_OPERATION     =
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_OPERATION   =
             "x-maformed-operation";
-    /** for end-point conformance testing only. never use in production */
-    public static final String MALFORMED_OMIT            = "omit";
+    /** for end-point conformance testing only. never use in production. */
+    public static final String MALFORMED_OMIT          = "omit";
 
-    protected enum SRUOperation {
+
+    enum SRUOperation {
         EXPLAIN, SCAN, SEARCH_RETRIEVE
     } // enum SRUOperation
 
-    protected class URIBuilder {
+    
+    class URIBuilder {
         private final StringBuilder sb;
         private boolean firstParam = true;
 
@@ -49,7 +67,7 @@ public abstract class SRUAbstractRequest {
             this.sb = new StringBuilder(endpointURI);
         }
 
-
+        
         public URIBuilder append(String name, String value) {
             if (name == null) {
                 throw new NullPointerException("name == null");
@@ -74,7 +92,7 @@ public abstract class SRUAbstractRequest {
             return this;
         }
 
-
+        
         public URIBuilder append(String name, int value) {
             return append(name, Integer.toString(value));
         }
@@ -84,8 +102,11 @@ public abstract class SRUAbstractRequest {
             return URI.create(sb.toString());
         }
     } // class
+    /** The URL of the endpoint. */
     protected final String endpointURI;
+    /** The version to be sued  for this request. */
     protected SRUVersion version;
+    /** A map of extra request data parameters. */
     protected Map<String, String> extraRequestData;
     private SRUVersion versionPreformed;
 
@@ -98,26 +119,51 @@ public abstract class SRUAbstractRequest {
     }
 
 
+    /**
+     * Get the endpoint URI.
+     * 
+     * @return the endpoiunt URI
+     */
     public String getEndpointURI() {
         return endpointURI;
     }
 
 
+    /**
+     * Set the version for this request.
+     * 
+     * @param version a version of <code>null</code> for client default
+     */
     public void setVersion(SRUVersion version) {
         this.version = version;
     }
 
 
+    /**
+     * Get the version for this request.
+     * 
+     * @return version for this request or <code>null</code> of client default
+     *         is used
+     */
     public SRUVersion getVersion() {
         return version;
     }
 
 
-    public SRUVersion getVersionPerformed() {
-        return versionPreformed;
-    }
-
-
+    /**
+     * Set an extra request parameter for this request.
+     * 
+     * @param name
+     *            the name for the extra request data parameter
+     * @param value
+     *            the value for the extra request data parameter
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     * @see <a href="http://www.loc.gov/standards/sru/specs/extra-data.html">SRU
+     *      Extra Data / Extensions</a>
+     */
     public void setExtraRequestData(String name, String value) {
         if (name == null) {
             throw new NullPointerException("name == null");
@@ -142,6 +188,20 @@ public abstract class SRUAbstractRequest {
     }
 
 
+    /**
+     * Set the value of extra request parameter for this request.
+     * 
+     * @param name
+     *            the name for the extra request data parameter
+     * @return the value for the extra request data parameter or
+     *         <code>null</code> if parameter was not set
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     * @see <a href="http://www.loc.gov/standards/sru/specs/extra-data.html">SRU
+     *      Extra Data / Extensions</a>
+     */
     public String getExtraRequestData(String name) {
         if (name == null) {
             throw new NullPointerException("name == null");
@@ -149,8 +209,9 @@ public abstract class SRUAbstractRequest {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("name is an empty string");
         }
-        if (!name.startsWith("x-")) {
-            throw new IllegalArgumentException("name must start with 'x-'");
+        if (!name.startsWith(PARAM_EXTENSION_PREFIX)) {
+            throw new IllegalArgumentException("name must start with '" +
+                    PARAM_EXTENSION_PREFIX + "'");
         }
         if (extraRequestData != null) {
             return extraRequestData.get(name);
@@ -159,6 +220,11 @@ public abstract class SRUAbstractRequest {
     }
 
 
+    final SRUVersion getVersionPerformed() {
+        return versionPreformed;
+    }
+
+    
     final URI makeURI(SRUVersion defaultVersion)
             throws SRUClientException {
         if (defaultVersion == null) {
@@ -245,10 +311,13 @@ public abstract class SRUAbstractRequest {
     }
 
 
-    protected abstract SRUOperation getOperation();
+    /**
+     * <em>Note: this method is not a part of public API.</em>
+     * @return a constant for this
+     */
+    abstract SRUOperation getOperation();
 
 
-    protected abstract void addParametersToURI(URIBuilder uri)
-            throws SRUClientException;
+    abstract void addParametersToURI(URIBuilder uri) throws SRUClientException;
 
 } // class AbstractSRURequest

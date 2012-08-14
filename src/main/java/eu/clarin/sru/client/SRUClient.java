@@ -1,3 +1,19 @@
+/**
+ * This software is copyright (c) 2011 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.client;
 
 import java.io.ByteArrayInputStream;
@@ -30,7 +46,10 @@ import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.client.SRUScanHandler.WhereInList;
 
-
+/**
+ * A class to perform SRU operations.
+ * <p><em>This class is not thread-safe!</em></p>
+ */
 public class SRUClient {
     private static final String SRU_NS =
             "http://www.loc.gov/zing/srw/";
@@ -51,6 +70,13 @@ public class SRUClient {
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
 
 
+    /**
+     * Constructor.
+     * 
+     * @param defaultVersion
+     *            the default version to use for SRU requests; may be overridden
+     *            by individual requests
+     */
     public SRUClient(SRUVersion defaultVersion) {
         if (defaultVersion == null) {
             throw new NullPointerException("version == null");
@@ -62,6 +88,19 @@ public class SRUClient {
     }
 
 
+    /**
+     * Register a record data parser.
+     * 
+     * @param parser
+     *            a parser instance
+     * @throws SRUClientException
+     *             if a parser handing the same record schema is already
+     *             registered
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the supplied parser is invalid
+     */
     public void registerRecordParser(SRURecordDataParser parser)
             throws SRUClientException {
         if (parser == null) {
@@ -84,6 +123,21 @@ public class SRUClient {
     }
 
 
+    /**
+     * Perform a <em>explain</em> operation.
+     * 
+     * @param request
+     *            an instance of a {@link SRUExplainRequest} object
+     * @param handler
+     *            an instance of {@link SRUExplainHandler} to receive callbacks
+     *            when processing the result of this request
+     * @throws SRUClientException
+     *             if an unrecoverable error occurred
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @see SRUExplainRequest
+     * @see SRUExplainHandler
+     */
     public void explain(SRUExplainRequest request, SRUExplainHandler handler)
             throws SRUClientException {
         if (request == null) {
@@ -150,6 +204,21 @@ public class SRUClient {
     }
 
 
+    /**
+     * Perform a <em>scan</em> operation.
+     * 
+     * @param request
+     *            an instance of a {@link SRUScanRequest} object
+     * @param handler
+     *            an instance of {@link SRUScanHandler} to receive callbacks
+     *            when processing the result of this request
+     * @throws SRUClientException
+     *             if an unrecoverable error occurred
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @see SRUScanRequest
+     * @see SRUScanHandler
+     */
     public void scan(SRUScanRequest request, SRUScanHandler handler)
             throws SRUClientException {
         if (request == null) {
@@ -216,6 +285,21 @@ public class SRUClient {
     }
 
 
+    /**
+     * Perform a <em>searchRetreive</em> operation.
+     * 
+     * @param request
+     *            an instance of a {@link SRUSearchRetrieveRequest} object
+     * @param handler
+     *            an instance of {@link SRUSearchRetrieveHandler} to receive
+     *            callbacks when processing the result of this request
+     * @throws SRUClientException
+     *             if an unrecoverable error occurred
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @see SRUSearchRetrieveRequest
+     * @see SRUSearchRetrieveHandler
+     */
     public void searchRetrieve(SRUSearchRetrieveRequest request,
             SRUSearchRetrieveHandler handler) throws SRUClientException {
         if (request == null) {
@@ -610,23 +694,25 @@ public class SRUClient {
 
                         SRURecordPacking packing = parseRecordPacking(reader);
 
-                        logger.debug("schema = {}, packing = {}, requested packing = {}",
+                        logger.debug("schema = {}, packing = {}, " +
+                                "requested packing = {}",
                                 new Object[] { schema, packing,
                                         request.getRecordPacking() });
 
                         if ((request.getRecordPacking() != null) &&
                                 (packing != request.getRecordPacking())) {
-                            logger.warn("requested '{}' record packing, but server responded with '{}' record packing",
-                                    request.getRecordPacking()
-                                            .toProtocolString(), packing
-                                            .toProtocolString());
+                            final SRURecordPacking p =
+                                    request.getRecordPacking();
+                            logger.warn("requested '{}' record packing, but " +
+                                "server responded with '{}' record packing",
+                                    p.getStringValue(),
+                                    packing.getStringValue());
                             // XXX: only throw if client is pedantic?
-                            throw new SRUClientException(
-                                    "requested '" +
-                                            request.getRecordPacking()
-                                                    .toProtocolString() +
-                                            "' record packing, but server responded with '" +
-                                            packing.toProtocolString() +
+                            throw new SRUClientException("requested '" +
+                                            p.getStringValue() +
+                                            "' record packing, but server " +
+                                            "responded with '" +
+                                            packing.getStringValue() +
                                             "' record packing");
                         }
 
@@ -663,6 +749,12 @@ public class SRUClient {
                                 } catch (XMLStreamException e) {
                                     throw new SRUClientException(
                                             "error parsing record", e);
+                                }
+                                if (recordData == null) {
+                                    // FIXME: handle this better? maybe throw?
+                                    logger.warn("parse did not correctly "
+                                            + "parse the record, will skip "
+                                            + "handler callback.");
                                 }
                             } else {
                                 // FIXME: handle this better?

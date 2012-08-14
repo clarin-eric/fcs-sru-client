@@ -1,21 +1,70 @@
+/**
+ * This software is copyright (c) 2011 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.client;
 
+/**
+ * An object for performing a <em>explain</em> operation.
+ * <p>The following argument arguments are mandatory:</p>
+ * <ul>
+ *   <li><em>scanClause</em></li>
+ * </ul>
+ * 
+ * @see SRUScanHandler
+ * @see <a href="http://www.loc.gov/standards/sru/specs/scan.html">SRU Scan
+ *      Operation</a>
+ */
 public final class SRUScanRequest extends SRUAbstractRequest {
     private String scanClause;
     private int responsePosition = -1;
     private int maximumTerms = -1;
 
 
-    protected SRUScanRequest(String baseURI) {
+    /**
+     * Constructor.
+     * 
+     * @param baseURI
+     *            the baseURI of the endpoint
+     */
+    public SRUScanRequest(String baseURI) {
         super(baseURI);
     }
 
 
+    /**
+     * Get the value of the <em>scanClause</em> argument for this request.
+     * 
+     * @return the value for the <em>scanClause</em> argument or
+     *         <code>null</code> of none was set
+     */
     public String getScanClause() {
         return scanClause;
     }
 
 
+    /**
+     * Set the value of the <em>scanClause</em> argument for this request.
+     * 
+     * @param scanClause
+     *            the value for the <em>scanClause</em> argument
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     */
     public void setScanClause(String scanClause) {
         if (scanClause == null) {
             throw new NullPointerException("scanClause == null");
@@ -27,11 +76,24 @@ public final class SRUScanRequest extends SRUAbstractRequest {
     }
 
 
+    /**
+     * Get the value of the <em>responsePosition</em> argument for this request.
+     * 
+     * @return the value for the <em>responsePosition</em> argument
+     */
     public int getResponsePosition() {
         return responsePosition;
     }
 
 
+    /**
+     * Set the value of the <em>responsePosition</em> argument for this request.
+     * 
+     * @param responsePosition
+     *            the value for the <em>responsePosition</em> argument
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     */
     public void setResponsePosition(int responsePosition) {
         if (responsePosition < 0) {
             throw new IllegalArgumentException("responsePosition < 0");
@@ -40,11 +102,24 @@ public final class SRUScanRequest extends SRUAbstractRequest {
     }
 
 
+    /**
+     * Get the value of the <em>maximumTerms</em> argument for this request.
+     * 
+     * @return the value for the <em>maximumTerms</em> argument
+     */
     public int getMaximumTerms() {
         return maximumTerms;
     }
 
 
+    /**
+     * Set the value of the <em>maximumTerms</em> argument for this request.
+     * 
+     * @param maximumTerms
+     *            the value for the <em>maximumTerms</em> argument
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     */
     public void setMaximumTerms(int maximumTerms) {
         if (maximumTerms < 0) {
             throw new IllegalArgumentException("maximumTerms < 0");
@@ -54,14 +129,13 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
 
     @Override
-    protected SRUOperation getOperation() {
+    SRUOperation getOperation() {
         return SRUOperation.SCAN;
     }
 
 
     @Override
-    protected void addParametersToURI(URIBuilder uriBuilder)
-            throws SRUClientException {
+    void addParametersToURI(URIBuilder uriBuilder) throws SRUClientException {
         // scanClause
         if ((scanClause == null) || scanClause.isEmpty()) {
             throw new SRUClientException(

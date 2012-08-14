@@ -1,9 +1,32 @@
+/**
+ * This software is copyright (c) 2011 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.client;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+
+/**
+ * Helper class for dealing with {@link XMLStreamReader}.
+ * <p>
+ * <em>Note: this class is semi-public API and may be change or removed in the future.</em>
+ * </p>
+ */
 public final class XmlStreamReaderUtils {
     private XmlStreamReaderUtils() {
     }
