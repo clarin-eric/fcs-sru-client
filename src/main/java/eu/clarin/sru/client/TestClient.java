@@ -133,7 +133,7 @@ public class TestClient {
             try {
                 logger.info("performing 'scan' request ...");
                 SRUScanRequest request = new SRUScanRequest(args[0]);
-                request.setScanClause("fcs.resource");
+                request.setScanClause("cmd.collections");
                 request.setMaximumTerms(2);
 //                request.setExtraRequestData(
 //                        SRUAbstractRequest.X_MALFORMED_OPERATION,
@@ -146,25 +146,25 @@ public class TestClient {
                 logger.error("a fatal error occured while performing 'scan' request", e);
             }
 
-//            try {
-//                logger.info("performing 'searchRetrieve' request ...");
-//                SRUSearchRetrieveRequest request =
-//                        new SRUSearchRetrieveRequest(args[0]);
-//                request.setQuery("Faustus");
-//                request.setRecordSchema(ClarinFederatedContentSearchRecordParser.FCS_RECORD_SCHEMA);
-//                request.setMaximumRecords(5);
-//                request.setRecordPacking(SRURecordPacking.XML);
-//                request.setExtraRequestData("x-indent-response", "4");
-////                request.setExtraRequestData(
-////                        SRUAbstractRequest.X_MALFORMED_OPERATION,
-////                        "invalid");
-////                request.setExtraRequestData(
-////                        SRUAbstractRequest.X_MALFORMED_VERSION,
-////                        SRUAbstractRequest.MALFORMED_OMIT);
-//                client.searchRetrieve(request, handler);
-//            } catch (SRUClientException e) {
-//                logger.error("a fatal error occured while performing 'searchRetrieve' request", e);
-//            }
+            try {
+                logger.info("performing 'searchRetrieve' request ...");
+                SRUSearchRetrieveRequest request =
+                        new SRUSearchRetrieveRequest(args[0]);
+                request.setQuery("Faustus");
+                request.setRecordSchema(ClarinFederatedContentSearchRecordParser.FCS_RECORD_SCHEMA);
+                request.setMaximumRecords(5);
+                request.setRecordPacking(SRURecordPacking.XML);
+                request.setExtraRequestData("x-indent-response", "4");
+//                request.setExtraRequestData(
+//                        SRUAbstractRequest.X_MALFORMED_OPERATION,
+//                        "invalid");
+//                request.setExtraRequestData(
+//                        SRUAbstractRequest.X_MALFORMED_VERSION,
+//                        SRUAbstractRequest.MALFORMED_OMIT);
+                client.searchRetrieve(request, handler);
+            } catch (SRUClientException e) {
+                logger.error("a fatal error occured while performing 'searchRetrieve' request", e);
+            }
         } else {
             System.err.println("missing args");
             System.exit(64);
