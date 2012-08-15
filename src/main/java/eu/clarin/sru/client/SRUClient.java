@@ -51,6 +51,8 @@ import eu.clarin.sru.client.SRUScanHandler.WhereInList;
  * <p><em>This class is not thread-safe!</em></p>
  */
 public class SRUClient {
+    /** constant record data schema parser to match any schema */
+    public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
     private static final String SRU_NS =
             "http://www.loc.gov/zing/srw/";
     private static final String SRU_DIAGNOSIC_NS =
@@ -72,7 +74,7 @@ public class SRUClient {
 
     /**
      * Constructor.
-     * 
+     *
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
@@ -90,7 +92,7 @@ public class SRUClient {
 
     /**
      * Register a record data parser.
-     * 
+     *
      * @param parser
      *            a parser instance
      * @throws SRUClientException
@@ -126,7 +128,7 @@ public class SRUClient {
 
     /**
      * Perform a <em>explain</em> operation.
-     * 
+     *
      * @param request
      *            an instance of a {@link SRUExplainRequest} object
      * @param handler
@@ -207,7 +209,7 @@ public class SRUClient {
 
     /**
      * Perform a <em>scan</em> operation.
-     * 
+     *
      * @param request
      *            an instance of a {@link SRUScanRequest} object
      * @param handler
@@ -288,7 +290,7 @@ public class SRUClient {
 
     /**
      * Perform a <em>searchRetreive</em> operation.
-     * 
+     *
      * @param request
      *            an instance of a {@link SRUSearchRetrieveRequest} object
      * @param handler
@@ -742,7 +744,7 @@ public class SRUClient {
                         if (SRU_DIAGNOSTIC_RECORD_SCHEMA.equals(schema)) {
                             surrogate = parseDiagnostic(recordReader, true);
                         } else {
-                            SRURecordDataParser parser = parsers.get(schema);
+                            SRURecordDataParser parser = findParser(schema);
                             if (parser != null) {
                                 try {
                                     proxy.reset(recordReader);
@@ -930,6 +932,15 @@ public class SRUClient {
                     RECORD_PACKING_XML + "' and '" + RECORD_PACKING_STRING +
                     "')");
         }
+    }
+
+
+    private SRURecordDataParser findParser(String schema) {
+        SRURecordDataParser parser = parsers.get(schema);
+        if (parser == null) {
+            parser = parsers.get(RECORD_DATA_PARSER_SCHEMA_ANY);
+        }
+        return parser;
     }
 
 
