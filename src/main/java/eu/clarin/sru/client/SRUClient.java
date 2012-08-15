@@ -22,9 +22,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.stream.XMLStreamException;
@@ -65,8 +65,8 @@ public class SRUClient {
             LoggerFactory.getLogger(SRUClient.class);
     private final SRUVersion defaultVersion;
     private final HttpClient httpClient;
-    private final ConcurrentMap<String, SRURecordDataParser> parsers =
-            new ConcurrentHashMap<String, SRURecordDataParser>();
+    private final Map<String, SRURecordDataParser> parsers =
+            new HashMap<String, SRURecordDataParser>();
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
 
 
@@ -115,8 +115,9 @@ public class SRUClient {
                     "parser.getRecordSchema() returns empty string");
         }
 
-        SRURecordDataParser old = parsers.putIfAbsent(recordSchema, parser);
-        if (old != null) {
+        if (!parsers.containsKey(recordSchema)) {
+            parsers.put(recordSchema, parser);
+        } else {
             throw new SRUClientException(
                     "record data parser already registered: " + recordSchema);
         }
