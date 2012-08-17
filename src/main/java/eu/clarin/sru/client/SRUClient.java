@@ -48,11 +48,13 @@ import eu.clarin.sru.client.SRUScanHandler.WhereInList;
 
 /**
  * A class to perform SRU operations.
- * <p><em>This class is not thread-safe!</em></p>
+ * <p>This class is <em>not</em> thread-safe!</p>
  */
 public class SRUClient {
     /** constant record data schema parser to match any schema */
     public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
+    /** default version the client will use, if not otherwise specified */
+    public static final SRUVersion DEFAULT_SRU_VERSION = SRUVersion.VERSION_1_2;
     private static final String SRU_NS =
             "http://www.loc.gov/zing/srw/";
     private static final String SRU_DIAGNOSIC_NS =
@@ -70,6 +72,32 @@ public class SRUClient {
     private final Map<String, SRURecordDataParser> parsers =
             new HashMap<String, SRURecordDataParser>();
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
+    private boolean strictMode;
+
+
+    /**
+     * Constructor. This constructor will create a <em>strict</em> client and
+     * use the default SRU version.
+     *
+     * @see #SRUClient(SRUVersion, boolean)
+     * @see #DEFAULT_SRU_VERSION
+     */
+    public SRUClient() {
+        this(DEFAULT_SRU_VERSION, true);
+    }
+
+
+    /**
+     * Constructor. This constructor will create a <em>strict</em> client.
+     *
+     * @param defaultVersion
+     *            the default version to use for SRU requests; may be overridden
+     *            by individual requests
+     * @see #SRUClient(SRUVersion, boolean)
+     */
+    public SRUClient(SRUVersion defaultVersion) {
+        this(defaultVersion, true);
+    }
 
 
     /**
@@ -78,17 +106,46 @@ public class SRUClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
+     * @param strictMode
+     *            if <code>true</code> the client will strictly adhere to the
+     *            SRU standard and raise fatal errors on violations, if
+     *            <code>false</code> it will act more forgiving and ignore
+     *            certain violations
+     *
      */
-    public SRUClient(SRUVersion defaultVersion) {
+    public SRUClient(SRUVersion defaultVersion, boolean strictMode) {
         if (defaultVersion == null) {
             throw new NullPointerException("version == null");
         }
         this.defaultVersion = defaultVersion;
+        this.strictMode = strictMode;
         this.httpClient = new DefaultHttpClient();
         this.httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT,
                     "eu.clarin.sru.client/0.0.1");
     }
 
+
+    /**
+     * Get the SRU protocol conformance mode of the client.
+     *
+     * @return <code>true</code> if the client operation in strict mode,
+     *         <code>false</code> otherwise
+     */
+    public boolean isStrictMode() {
+        return strictMode;
+    }
+
+
+    /**
+     * Set the SRU protocol conformance mode of the client.
+     *
+     * @param strictMode
+     *            <code>true</code> if the client should operate in strict mode,
+     *            <code>false</code> if the client should be more tolerant
+     */
+    public void setStrictMode(boolean strictMode) {
+        this.strictMode = strictMode;
+    }
 
     /**
      * Register a record data parser.
@@ -433,7 +490,7 @@ public class SRUClient {
 
             String schema = reader.readContent(SRU_NS, "recordSchema", true);
 
-            SRURecordPacking packing = parseRecordPacking(reader);
+            SRURecordPacking packing = parseRecordPacking(reader, strictMode);
 
             logger.debug("schema = {}, packing = {}", schema, packing);
 
@@ -456,6 +513,17 @@ public class SRUClient {
             // explainResponse/echoedExplainRequest
             if (reader.readStart(SRU_NS, "echoedExplainRequest", false)) {
                 reader.readEnd(SRU_NS, "echoedExplainRequest", true);
+            }
+
+            /*
+             * common error: echoedExplainRequest in default namespace
+             */
+            if (reader.readStart("", "echoedExplainRequest", false)) {
+                logger.error("Element 'echoedExplainRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                if (strictMode) {
+                    throw new SRUClientException("Element 'echoedExplainRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                }
+                reader.readEnd("", "echoedExplainRequest", true);
             }
 
             // explainResponse/diagnostics
@@ -596,6 +664,17 @@ public class SRUClient {
                     reader.readEnd(SRU_NS, "echoedScanRequest", true);
                 }
 
+                /*
+                 * common error: echoedScanRequest in default namespace
+                 */
+                if (reader.readStart("", "echoedScanRequest", false)) {
+                    logger.error("Element 'echoedScanRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                    if (strictMode) {
+                        throw new SRUClientException("Element 'echoedScanRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                    }
+                    reader.readEnd("", "echoedScanRequest", true);
+                }
+
                 // scanResponse/diagnostics
                 final List<SRUDiagnostic> diagnostics = parseDiagnostics(reader);
                 if (diagnostics != null) {
@@ -695,7 +774,8 @@ public class SRUClient {
                         String schema = reader.readContent(SRU_NS,
                                 "recordSchema", true);
 
-                        SRURecordPacking packing = parseRecordPacking(reader);
+                        SRURecordPacking packing =
+                                parseRecordPacking(reader, strictMode);
 
                         logger.debug("schema = {}, packing = {}, " +
                                 "requested packing = {}",
@@ -706,17 +786,18 @@ public class SRUClient {
                                 (packing != request.getRecordPacking())) {
                             final SRURecordPacking p =
                                     request.getRecordPacking();
-                            logger.warn("requested '{}' record packing, but " +
+                            logger.error("requested '{}' record packing, but " +
                                 "server responded with '{}' record packing",
                                     p.getStringValue(),
                                     packing.getStringValue());
-                            // XXX: only throw if client is pedantic?
-                            throw new SRUClientException("requested '" +
-                                            p.getStringValue() +
-                                            "' record packing, but server " +
-                                            "responded with '" +
-                                            packing.getStringValue() +
-                                            "' record packing");
+                            if (strictMode) {
+                                throw new SRUClientException("requested '" +
+                                        p.getStringValue() +
+                                        "' record packing, but server " +
+                                        "responded with '" +
+                                        packing.getStringValue() +
+                                        "' record packing");
+                            }
                         }
 
                         // searchRetrieveResponse/record/recordData
@@ -814,6 +895,35 @@ public class SRUClient {
                         reader.readEnd(SRU_NS, "record");
                     } // while
                     reader.readEnd(SRU_NS, "records");
+                } else {
+                    /*
+                     * provide a better error format, if
+                     */
+                    if (reader.readStart(SRU_NS, "records", false)) {
+                        int bad = 0;
+                        while (reader.readStart(SRU_NS, "record", false)) {
+                            bad++;
+                            reader.readEnd(SRU_NS, "record", true);
+                        }
+                        reader.readEnd(SRU_NS, "records", true);
+                        if (bad == 0) {
+                            logger.error("endpoint declared 0 results, but " +
+                                    "response contained an empty 'records' " +
+                                    "element");
+                            if (strictMode) {
+                                throw new SRUClientException(
+                                        "endpoint declared 0 results, but response contained an empty 'records' element (behavior violates SRU specification)");
+                            }
+                        } else {
+                            logger.error("endpoint declared 0 results, but " +
+                                    "response contained an " + bad +
+                                    " record(s)");
+                            if (strictMode) {
+                            throw new SRUClientException("endpoint declared 0 results, but response containted " +
+                                    bad + " records (behavior may violate SRU specification)");
+                            }
+                        }
+                    }
                 }
 
                 int nextRecordPosition = reader.readContent(SRU_NS,
@@ -825,6 +935,17 @@ public class SRUClient {
                 if (reader.readStart(SRU_NS,
                         "echoedSearchRetrieveRequest", false)) {
                     reader.readEnd(SRU_NS, "echoedSearchRetrieveRequest", true);
+                }
+
+                /*
+                 * common error: echoedSearchRetrieveRequest in default namespace
+                 */
+                if (reader.readStart("", "echoedSearchRetrieveRequest", false)) {
+                    logger.error("Element 'echoedSearchRetrieveRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                    if (strictMode) {
+                        throw new SRUClientException("Element 'echoedSearchRetrieveRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                    }
+                    reader.readEnd("", "echoedSearchRetrieveRequest", true);
                 }
 
                 // searchRetrieveResponse/diagnostics
@@ -918,7 +1039,8 @@ public class SRUClient {
     }
 
 
-    private static SRURecordPacking parseRecordPacking(SRUXMLStreamReader reader)
+    private static SRURecordPacking parseRecordPacking(
+            SRUXMLStreamReader reader, boolean pedantic)
             throws XMLStreamException, SRUClientException {
         final String v = reader.readContent(SRU_NS, "recordPacking", true);
 
@@ -926,6 +1048,15 @@ public class SRUClient {
             return SRURecordPacking.XML;
         } else if (RECORD_PACKING_STRING.equals(v)) {
             return SRURecordPacking.STRING;
+        } else if (!pedantic && RECORD_PACKING_XML.equalsIgnoreCase(v)) {
+            logger.error("invalid value '{}' for record packing, should be '{}'",
+                         v, RECORD_PACKING_XML);
+            return SRURecordPacking.XML;
+        } else if (!pedantic && RECORD_PACKING_STRING.equalsIgnoreCase(v)) {
+            logger.error("invalid value '{}' for record packing, should be '{}'",
+                         v, RECORD_PACKING_STRING);
+            return SRURecordPacking.STRING;
+
         } else {
             throw new SRUClientException("invalid value '" + v +
                     "' for record packing (valid values are: '" +
