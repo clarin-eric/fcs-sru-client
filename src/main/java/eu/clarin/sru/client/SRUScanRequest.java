@@ -28,6 +28,15 @@ package eu.clarin.sru.client;
  *      Operation</a>
  */
 public final class SRUScanRequest extends SRUAbstractRequest {
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_SCAN_CLAUSE =
+            "x-malformed-scanClause";
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_RESPONSE_POSITION =
+            "x-malformed-responsePosition";
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_MAXIMUM_TERMS =
+            "x-malformed-maximumTerms";
     private String scanClause;
     private int responsePosition = -1;
     private int maximumTerms = -1;
@@ -137,20 +146,45 @@ public final class SRUScanRequest extends SRUAbstractRequest {
     @Override
     void addParametersToURI(URIBuilder uriBuilder) throws SRUClientException {
         // scanClause
-        if ((scanClause == null) || scanClause.isEmpty()) {
-            throw new SRUClientException(
-                    "mandatory argument 'scanClause' not set or empty");
+        final String malformedScan =
+                getExtraRequestData(X_MALFORMED_SCAN_CLAUSE);
+        if (malformedScan == null) {
+            if ((scanClause == null) || scanClause.isEmpty()) {
+                throw new SRUClientException(
+                        "mandatory argument 'scanClause' not set or empty");
+            }
+            uriBuilder.append(PARAM_SCAN_CLAUSE, scanClause);
+        } else {
+            if (!malformedScan.equalsIgnoreCase(MALFORMED_OMIT)) {
+                uriBuilder.append(PARAM_VERSION, malformedScan);
+            }
         }
-        uriBuilder.append(PARAM_SCAN_CLAUSE, scanClause);
 
         // responsePosition
-        if (responsePosition > -1) {
-            uriBuilder.append(PARAM_RESPONSE_POSITION, responsePosition);
+        final String malformedResponsePosition =
+                getExtraRequestData(X_MALFORMED_RESPONSE_POSITION);
+        if (malformedResponsePosition == null) {
+            if (responsePosition > -1) {
+                uriBuilder.append(PARAM_RESPONSE_POSITION, responsePosition);
+            }
+        } else {
+            if (!malformedResponsePosition.equalsIgnoreCase(MALFORMED_OMIT)) {
+                uriBuilder.append(PARAM_RESPONSE_POSITION,
+                        malformedResponsePosition);
+            }
         }
 
         // maximumTerms
-        if (maximumTerms > -1) {
-            uriBuilder.append(PARAM_MAXIMUM_TERMS, maximumTerms);
+        final String malformedMaximumTerms =
+                getExtraRequestData(X_MALFORMED_MAXIMUM_TERMS);
+        if (malformedMaximumTerms == null) {
+            if (maximumTerms > -1) {
+                uriBuilder.append(PARAM_MAXIMUM_TERMS, maximumTerms);
+            }
+        } else {
+            if (!malformedMaximumTerms.equalsIgnoreCase(MALFORMED_OMIT)) {
+                uriBuilder.append(PARAM_MAXIMUM_TERMS, malformedMaximumTerms);
+            }
         }
     }
 

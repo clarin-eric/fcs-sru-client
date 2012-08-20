@@ -45,20 +45,21 @@ abstract class SRUAbstractRequest {
     private static final String VERSION_1_2            = "1.2";
     private static final String PARAM_EXTENSION_PREFIX = "x-";
     /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_OPERATION   =
+            "x-malformed-operation";
+    /** for end-point conformance testing only. never use in production. */
     public static final String X_MALFORMED_VERSION     =
             "x-malformed-version";
     /** for end-point conformance testing only. never use in production. */
-    public static final String X_MALFORMED_OPERATION   =
-            "x-maformed-operation";
-    /** for end-point conformance testing only. never use in production. */
     public static final String MALFORMED_OMIT          = "omit";
+    private static final String MALFORMED_KEY_PREFIX   = "x-malformed";
 
 
     enum SRUOperation {
         EXPLAIN, SCAN, SEARCH_RETRIEVE
     } // enum SRUOperation
 
-    
+
     class URIBuilder {
         private final StringBuilder sb;
         private boolean firstParam = true;
@@ -67,7 +68,7 @@ abstract class SRUAbstractRequest {
             this.sb = new StringBuilder(endpointURI);
         }
 
-        
+
         public URIBuilder append(String name, String value) {
             if (name == null) {
                 throw new NullPointerException("name == null");
@@ -92,7 +93,7 @@ abstract class SRUAbstractRequest {
             return this;
         }
 
-        
+
         public URIBuilder append(String name, int value) {
             return append(name, Integer.toString(value));
         }
@@ -121,7 +122,7 @@ abstract class SRUAbstractRequest {
 
     /**
      * Get the endpoint URI.
-     * 
+     *
      * @return the endpoiunt URI
      */
     public String getEndpointURI() {
@@ -131,7 +132,7 @@ abstract class SRUAbstractRequest {
 
     /**
      * Set the version for this request.
-     * 
+     *
      * @param version a version of <code>null</code> for client default
      */
     public void setVersion(SRUVersion version) {
@@ -141,7 +142,7 @@ abstract class SRUAbstractRequest {
 
     /**
      * Get the version for this request.
-     * 
+     *
      * @return version for this request or <code>null</code> of client default
      *         is used
      */
@@ -152,7 +153,7 @@ abstract class SRUAbstractRequest {
 
     /**
      * Set an extra request parameter for this request.
-     * 
+     *
      * @param name
      *            the name for the extra request data parameter
      * @param value
@@ -190,7 +191,7 @@ abstract class SRUAbstractRequest {
 
     /**
      * Set the value of extra request parameter for this request.
-     * 
+     *
      * @param name
      *            the name for the extra request data parameter
      * @return the value for the extra request data parameter or
@@ -224,7 +225,7 @@ abstract class SRUAbstractRequest {
         return versionPreformed;
     }
 
-    
+
     final URI makeURI(SRUVersion defaultVersion)
             throws SRUClientException {
         if (defaultVersion == null) {
@@ -235,10 +236,10 @@ abstract class SRUAbstractRequest {
         /*
          * append operation parameter
          *
-         * NB: Setting "x-operation-version" as an extra request parameter makes
-         * the client to send invalid requests. This is intended to use for
-         * testing endpoints for protocol conformance (i.e. provoke an error)
-         * and SHOULD NEVER be used in production!
+         * NB: Setting "x-malformed-operation" as an extra request parameter
+         * makes the client to send invalid requests. This is intended to use
+         * for testing endpoints for protocol conformance (i.e. provoke an
+         * error) and SHOULD NEVER be used in production!
          */
         final String malformedOperation =
                 getExtraRequestData(X_MALFORMED_OPERATION);
@@ -300,8 +301,7 @@ abstract class SRUAbstractRequest {
             for (Map.Entry<String, String> entry :
                 extraRequestData.entrySet()) {
                 String key = entry.getKey();
-                if (key.equals(X_MALFORMED_OPERATION) ||
-                        key.equals(X_MALFORMED_VERSION)) {
+                if (key.startsWith(MALFORMED_KEY_PREFIX)) {
                     continue;
                 }
                 uriBuilder.append(key, entry.getValue());

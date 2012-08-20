@@ -24,12 +24,24 @@ package eu.clarin.sru.client;
  * <ul>
  * <li><em>query</em></li>
  * </ul>
- * 
+ *
  * @see SRUSearchRetrieveHandler
  * @see <a href="http://www.loc.gov/standards/sru/specs/search-retrieve.html">
  *      SRU SearchRetrieve Operation</a>
  */
 public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_QUERY =
+            "x-malformed-query";
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_START_RECORD =
+            "x-malformed-startRecord";
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_MAXIMUM_RECORDS =
+            "x-malformed-maximumRecords";
+    /** for end-point conformance testing only. never use in production. */
+    public static final String X_MALFORMED_RECORD_PACKING =
+            "x-malformed-recordPacking";
     private String query;
     private int startRecord = -1;
     private int maximumRecords = -1;
@@ -40,7 +52,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Constructor.
-     * 
+     *
      * @param baseURI
      *            the baseURI of the endpoint
      */
@@ -51,7 +63,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>query</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>query</em> argument or <code>null</code> of
      *         none was set
      */
@@ -62,7 +74,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>query</em> argument for this request.
-     * 
+     *
      * @param query
      *            the value for the <em>query</em> argument
      * @throws NullPointerException
@@ -83,7 +95,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>startRecord</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>startRecord</em> argument or
      *         <code>-1</code> of none was set
      */
@@ -94,7 +106,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>startRecord</em> argument for this request.
-     * 
+     *
      * @param startRecord
      *            the value for the <em>startRecord</em> argument
      * @throws IllegalArgumentException
@@ -110,7 +122,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>maximumRecords</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>maximumRecords</em> argument or
      *         <code>-1</code> of none was set
      */
@@ -121,7 +133,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>maximumRecords</em> argument for this request.
-     * 
+     *
      * @param maximumRecords
      *            the value for the <em>maximumRecords</em> argument
      * @throws IllegalArgumentException
@@ -137,7 +149,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>recordSchema</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>recordSchema</em> argument or
      *         <code>null</code> of none was set
      */
@@ -148,7 +160,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>recordSchema</em> argument for this request.
-     * 
+     *
      * @param recordSchema
      *            the value for the <em>recordSchema</em> argument
      * @throws NullPointerException
@@ -163,7 +175,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>recordSchema</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>recordSchema</em> argument or
      *         <code>null</code> of none was set
      */
@@ -174,7 +186,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>recordPacking</em> argument for this request.
-     * 
+     *
      * @param recordPacking
      *            the value for the <em>recordPacking</em> argument
      * @throws NullPointerException
@@ -190,7 +202,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>resultSetTTL</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>resultSetTTL</em> argument or
      *         <code>-1</code> of none was set
      */
@@ -201,7 +213,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>resultSetTTL</em> argument for this request.
-     * 
+     *
      * @param resultSetTTL
      *            the value for the <em>resultSetTTL</em> argument
      * @throws IllegalArgumentException
@@ -220,44 +232,109 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
     @Override
     void addParametersToURI(URIBuilder uriBuilder) throws SRUClientException {
-        // query
-        if ((query == null) || query.isEmpty()) {
-            throw new SRUClientException(
-                    "mandatory argument 'query' not set or empty");
-        }
-        uriBuilder.append(PARAM_QUERY, query);
-
-        // startRecord
-        if (startRecord > 0) {
-            uriBuilder.append(PARAM_START_RECORD, startRecord);
-        }
-
-        // maximumRecords
-        if (maximumRecords > -1) {
-            uriBuilder.append(PARAM_MAXIMUM_RECORDS, maximumRecords);
-        }
-
-        // recordPacking
-        if (recordPacking != null) {
-            switch (recordPacking) {
-            case XML:
-                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
-                break;
-            case STRING:
-                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_STRING);
-                break;
-            default:
-                throw new SRUClientException("unsupported record packing: " +
-                        recordPacking);
-            } // switch
+        /*
+         * append query argument (mandatory)
+         *
+         * NB: Setting "x-malformed-query" as an extra request parameter makes
+         * the client to send invalid requests. This is intended to use for
+         * testing endpoints for protocol conformance (i.e. provoke an error)
+         * and SHOULD NEVER be used in production!
+         */
+        final String malformedQuery = getExtraRequestData(X_MALFORMED_QUERY);
+        if (malformedQuery == null) {
+            if ((query == null) || query.isEmpty()) {
+                throw new SRUClientException(
+                        "mandatory argument 'query' not set or empty");
+            }
+            uriBuilder.append(PARAM_QUERY, query);
+        } else {
+            if (!malformedQuery.equalsIgnoreCase(MALFORMED_OMIT)) {
+                uriBuilder.append(PARAM_QUERY, malformedQuery);
+            }
         }
 
-        // recordSchema
+        /*
+         * append startRecord argument (optional)
+         *
+         * NB: Setting "x-malformed-startRecord" as an extra request parameter
+         * makes the client to send invalid requests. This is intended to use
+         * for testing endpoints for protocol conformance (i.e. provoke an
+         * error) and SHOULD NEVER be used in production!
+         */
+        final String malformedStartRecord =
+                getExtraRequestData(X_MALFORMED_START_RECORD);
+        if (malformedStartRecord == null) {
+            if (startRecord > 0) {
+                uriBuilder.append(PARAM_START_RECORD, startRecord);
+            }
+        } else {
+            if (!malformedStartRecord.equalsIgnoreCase(MALFORMED_OMIT)) {
+                uriBuilder.append(PARAM_START_RECORD, malformedStartRecord);
+            }
+        }
+
+        /*
+         * append maximumRecords argument (optional)
+         *
+         * NB: Setting "x-malformed-maximumRecords" as an extra request
+         * parameter makes the client to send invalid requests. This is
+         * intended to use for testing endpoints for protocol conformance
+         * (i.e. provoke an error) and SHOULD NEVER be used in production!
+         */
+        final String malformedMaxiumRecords =
+                getExtraRequestData(X_MALFORMED_MAXIMUM_RECORDS);
+        if (malformedMaxiumRecords == null) {
+            if (maximumRecords > -1) {
+                uriBuilder.append(PARAM_MAXIMUM_RECORDS, maximumRecords);
+            }
+        } else {
+            if (!malformedMaxiumRecords.equalsIgnoreCase(MALFORMED_OMIT)) {
+                uriBuilder.append(PARAM_MAXIMUM_RECORDS,
+                        malformedMaxiumRecords);
+            }
+        }
+
+        /*
+         * append recordPacking argument (optional)
+         *
+         * NB: Setting "x-malformed-recordPacking" as an extra request
+         * parameter makes the client to send invalid requests. This is
+         * intended to use for testing endpoints for protocol conformance
+         * (i.e. provoke an error) and SHOULD NEVER be used in production!
+         */
+        final String malformedRecordPacking =
+                getExtraRequestData(X_MALFORMED_RECORD_PACKING);
+        if (malformedRecordPacking == null) {
+            if (recordPacking != null) {
+                switch (recordPacking) {
+                case XML:
+                    uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
+                    break;
+                case STRING:
+                    uriBuilder.append(PARAM_RECORD_PACKING,
+                            RECORD_PACKING_STRING);
+                    break;
+                default:
+                    throw new SRUClientException(
+                            "unsupported record packing: " + recordPacking);
+                } // switch
+            }
+        } else {
+            if (!malformedRecordPacking.equalsIgnoreCase(MALFORMED_OMIT)) {
+                uriBuilder.append(PARAM_RECORD_PACKING, malformedRecordPacking);
+            }
+        }
+
+        /*
+         * append recordSchema argument (optional)
+         */
         if (recordSchema != null) {
             uriBuilder.append(PARAM_RECORD_SCHEMA, recordSchema);
         }
 
-        // resultSetTTL
+        /*
+         * append resultSetTTL argument (optional)
+         */
         if (resultSetTTL > -1) {
             uriBuilder.append(PARAM_RESULT_SET_TTL, resultSetTTL);
         }
