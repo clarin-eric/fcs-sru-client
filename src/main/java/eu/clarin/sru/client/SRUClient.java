@@ -430,7 +430,7 @@ public class SRUClient {
         HttpGet request = null;
         HttpResponse response = null;
         try {
-            logger.debug("executing HTTP request: {}", uri.toString());
+            logger.debug("performing HTTP request: {}", uri.toString());
             try {
                 request = new HttpGet(uri);
                 response = httpClient.execute(request);
@@ -447,10 +447,16 @@ public class SRUClient {
             } catch (ClientProtocolException e) {
                 throw new SRUClientException("client protocol exception", e);
             } catch (UnknownHostException e) {
-                throw new SRUClientException("unknown host: " + uri.getHost(),
-                        e);
+                throw new SRUClientException(
+                        "unknown host: " + uri.getHost(), e);
             } catch (IOException e) {
-                throw new SRUClientException("input/output error", e);
+                String msg = null;
+                if ((e.getMessage() != null) && !e.getMessage().isEmpty()) {
+                    msg = e.getMessage();
+                }
+                throw new SRUClientException(msg != null
+                        ? msg
+                        : "input/output error", e);
             }
         } catch (SRUClientException e) {
             /*
