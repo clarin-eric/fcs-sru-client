@@ -47,10 +47,10 @@ import org.slf4j.LoggerFactory;
 import eu.clarin.sru.client.SRUScanHandler.WhereInList;
 
 /**
- * A class to perform SRU operations.
+ * A non-threaded SRU client.
  * <p>This class is <em>not</em> thread-safe!</p>
  */
-public class SRUSimpleClient {
+public class SRUSimpleClient implements SRUClient {
     /** constant record data schema parser to match any schema */
     public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
     /** default version the client will use, if not otherwise specified */
@@ -79,7 +79,7 @@ public class SRUSimpleClient {
      * Constructor. This constructor will create a <em>strict</em> client and
      * use the default SRU version.
      *
-     * @see #SRUClient(SRUVersion, boolean)
+     * @see #SRUSimpleClient(SRUVersion, boolean)
      * @see #DEFAULT_SRU_VERSION
      */
     public SRUSimpleClient() {
@@ -93,7 +93,7 @@ public class SRUSimpleClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
-     * @see #SRUClient(SRUVersion, boolean)
+     * @see #SRUSimpleClient(SRUVersion, boolean)
      */
     public SRUSimpleClient(SRUVersion defaultVersion) {
         this(defaultVersion, true);
@@ -125,41 +125,7 @@ public class SRUSimpleClient {
     }
 
 
-    /**
-     * Get the SRU protocol conformance mode of the client.
-     *
-     * @return <code>true</code> if the client operation in strict mode,
-     *         <code>false</code> otherwise
-     */
-    public boolean isStrictMode() {
-        return strictMode;
-    }
-
-
-    /**
-     * Set the SRU protocol conformance mode of the client.
-     *
-     * @param strictMode
-     *            <code>true</code> if the client should operate in strict mode,
-     *            <code>false</code> if the client should be more tolerant
-     */
-    public void setStrictMode(boolean strictMode) {
-        this.strictMode = strictMode;
-    }
-
-    /**
-     * Register a record data parser.
-     *
-     * @param parser
-     *            a parser instance
-     * @throws SRUClientException
-     *             if a parser handing the same record schema is already
-     *             registered
-     * @throws NullPointerException
-     *             if any required argument is <code>null</code>
-     * @throws IllegalArgumentException
-     *             if the supplied parser is invalid
-     */
+    @Override
     public void registerRecordParser(SRURecordDataParser parser)
             throws SRUClientException {
         if (parser == null) {
@@ -183,21 +149,7 @@ public class SRUSimpleClient {
     }
 
 
-    /**
-     * Perform a <em>explain</em> operation.
-     *
-     * @param request
-     *            an instance of a {@link SRUExplainRequest} object
-     * @param handler
-     *            an instance of {@link SRUExplainHandler} to receive callbacks
-     *            when processing the result of this request
-     * @throws SRUClientException
-     *             if an unrecoverable error occurred
-     * @throws NullPointerException
-     *             if any required argument is <code>null</code>
-     * @see SRUExplainRequest
-     * @see SRUExplainHandler
-     */
+    @Override
     public void explain(SRUExplainRequest request, SRUExplainHandler handler)
             throws SRUClientException {
         if (request == null) {
@@ -264,21 +216,7 @@ public class SRUSimpleClient {
     }
 
 
-    /**
-     * Perform a <em>scan</em> operation.
-     *
-     * @param request
-     *            an instance of a {@link SRUScanRequest} object
-     * @param handler
-     *            an instance of {@link SRUScanHandler} to receive callbacks
-     *            when processing the result of this request
-     * @throws SRUClientException
-     *             if an unrecoverable error occurred
-     * @throws NullPointerException
-     *             if any required argument is <code>null</code>
-     * @see SRUScanRequest
-     * @see SRUScanHandler
-     */
+    @Override
     public void scan(SRUScanRequest request, SRUScanHandler handler)
             throws SRUClientException {
         if (request == null) {
@@ -345,21 +283,7 @@ public class SRUSimpleClient {
     }
 
 
-    /**
-     * Perform a <em>searchRetreive</em> operation.
-     *
-     * @param request
-     *            an instance of a {@link SRUSearchRetrieveRequest} object
-     * @param handler
-     *            an instance of {@link SRUSearchRetrieveHandler} to receive
-     *            callbacks when processing the result of this request
-     * @throws SRUClientException
-     *             if an unrecoverable error occurred
-     * @throws NullPointerException
-     *             if any required argument is <code>null</code>
-     * @see SRUSearchRetrieveRequest
-     * @see SRUSearchRetrieveHandler
-     */
+    @Override
     public void searchRetrieve(SRUSearchRetrieveRequest request,
             SRUSearchRetrieveHandler handler) throws SRUClientException {
         if (request == null) {
