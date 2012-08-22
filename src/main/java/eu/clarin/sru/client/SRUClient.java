@@ -94,4 +94,4 @@ public interface SRUClient {
     public abstract void searchRetrieve(SRUSearchRetrieveRequest request,
             SRUSearchRetrieveHandler handler) throws SRUClientException;
 
-}
+} // interface SRUClient

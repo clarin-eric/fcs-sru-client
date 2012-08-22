@@ -1010,4 +1010,4 @@ public class SRUSimpleClient implements SRUClient {
         return new SRUXMLStreamReader(in, wrap);
     }
 
-} // class SRUClient
+} // class SRUSimpleClient
