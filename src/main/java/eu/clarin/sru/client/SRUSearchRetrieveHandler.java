@@ -112,7 +112,7 @@ public interface SRUSearchRetrieveHandler {
      * @param identifier
      *            identifier of the record or <code>null</code> if not available
      * @param position
-     *            position of the record in the result set ot <code>-1</code> if
+     *            position of the record in the result set or <code>-1</code> if
      *            not available
      * @param data
      *            the parsed record data
@@ -131,7 +131,7 @@ public interface SRUSearchRetrieveHandler {
      * @param identifier
      *            identifier of the record or <code>null</code> if not available
      * @param position
-     *            position of the record in the result set ot <code>-1</code> if
+     *            position of the record in the result set or <code>-1</code> if
      *            not available
      * @param data
      *            the surrogate record data, i.e. a diagnostic
@@ -149,7 +149,7 @@ public interface SRUSearchRetrieveHandler {
      * @param identifier
      *            identifier of the record or <code>null</code> if not available
      * @param position
-     *            position of the record in the result set ot <code>-1</code> if
+     *            position of the record in the result set or <code>-1</code> if
      *            not available
      * @param reader
      *            a {@link XMLStreamReader} to parse the extra term data
