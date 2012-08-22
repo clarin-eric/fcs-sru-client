@@ -50,7 +50,7 @@ import eu.clarin.sru.client.SRUScanHandler.WhereInList;
  * A class to perform SRU operations.
  * <p>This class is <em>not</em> thread-safe!</p>
  */
-public class SRUClient {
+public class SRUSimpleClient {
     /** constant record data schema parser to match any schema */
     public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
     /** default version the client will use, if not otherwise specified */
@@ -66,7 +66,7 @@ public class SRUClient {
     private static final String RECORD_PACKING_XML = "xml";
     private static final String RECORD_PACKING_STRING = "string";
     private static final Logger logger =
-            LoggerFactory.getLogger(SRUClient.class);
+            LoggerFactory.getLogger(SRUSimpleClient.class);
     private final SRUVersion defaultVersion;
     private final HttpClient httpClient;
     private final Map<String, SRURecordDataParser> parsers =
@@ -82,7 +82,7 @@ public class SRUClient {
      * @see #SRUClient(SRUVersion, boolean)
      * @see #DEFAULT_SRU_VERSION
      */
-    public SRUClient() {
+    public SRUSimpleClient() {
         this(DEFAULT_SRU_VERSION, true);
     }
 
@@ -95,7 +95,7 @@ public class SRUClient {
      *            by individual requests
      * @see #SRUClient(SRUVersion, boolean)
      */
-    public SRUClient(SRUVersion defaultVersion) {
+    public SRUSimpleClient(SRUVersion defaultVersion) {
         this(defaultVersion, true);
     }
 
@@ -113,7 +113,7 @@ public class SRUClient {
      *            certain violations
      *
      */
-    public SRUClient(SRUVersion defaultVersion, boolean strictMode) {
+    public SRUSimpleClient(SRUVersion defaultVersion, boolean strictMode) {
         if (defaultVersion == null) {
             throw new NullPointerException("version == null");
         }
