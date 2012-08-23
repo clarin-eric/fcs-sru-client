@@ -32,7 +32,7 @@ public class TestClient {
     public static void main(String[] args) {
         if (args.length > 0) {
             logger.info("initializing client ...");
-            SRUClient client = new SRUSimpleClient(SRUVersion.VERSION_1_2);
+            SRUClient client = new SRUClient(SRUVersion.VERSION_1_2);
             try {
                 client.registerRecordParser(new ClarinFederatedContentSearchRecordParser());
             } catch (SRUClientException e) {
