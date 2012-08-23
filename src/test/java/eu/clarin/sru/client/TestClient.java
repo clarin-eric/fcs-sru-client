@@ -133,7 +133,7 @@ public class TestClient {
             try {
                 logger.info("performing 'scan' request ...");
                 SRUScanRequest request = new SRUScanRequest(args[0]);
-                request.setScanClause("cmd.collections");
+                request.setScanClause("fcs.resource");
                 request.setMaximumTerms(2);
 //                request.setExtraRequestData(
 //                        SRUAbstractRequest.X_MALFORMED_OPERATION,
