@@ -51,8 +51,6 @@ import eu.clarin.sru.client.SRUScanHandler.WhereInList;
  * <p>This class is <em>not</em> thread-safe!</p>
  */
 public class SRUClient {
-    /** constant record data schema parser to match any schema */
-    public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
     /** default version the client will use, if not otherwise specified */
     public static final SRUVersion DEFAULT_SRU_VERSION = SRUVersion.VERSION_1_2;
     private static final String SRU_NS =
@@ -1075,7 +1073,7 @@ public class SRUClient {
     private SRURecordDataParser findParser(String schema) {
         SRURecordDataParser parser = parsers.get(schema);
         if (parser == null) {
-            parser = parsers.get(RECORD_DATA_PARSER_SCHEMA_ANY);
+            parser = parsers.get(SRURecordDataParser.RECORD_DATA_PARSER_SCHEMA_ANY);
         }
         return parser;
     }

@@ -25,6 +25,9 @@ import javax.xml.stream.XMLStreamReader;
  * 
  */
 public interface SRURecordDataParser {
+    /** constant record data schema parser to match any schema */
+    public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
+
 
     /**
      * The record schema this parser is able to process.
