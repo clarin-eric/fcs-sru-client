@@ -66,11 +66,10 @@ public class SRUClient {
     private static final Logger logger =
             LoggerFactory.getLogger(SRUClient.class);
     private final SRUVersion defaultVersion;
-    private final HttpClient httpClient;
-    private final Map<String, SRURecordDataParser> parsers =
-            new HashMap<String, SRURecordDataParser>();
-    private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
     private boolean strictMode;
+    private final Map<String, SRURecordDataParser> parsers;
+    private final HttpClient httpClient;
+    private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
 
 
     /**
@@ -109,14 +108,43 @@ public class SRUClient {
      *            SRU standard and raise fatal errors on violations, if
      *            <code>false</code> it will act more forgiving and ignore
      *            certain violations
-     *
      */
     public SRUClient(SRUVersion defaultVersion, boolean strictMode) {
+        this(defaultVersion, strictMode,
+                new HashMap<String, SRURecordDataParser>());
+    }
+
+
+    /**
+     * Constructor.
+     *
+     * <p>
+     * For internal use only.
+     * </p>
+     *
+     * @param defaultVersion
+     *            the default version to use for SRU requests; may be overridden
+     *            by individual requests
+     * @param strictMode
+     *            if <code>true</code> the client will strictly adhere to the
+     *            SRU standard and raise fatal errors on violations, if
+     *            <code>false</code> it will act more forgiving and ignore
+     *            certain violations
+     * @param parsers
+     *            a <code>Map</code> to store record schema to record data
+     *            parser mappings
+     */
+    SRUClient(SRUVersion defaultVersion, boolean strictMode,
+            Map<String, SRURecordDataParser> parsers) {
         if (defaultVersion == null) {
             throw new NullPointerException("version == null");
         }
+        if (parsers == null) {
+            throw new NullPointerException("parsers == null");
+        }
         this.defaultVersion = defaultVersion;
-        this.strictMode = strictMode;
+        this.strictMode     = strictMode;
+        this.parsers        = parsers;
         this.httpClient = new DefaultHttpClient();
         this.httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT,
                     "eu.clarin.sru.client/0.0.1");
@@ -144,6 +172,7 @@ public class SRUClient {
     public void setStrictMode(boolean strictMode) {
         this.strictMode = strictMode;
     }
+
 
     /**
      * Register a record data parser.
