@@ -86,7 +86,7 @@ public class SRUDefaultHandlerAdapter implements SRUDefaultHandler {
 
 
     @Override
-    public void onStartRecords(int numberOfRecords, int resultSetId,
+    public void onStartRecords(int numberOfRecords, String resultSetId,
             int resultSetIdleTime) throws SRUClientException {
     }
 

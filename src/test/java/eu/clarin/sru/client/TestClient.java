@@ -85,7 +85,7 @@ public class TestClient {
 
                 @Override
                 public void onStartRecords(int numberOfRecords,
-                        int resultSetId, int resultSetIdleTime)
+                        String resultSetId, int resultSetIdleTime)
                         throws SRUClientException {
                     logger.info("onStartRecords(): numberOfRecords = {}",
                             numberOfRecords);

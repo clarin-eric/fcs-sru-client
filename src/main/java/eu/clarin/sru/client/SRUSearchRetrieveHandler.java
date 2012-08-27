@@ -83,13 +83,13 @@ public interface SRUSearchRetrieveHandler {
      * @param numberOfRecords
      *            the number of records or <code>-1</code> if not available
      * @param resultSetId
-     *            the result set id or <code>-1</code> if not available
+     *            the result set id or <code>null</code> if not available
      * @param resultSetIdleTime
      *            the result set idle time or <code>-1</code> if not available
      * @throws SRUClientException
      *             any SRU exception, possibly wrapping another exception
      */
-    public void onStartRecords(int numberOfRecords, int resultSetId,
+    public void onStartRecords(int numberOfRecords, String resultSetId,
             int resultSetIdleTime) throws SRUClientException;
 
 

@@ -780,8 +780,8 @@ public class SRUClient {
                         "numberOfRecords", true, -1);
 
                 // searchRetrieveResponse/resultSetId
-                int resultSetId = reader.readContent(SRU_NS,
-                        "resultSetId", false, -1);
+                String resultSetId = reader.readContent(SRU_NS,
+                        "resultSetId", false);
 
                 // searchRetrieveResponse/resultSetIdleTime
                 int resultSetIdleTime = reader.readContent(SRU_NS,
