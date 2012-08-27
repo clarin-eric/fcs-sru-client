@@ -21,7 +21,7 @@ package eu.clarin.sru.client;
  * 
  * <p>
  * This class is available as a convenience base class for SRU applications: it
- * implements teh three response handler interfaces:
+ * implements the three response handler interfaces:
  * </p>
  * <ul>
  * <li>{@link SRUExplainHandler}</li>
