@@ -35,15 +35,15 @@ public class ClarinFederatedContentSearchRecordParser implements
         SRURecordDataParser {
     private static final Logger logger =
             LoggerFactory.getLogger(ClarinFederatedContentSearchRecordParser.class);
-    public static final String FCS_NS = "http://clarin.eu/fcs/1.0";
-    public static final String FCS_RECORD_SCHEMA = FCS_NS;
+    public static final String FCS_NS =
+            ClarinFederatedContentSearchRecordData.RECORD_SCHEMA;
     public static final String FCS_KWIC_NS = "http://clarin.eu/fcs/1.0/kwic";
     private static final String DATAVIEW_KWIC = "kwic";
 
 
     @Override
     public String getRecordSchema() {
-        return FCS_RECORD_SCHEMA;
+        return ClarinFederatedContentSearchRecordData.RECORD_SCHEMA;
     }
 
 

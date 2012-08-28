@@ -44,7 +44,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.client.SRUScanHandler.WhereInList;
 
 /**
  * A class to perform SRU operations.
@@ -649,16 +648,16 @@ public class SRUClient {
                         // scanResponse/terms/whereInList
                         String s = reader.readContent(SRU_NS,
                                 "whereInList", false);
-                        WhereInList whereInList = null;
+                        SRUWhereInList whereInList = null;
                         if (s != null) {
                             if ("first".equals(s)) {
-                                whereInList = WhereInList.FIRST;
+                                whereInList = SRUWhereInList.FIRST;
                             } else if ("last".equals(s)) {
-                                whereInList = WhereInList.LAST;
+                                whereInList = SRUWhereInList.LAST;
                             } else if ("only".equals(s)) {
-                                whereInList = WhereInList.ONLY;
+                                whereInList = SRUWhereInList.ONLY;
                             } else if ("inner".equals(s)) {
-                                whereInList = WhereInList.INNER;
+                                whereInList = SRUWhereInList.INNER;
                             } else {
                                 throw new SRUClientException(
                                         "invalid value for 'whereInList': " + s);
@@ -868,15 +867,29 @@ public class SRUClient {
                                             "error parsing record", e);
                                 }
                                 if (recordData == null) {
-                                    // FIXME: handle this better? maybe throw?
-                                    logger.warn("parse did not correctly "
-                                            + "parse the record, will skip "
-                                            + "handler callback.");
+                                    logger.debug("parser did not parse " +
+                                            "record correctly and returned " +
+                                            "null.");
+                                    surrogate = new SRUDiagnostic(
+                                            SRUClientDiagnostics.DIAG_RECORD_PARSER_NULL,
+                                            null, "Record parser for schema '" +
+                                                    schema + "' did nor " +
+                                                    "parse record correctly " +
+                                                    "and errornously " +
+                                                    "returned null.");
                                 }
                             } else {
-                                // FIXME: handle this better?
-                                logger.debug("no record parser found for schema '{}'",
-                                        schema);
+                                /*
+                                 * no record parser found, inject a
+                                 * surrogate diagnostic
+                                 */
+                                logger.debug("no record data parser found " +
+                                        "for schema '{}'", schema);
+                                surrogate = new SRUDiagnostic(
+                                        SRUClientDiagnostics.DIAG_NO_RECORD_PARSER,
+                                        schema,
+                                        "No record data parser for schema '" +
+                                                schema + "' found.");
                             }
                         }
 
@@ -945,15 +958,21 @@ public class SRUClient {
                                     "element");
                             if (strictMode) {
                                 throw new SRUClientException(
-                                        "endpoint declared 0 results, but response contained an empty 'records' element (behavior violates SRU specification)");
+                                        "endpoint declared 0 results, but " +
+                                        "response contained an empty " +
+                                        "'records' element (behavior " +
+                                        "violates SRU specification)");
                             }
                         } else {
                             logger.error("endpoint declared 0 results, but " +
                                     "response contained an " + bad +
                                     " record(s)");
                             if (strictMode) {
-                            throw new SRUClientException("endpoint declared 0 results, but response containted " +
-                                    bad + " records (behavior may violate SRU specification)");
+                                throw new SRUClientException(
+                                            "endpoint declared 0 results, " +
+                                            "but response containted " + bad +
+                                            " records (behavior may violate " +
+                                            "SRU specification)");
                             }
                         }
                     }
@@ -971,12 +990,18 @@ public class SRUClient {
                 }
 
                 /*
-                 * common error: echoedSearchRetrieveRequest in default namespace
+                 * common error: echoedSearchRetrieveRequest in
+                 * default namespace
                  */
                 if (reader.readStart("", "echoedSearchRetrieveRequest", false)) {
-                    logger.error("Element 'echoedSearchRetrieveRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                    logger.error("Element 'echoedSearchRetrieveRequest' " +
+                            "must be in SRU namespace, but endpoint put it " +
+                            "into default namespace");
                     if (strictMode) {
-                        throw new SRUClientException("Element 'echoedSearchRetrieveRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                        throw new SRUClientException(
+                                "Element 'echoedSearchRetrieveRequest' must " +
+                                "be in SRU namespace, but endpoint put it " +
+                                "into default namespace");
                     }
                     reader.readEnd("", "echoedSearchRetrieveRequest", true);
                 }
@@ -1073,7 +1098,7 @@ public class SRUClient {
 
 
     private static SRURecordPacking parseRecordPacking(
-            SRUXMLStreamReader reader, boolean pedantic)
+            SRUXMLStreamReader reader, boolean strictMode)
             throws XMLStreamException, SRUClientException {
         final String v = reader.readContent(SRU_NS, "recordPacking", true);
 
@@ -1081,11 +1106,11 @@ public class SRUClient {
             return SRURecordPacking.XML;
         } else if (RECORD_PACKING_STRING.equals(v)) {
             return SRURecordPacking.STRING;
-        } else if (!pedantic && RECORD_PACKING_XML.equalsIgnoreCase(v)) {
+        } else if (!strictMode && RECORD_PACKING_XML.equalsIgnoreCase(v)) {
             logger.error("invalid value '{}' for record packing, should be '{}'",
                          v, RECORD_PACKING_XML);
             return SRURecordPacking.XML;
-        } else if (!pedantic && RECORD_PACKING_STRING.equalsIgnoreCase(v)) {
+        } else if (!strictMode && RECORD_PACKING_STRING.equalsIgnoreCase(v)) {
             logger.error("invalid value '{}' for record packing, should be '{}'",
                          v, RECORD_PACKING_STRING);
             return SRURecordPacking.STRING;

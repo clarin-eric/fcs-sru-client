@@ -75,7 +75,7 @@ public class SRUDefaultHandlerAdapter implements SRUDefaultHandler {
 
     @Override
     public void onTerm(String value, int numberOfRecords, String displayTerm,
-            WhereInList whereInList) throws SRUClientException {
+            SRUWhereInList whereInList) throws SRUClientException {
     }
 
 

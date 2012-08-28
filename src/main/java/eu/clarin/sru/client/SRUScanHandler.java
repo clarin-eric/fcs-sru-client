@@ -31,33 +31,6 @@ import javax.xml.stream.XMLStreamReader;
  */
 public interface SRUScanHandler {
     /**
-     * A flag to indicate the position of the term within the complete term
-     * list.
-     */
-    public enum WhereInList {
-        /**
-         * The first term (<em>first</em>)
-         */
-        FIRST,
-
-        /**
-         * The last term (<em>last</em>)
-         */
-        LAST,
-
-        /**
-         * The only term (<em>only</em>)
-         */
-        ONLY,
-
-        /**
-         * Any other term (<em>inner</em>)
-         */
-        INNER;
-    }
-
-
-    /**
      * Receive notification of diagnostics.
      * 
      * @param diagnostics
@@ -140,7 +113,7 @@ public interface SRUScanHandler {
      *             any SRU exception, possibly wrapping another exception
      */
     public void onTerm(String value, int numberOfRecords, String displayTerm,
-            WhereInList whereInList) throws SRUClientException;
+            SRUWhereInList whereInList) throws SRUClientException;
 
 
     /**

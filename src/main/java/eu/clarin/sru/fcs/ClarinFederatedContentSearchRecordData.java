@@ -25,6 +25,10 @@ import eu.clarin.sru.client.SRURecordData;
  */
 public final class ClarinFederatedContentSearchRecordData implements
         SRURecordData {
+    /**
+     * The record schema for CLARIN FCS records.
+     */
+    public static final String RECORD_SCHEMA = "http://clarin.eu/fcs/1.0";
     private String pid;
     private String left;
     private String keyword;

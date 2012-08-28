@@ -21,6 +21,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+
+/**
+ * Abstract base class for SRU requests.
+ * 
+ * @see SRUExplainResponse
+ * @see SRUScanResponse
+ * @see SRUSearchRetrieveResponse
+ */
 abstract class SRUAbstractRequest {
     static final String PARAM_OPERATION                = "operation";
     static final String PARAM_VERSION                  = "version";
@@ -112,6 +120,14 @@ abstract class SRUAbstractRequest {
     private SRUVersion versionPreformed;
 
 
+    /**
+     * Constructor.
+     *
+     * @param endpointURI
+     *            the URI of the endpoint
+     * @throws NullPointerException
+     *             if any required argument is null
+     */
     protected SRUAbstractRequest(String endpointURI) {
         if (endpointURI == null) {
             throw new NullPointerException("endpointURI == null");
@@ -123,7 +139,7 @@ abstract class SRUAbstractRequest {
     /**
      * Get the endpoint URI.
      *
-     * @return the endpoiunt URI
+     * @return the endpoint URI
      */
     public String getEndpointURI() {
         return endpointURI;

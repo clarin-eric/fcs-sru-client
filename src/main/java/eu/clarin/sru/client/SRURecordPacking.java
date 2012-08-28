@@ -17,7 +17,7 @@
 package eu.clarin.sru.client;
 
 /**
- * SRU Record packing
+ * SRU record packing
  */
 public enum SRURecordPacking {
     /**

@@ -12,5 +12,6 @@ public enum SRUVersion {
     /**
      * SRU/CQL version 1.2
      */
-    VERSION_1_2;
+    VERSION_1_2
+
 } // enum SRUVersion

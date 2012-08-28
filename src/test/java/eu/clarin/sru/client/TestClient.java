@@ -76,7 +76,7 @@ public class TestClient {
 
                 @Override
                 public void onTerm(String value, int numberOfRecords,
-                        String displayTerm, WhereInList whereInList)
+                        String displayTerm, SRUWhereInList whereInList)
                         throws SRUClientException {
                     logger.info("onTerm(): value = {}, numberOfRecords = {}, displayTerm = {}, whereInList = {}",
                             new Object[] { value, numberOfRecords, displayTerm,
@@ -151,7 +151,7 @@ public class TestClient {
                 SRUSearchRetrieveRequest request =
                         new SRUSearchRetrieveRequest(args[0]);
                 request.setQuery("Faustus");
-                request.setRecordSchema(ClarinFederatedContentSearchRecordParser.FCS_RECORD_SCHEMA);
+                request.setRecordSchema(ClarinFederatedContentSearchRecordData.RECORD_SCHEMA);
                 request.setMaximumRecords(5);
                 request.setRecordPacking(SRURecordPacking.XML);
                 request.setExtraRequestData("x-indent-response", "4");
