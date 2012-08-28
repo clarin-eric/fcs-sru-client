@@ -373,7 +373,7 @@ public class SRUClient {
 
 
     /**
-     * Perform a <em>searchRetreive</em> operation.
+     * Perform a <em>searchRetrieve</em> operation.
      *
      * @param request
      *            an instance of a {@link SRUSearchRetrieveRequest} object
