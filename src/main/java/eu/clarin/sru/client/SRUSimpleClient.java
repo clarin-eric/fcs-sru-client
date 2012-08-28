@@ -46,10 +46,24 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * A class to perform SRU operations.
- * <p>This class is <em>not</em> thread-safe!</p>
+ * A simple client to perform SRU operations using callbacks. The application
+ * must provide the appropriate callbacks to receive the results of the
+ * operations.
+ * <p>
+ * This client is reusable but not thread-safe: the application may reuse a
+ * client object, but it may not be concurrently shared between multiple
+ * threads.
+ * </p>
+ * <p>
+ * This class is modeled after Java's SAX-API. 
+ * </p>
+ * 
+ * @see SRUExplainHandler
+ * @see SRUScanHandler
+ * @see SRUSearchRetrieveHandler
+ * @see SRUDefaultHandlerAdapter
  */
-public class SRUClient {
+public class SRUSimpleClient {
     /** default version the client will use, if not otherwise specified */
     public static final SRUVersion DEFAULT_SRU_VERSION = SRUVersion.VERSION_1_2;
     private static final String SRU_NS =
@@ -63,7 +77,7 @@ public class SRUClient {
     private static final String RECORD_PACKING_XML = "xml";
     private static final String RECORD_PACKING_STRING = "string";
     private static final Logger logger =
-            LoggerFactory.getLogger(SRUClient.class);
+            LoggerFactory.getLogger(SRUSimpleClient.class);
     private final SRUVersion defaultVersion;
     private boolean strictMode;
     private final Map<String, SRURecordDataParser> parsers;
@@ -75,10 +89,10 @@ public class SRUClient {
      * Constructor. This constructor will create a <em>strict</em> client and
      * use the default SRU version.
      *
-     * @see #SRUClient(SRUVersion, boolean)
+     * @see #SRUSimpleClient(SRUVersion, boolean)
      * @see #DEFAULT_SRU_VERSION
      */
-    public SRUClient() {
+    public SRUSimpleClient() {
         this(DEFAULT_SRU_VERSION, true);
     }
 
@@ -89,9 +103,9 @@ public class SRUClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
-     * @see #SRUClient(SRUVersion, boolean)
+     * @see #SRUSimpleClient(SRUVersion, boolean)
      */
-    public SRUClient(SRUVersion defaultVersion) {
+    public SRUSimpleClient(SRUVersion defaultVersion) {
         this(defaultVersion, true);
     }
 
@@ -108,7 +122,7 @@ public class SRUClient {
      *            <code>false</code> it will act more forgiving and ignore
      *            certain violations
      */
-    public SRUClient(SRUVersion defaultVersion, boolean strictMode) {
+    public SRUSimpleClient(SRUVersion defaultVersion, boolean strictMode) {
         this(defaultVersion, strictMode,
                 new HashMap<String, SRURecordDataParser>());
     }
@@ -133,7 +147,7 @@ public class SRUClient {
      *            a <code>Map</code> to store record schema to record data
      *            parser mappings
      */
-    SRUClient(SRUVersion defaultVersion, boolean strictMode,
+    SRUSimpleClient(SRUVersion defaultVersion, boolean strictMode,
             Map<String, SRURecordDataParser> parsers) {
         if (defaultVersion == null) {
             throw new NullPointerException("version == null");
@@ -1138,4 +1152,4 @@ public class SRUClient {
         return new SRUXMLStreamReader(in, wrap);
     }
 
-} // class SRUClient
+} // class SRUSimpleClient

@@ -25,14 +25,14 @@ import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordData;
 import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordParser;
 
 
-public class TestClient {
+public class TestSimpleClient {
     private static final Logger logger =
-            LoggerFactory.getLogger(TestClient.class);
+            LoggerFactory.getLogger(TestSimpleClient.class);
 
     public static void main(String[] args) {
         if (args.length > 0) {
             logger.info("initializing client ...");
-            SRUClient client = new SRUClient(SRUVersion.VERSION_1_2);
+            SRUSimpleClient client = new SRUSimpleClient(SRUVersion.VERSION_1_2);
             try {
                 client.registerRecordParser(new ClarinFederatedContentSearchRecordParser());
             } catch (SRUClientException e) {
@@ -165,6 +165,8 @@ public class TestClient {
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'searchRetrieve' request", e);
             }
+            
+            logger.info("done");
         } else {
             System.err.println("missing args");
             System.exit(64);
@@ -179,7 +181,8 @@ public class TestClient {
         org.apache.log4j.Logger logger =
                 org.apache.log4j.Logger.getRootLogger();
         logger.setLevel(org.apache.log4j.Level.INFO);
-        logger.getLoggerRepository()
-            .getLogger("eu.clarin").setLevel(org.apache.log4j.Level.DEBUG);
+        logger.getLoggerRepository().getLogger("eu.clarin").setLevel(
+                org.apache.log4j.Level.DEBUG);
     }
-} // class TestClient
+
+} // class TestSimpleClient
