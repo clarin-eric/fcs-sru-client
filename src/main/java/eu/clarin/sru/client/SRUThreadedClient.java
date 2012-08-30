@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * This client is reusable and thread-safe: the application may reuse a
  * client object and may shared it between multiple threads. <br />
  * NB: The registered {@link SRURecordDataParser} need to be thread-safe
- * </p> 
+ * </p>
  */
 public class SRUThreadedClient {
     private static final Logger logger =
@@ -139,7 +139,8 @@ public class SRUThreadedClient {
      *
      * @param request
      *            an instance of a {@link SRUExplainRequest} object
-     * @return a {@link SRUExplainResponse} object
+     * @return a {@link Future} object that wraps a {@link SRUExplainResponse}
+     *         object
      * @throws SRUClientException
      *             if an unrecoverable error occurred
      * @throws NullPointerException
@@ -164,11 +165,49 @@ public class SRUThreadedClient {
 
 
     /**
+     * Perform a <em>explain</em> operation and invoke a user supplied callback
+     * after the request has been completed.
+     *
+     * @param request
+     *            an instance of a {@link SRUExplainRequest} object
+     * @param callback
+     *            the callback to be invoked
+     * @throws SRUClientException
+     *             if an unrecoverable error occurred
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @see SRUCallback
+     */
+    public void explain(final SRUExplainRequest request,
+            final SRUCallback<SRUExplainResponse> callback)
+            throws SRUClientException {
+        if (request == null) {
+            throw new NullPointerException("request == null");
+        }
+        if (callback == null) {
+            throw new NullPointerException("callback == null");
+        }
+        if (executor.isShutdown()) {
+            throw new SRUClientException("client is shutting down");
+        }
+        executor.submit(new AsyncRequest<SRUExplainRequest, SRUExplainResponse>(
+                request, callback) {
+            @Override
+            protected SRUExplainResponse doRequest(SRUClient client)
+                    throws SRUClientException {
+                return client.explain(request);
+            }
+        });
+    }
+
+
+    /**
      * Perform a <em>scan</em> operation.
      *
      * @param request
      *            an instance of a {@link SRUScanRequest} object
-     * @return a {@link SRUScanResponse} object
+     * @return a {@link Future} object that wraps a {@link SRUScanResponse}
+     *         object
      * @throws SRUClientException
      *             if an unrecoverable error occurred
      * @throws NullPointerException
@@ -194,11 +233,49 @@ public class SRUThreadedClient {
 
 
     /**
+     * Perform a <em>scan</em> operation and invoke a user supplied callback
+     * after the request has been completed.
+     *
+     * @param request
+     *            an instance of a {@link SRUScanRequest} object
+     * @param callback
+     *            the callback to be invoked
+     * @throws SRUClientException
+     *             if an unrecoverable error occurred
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @see SRUCallback
+     */
+    public void scan(final SRUScanRequest request,
+            final SRUCallback<SRUScanResponse> callback)
+            throws SRUClientException {
+        if (request == null) {
+            throw new NullPointerException("request == null");
+        }
+        if (callback == null) {
+            throw new NullPointerException("callback == null");
+        }
+        if (executor.isShutdown()) {
+            throw new SRUClientException("client is shutting down");
+        }
+        executor.submit(new AsyncRequest<SRUScanRequest, SRUScanResponse>(
+                request, callback) {
+            @Override
+            protected SRUScanResponse doRequest(SRUClient client)
+                    throws SRUClientException {
+                return client.scan(request);
+            }
+        });
+    }
+
+
+    /**
      * Perform a <em>searchRetrieve</em> operation.
      *
      * @param request
      *            an instance of a {@link SRUSearchRetrieveRequest} object
-     * @return a {@link SRUSearchRetrieveRequest} object
+     * @return a {@link Future} object that wraps a {@link SRUExplainResponse}
+     *         object
      * @throws SRUClientException
      *             if an unrecoverable error occurred
      * @throws NullPointerException
@@ -212,7 +289,45 @@ public class SRUThreadedClient {
         if (executor.isShutdown()) {
             throw new SRUClientException("client is shutting down");
         }
-        return executor.submit(new Request<SRUSearchRetrieveRequest, SRUSearchRetrieveResponse>(request) {
+        return executor.submit(new Request<SRUSearchRetrieveRequest,
+                SRUSearchRetrieveResponse>(request) {
+            @Override
+            protected SRUSearchRetrieveResponse doRequest(SRUClient client)
+                    throws SRUClientException {
+                return client.searchRetrieve(request);
+            }
+        });
+    }
+
+
+    /**
+     * Perform a <em>searchRetrieve</em> operation and invoke a user supplied
+     * callback after the request has been completed.
+     *
+     * @param request
+     *            an instance of a {@link SRUSearchRetrieveRequest} object
+     * @param callback
+     *            the callback to be invoked
+     * @throws SRUClientException
+     *             if an unrecoverable error occurred
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @see SRUCallback
+     */
+    public void searchRetrieve(final SRUSearchRetrieveRequest request,
+            final SRUCallback<SRUSearchRetrieveResponse> callback)
+            throws SRUClientException {
+        if (request == null) {
+            throw new NullPointerException("request == null");
+        }
+        if (callback == null) {
+            throw new NullPointerException("callback == null");
+        }
+        if (executor.isShutdown()) {
+            throw new SRUClientException("client is shutting down");
+        }
+        executor.submit(new AsyncRequest<SRUSearchRetrieveRequest,
+                SRUSearchRetrieveResponse>(request, callback) {
             @Override
             protected SRUSearchRetrieveResponse doRequest(SRUClient client)
                     throws SRUClientException {
@@ -290,6 +405,35 @@ public class SRUThreadedClient {
 
         protected abstract S doRequest(SRUClient client)
                 throws SRUClientException;
+    }
+
+
+    private abstract class AsyncRequest<V extends SRUAbstractRequest,
+                                        S extends SRUAbstractResponse<?>>
+            implements Runnable {
+        protected final V request;
+        private final SRUCallback<S> callback;
+
+
+        public AsyncRequest(V request, SRUCallback<S> callback) {
+            this.callback = callback;
+            this.request = request;
+        }
+
+
+        @Override
+        public void run() {
+            try {
+                S response = doRequest(client.get());
+                callback.done(response);
+            } catch (SRUClientException e) {
+                logger.debug("exception", e);
+            } catch (Throwable t) {
+                logger.error("something went wrong", t);
+            }
+        }
+
+        protected abstract S doRequest(SRUClient client) throws SRUClientException;
     }
 
 } // class SRUThreadedClient

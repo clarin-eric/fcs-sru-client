@@ -30,7 +30,7 @@ import org.w3c.dom.Document;
  * @see SRUScanResponse
  * @see SRUSearchRetrieveResponse
  */
-class SRUAbstractResponse<T> {
+class SRUAbstractResponse<T extends SRUAbstractRequest> {
     private final T request;
     private final List<SRUDiagnostic> diagnostics;
     private final Document extraResponseData;
