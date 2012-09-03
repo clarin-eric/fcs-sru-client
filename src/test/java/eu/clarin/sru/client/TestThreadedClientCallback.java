@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordData;
 import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordParser;
 
+
 public class TestThreadedClientCallback {
     private static final Logger logger =
             LoggerFactory.getLogger(TestThreadedClientCallback.class);
@@ -37,10 +38,17 @@ public class TestThreadedClientCallback {
                  */
                 logger.info("submitting 'explain' request ...");
                 SRUExplainRequest request1 = new SRUExplainRequest(args[0]);
-                client.explain(request1, new SRUCallback<SRUExplainResponse>() {
+                client.explain(request1, new SRUCallback<SRUExplainRequest, SRUExplainResponse>() {
                     @Override
-                    public void done(SRUExplainResponse response) {
+                    public void onSuccess(SRUExplainResponse response) {
                         printExplainResponse(response);
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onError(SRUExplainRequest request,
+                            SRUClientException error) {
+                        logger.error("error while performing request", error);
                         latch.countDown();
                     }
                 });
@@ -48,10 +56,17 @@ public class TestThreadedClientCallback {
                 logger.info("submitting 'scan' request ...");
                 SRUScanRequest request2 = new SRUScanRequest(args[0]);
                 request2.setScanClause("fcs.resource");
-                client.scan(request2, new SRUCallback<SRUScanResponse>() {
+                client.scan(request2, new SRUCallback<SRUScanRequest, SRUScanResponse>() {
                     @Override
-                    public void done(SRUScanResponse response) {
+                    public void onSuccess(SRUScanResponse response) {
                         printScanResponse(response);
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onError(SRUScanRequest request,
+                            SRUClientException error) {
+                        logger.error("error while performing request", error);
                         latch.countDown();
                     }
                 });
@@ -62,10 +77,17 @@ public class TestThreadedClientCallback {
                 request3.setQuery("Faustus");
                 request3.setRecordSchema(ClarinFederatedContentSearchRecordData.RECORD_SCHEMA);
                 request3.setMaximumRecords(5);
-                client.searchRetrieve(request3, new SRUCallback<SRUSearchRetrieveResponse>() {
+                client.searchRetrieve(request3, new SRUCallback<SRUSearchRetrieveRequest, SRUSearchRetrieveResponse>() {
                     @Override
-                    public void done(SRUSearchRetrieveResponse response) {
+                    public void onSuccess(SRUSearchRetrieveResponse response) {
                         printSearchResponse(response);
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void onError(SRUSearchRetrieveRequest request,
+                            SRUClientException error) {
+                        logger.error("error while performing request", error);
                         latch.countDown();
                     }
                 });

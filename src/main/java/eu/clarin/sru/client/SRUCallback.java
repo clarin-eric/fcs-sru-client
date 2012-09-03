@@ -24,21 +24,35 @@ package eu.clarin.sru.client;
  * NB: the callbacks will be executed by any of worker threads of the client.
  * </p>
  *
- * @param <T>
- *            a response type
+ * @param <V>
+ *            the request type
+ * @param <S>
+ *            the response type
  *
  * @see SRUThreadedClient#explain(SRUExplainRequest, SRUCallback)
  * @see SRUThreadedClient#scan(SRUScanRequest, SRUCallback)
  * @see SRUThreadedClient#searchRetrieve(SRUSearchRetrieveRequest, SRUCallback)
  */
-public interface SRUCallback<T extends SRUAbstractResponse<?>> {
+public interface SRUCallback<V extends SRUAbstractRequest,
+                             S extends SRUAbstractResponse<V>> {
 
     /**
      * Invoked when the request has been completed successfully.
      *
      * @param response
-     *            the response to the rquest
+     *            the response to the request
      */
-    public void done(T response);
+    public void onSuccess(S response);
+
+
+    /**
+     * Invoked when the request yielded an error
+     *
+     * @param request
+     *            the original request
+     * @param error
+     *            the error
+     */
+    public void onError(V request, SRUClientException error);
 
 } // interface SRUCallback

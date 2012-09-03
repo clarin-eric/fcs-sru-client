@@ -179,7 +179,7 @@ public class SRUThreadedClient {
      * @see SRUCallback
      */
     public void explain(final SRUExplainRequest request,
-            final SRUCallback<SRUExplainResponse> callback)
+            final SRUCallback<SRUExplainRequest, SRUExplainResponse> callback)
             throws SRUClientException {
         if (request == null) {
             throw new NullPointerException("request == null");
@@ -247,7 +247,7 @@ public class SRUThreadedClient {
      * @see SRUCallback
      */
     public void scan(final SRUScanRequest request,
-            final SRUCallback<SRUScanResponse> callback)
+            final SRUCallback<SRUScanRequest, SRUScanResponse> callback)
             throws SRUClientException {
         if (request == null) {
             throw new NullPointerException("request == null");
@@ -315,7 +315,7 @@ public class SRUThreadedClient {
      * @see SRUCallback
      */
     public void searchRetrieve(final SRUSearchRetrieveRequest request,
-            final SRUCallback<SRUSearchRetrieveResponse> callback)
+            final SRUCallback<SRUSearchRetrieveRequest, SRUSearchRetrieveResponse> callback)
             throws SRUClientException {
         if (request == null) {
             throw new NullPointerException("request == null");
@@ -409,13 +409,13 @@ public class SRUThreadedClient {
 
 
     private abstract class AsyncRequest<V extends SRUAbstractRequest,
-                                        S extends SRUAbstractResponse<?>>
+                                        S extends SRUAbstractResponse<V>>
             implements Runnable {
         protected final V request;
-        private final SRUCallback<S> callback;
+        private final SRUCallback<V, S> callback;
 
 
-        public AsyncRequest(V request, SRUCallback<S> callback) {
+        public AsyncRequest(V request, SRUCallback<V, S> callback) {
             this.callback = callback;
             this.request = request;
         }
@@ -424,16 +424,20 @@ public class SRUThreadedClient {
         @Override
         public void run() {
             try {
-                S response = doRequest(client.get());
-                callback.done(response);
-            } catch (SRUClientException e) {
-                logger.debug("exception", e);
+                try {
+                    final S response = doRequest(client.get());
+                    callback.onSuccess(response);
+                } catch (SRUClientException e) {
+                    callback.onError(request, e);
+                }
             } catch (Throwable t) {
-                logger.error("something went wrong", t);
+                logger.error("error while performing async callback", t);
             }
         }
 
-        protected abstract S doRequest(SRUClient client) throws SRUClientException;
+
+        protected abstract S doRequest(SRUClient client)
+                throws SRUClientException;
     }
 
 } // class SRUThreadedClient
