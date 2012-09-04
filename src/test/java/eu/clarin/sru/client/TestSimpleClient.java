@@ -43,7 +43,7 @@ public class TestSimpleClient {
             /*
              * just use one dump handler for each request.
              * A real application should be smarter here and use the
-             * appropriate handler 
+             * appropriate handler
              */
             SRUDefaultHandlerAdapter handler = new SRUDefaultHandlerAdapter() {
                 @Override
@@ -104,7 +104,7 @@ public class TestSimpleClient {
                     logger.info("onRecord(): identifier = {}, position = {}, schema = {}",
                             new Object[] { identifier, position,
                                     data.getRecordSchema() });
-                    if (ClarinFederatedContentSearchRecordParser.FCS_NS
+                    if (ClarinFederatedContentSearchRecordData.RECORD_SCHEMA
                             .equals(data.getRecordSchema())) {
                         ClarinFederatedContentSearchRecordData record = (ClarinFederatedContentSearchRecordData) data;
                         logger.info("CLARIN-FCS: \"{}\"/\"{}\"/\"{}\"",
@@ -165,7 +165,7 @@ public class TestSimpleClient {
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'searchRetrieve' request", e);
             }
-            
+
             logger.info("done");
         } else {
             System.err.println("missing args");

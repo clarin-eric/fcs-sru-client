@@ -1141,7 +1141,7 @@ public class SRUSimpleClient {
     private SRURecordDataParser findParser(String schema) {
         SRURecordDataParser parser = parsers.get(schema);
         if (parser == null) {
-            parser = parsers.get(SRURecordDataParser.RECORD_DATA_PARSER_SCHEMA_ANY);
+            parser = parsers.get(SRUClientConstants.RECORD_DATA_PARSER_SCHEMA_ANY);
         }
         return parser;
     }

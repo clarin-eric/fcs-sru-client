@@ -52,7 +52,7 @@ public final class ClarinFederatedContentSearchRecordData implements
 
     @Override
     public String getRecordSchema() {
-        return ClarinFederatedContentSearchRecordParser.FCS_NS;
+        return RECORD_SCHEMA;
     }
 
 

@@ -22,16 +22,12 @@ import javax.xml.stream.XMLStreamReader;
 
 /**
  * A parser to parse record data and create appropriate Java objects.
- * 
+ *
  */
 public interface SRURecordDataParser {
-    /** constant record data schema parser to match any schema */
-    public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
-
-
     /**
      * The record schema this parser is able to process.
-     * 
+     *
      * @return the record schema this parser is able to process
      */
     public String getRecordSchema();
@@ -39,7 +35,7 @@ public interface SRURecordDataParser {
 
     /**
      * Parse a record data into a Java object.
-     * 
+     *
      * @param reader
      *            a {@link XMLStreamReader} to parse the record data
      * @return the parsed record
