@@ -31,10 +31,14 @@ public final class SRUScanResponse extends SRUAbstractResponse<SRUScanRequest> {
 
 
     SRUScanResponse(SRUScanRequest request, List<SRUDiagnostic> diagnostics,
-            Document extraResponseData, List<SRUTerm> terms) {
-        super(request, diagnostics, extraResponseData);
+            Document extraResponseData, int totalBytesTransferred,
+            long timeTotal, long timeQueued, long timeNetwork,
+            long timeProcessing, List<SRUTerm> terms) {
+        super(request, diagnostics, extraResponseData, totalBytesTransferred,
+                timeTotal, timeQueued, timeNetwork, timeProcessing);
         this.terms = ((terms != null) && !terms.isEmpty())
-                ? Collections.unmodifiableList(terms) : null;
+                ? Collections.unmodifiableList(terms)
+                : null;
     }
 
 

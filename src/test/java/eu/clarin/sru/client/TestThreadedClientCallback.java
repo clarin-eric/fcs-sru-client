@@ -120,6 +120,13 @@ public class TestThreadedClientCallback {
             SRURecord record = response.getRecord();
             logger.info("schema = {}", record.getRecordSchema());
         }
+        logger.info("request time (in millis): {} total, {} queued, {} " +
+                "network, {} processing; {} bytes transferred",
+            new Object[] { response.getTimeTotal(),
+                    response.getTimeWait(),
+                    response.getTimeNetwork(),
+                    response.getTimeProcessing(),
+                    response.getTotalBytesTransferred() });
     }
 
 
@@ -146,6 +153,13 @@ public class TestThreadedClientCallback {
         } else {
             logger.info("no terms");
         }
+        logger.info("request time (in millis): {} total, {} queued, {} " +
+                    "network, {} processing; {} bytes transferred",
+                new Object[] { response.getTimeTotal(),
+                        response.getTimeWait(),
+                        response.getTimeNetwork(),
+                        response.getTimeProcessing(),
+                        response.getTotalBytesTransferred() });
     }
 
 
@@ -186,6 +200,13 @@ public class TestThreadedClientCallback {
         } else {
             logger.info("no results");
         }
+        logger.info("request time (in millis): {} total, {} queued, {} " +
+                "network, {} processing; {} bytes transferred",
+            new Object[] { response.getTimeTotal(),
+                    response.getTimeWait(),
+                    response.getTimeNetwork(),
+                    response.getTimeProcessing(),
+                    response.getTotalBytesTransferred() });
     }
 
 

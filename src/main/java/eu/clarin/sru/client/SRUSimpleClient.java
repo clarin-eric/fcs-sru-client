@@ -55,9 +55,9 @@ import org.slf4j.LoggerFactory;
  * threads.
  * </p>
  * <p>
- * This class is modeled after Java's SAX-API. 
+ * This class is modeled after Java's SAX-API.
  * </p>
- * 
+ *
  * @see SRUExplainHandler
  * @see SRUScanHandler
  * @see SRUSearchRetrieveHandler
@@ -272,13 +272,14 @@ public class SRUSimpleClient {
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_start);
             final long millisNetwork =
                     TimeUnit.NANOSECONDS.toMillis(ts_parsing - ts_start);
-            final long millisParsing =
+            final long millisProcessing =
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
-            logger.debug("{} byte(s) in {} milli(s) ({} milli(s) network / {} milli(s) parsing)",
+            logger.debug("{} byte(s) in {} milli(s) " +
+                    "({} milli(s) network / {} milli(s) processing)",
                     new Object[] { reader.getByteCount(),
-                            millisTotal, millisNetwork, millisParsing });
+                            millisTotal, millisNetwork, millisProcessing });
             handler.onRequestStatistics((int) reader.getByteCount(),
-                    millisTotal, millisNetwork, millisParsing);
+                    millisTotal, millisNetwork, millisProcessing);
         } catch (IllegalStateException e) {
             throw new SRUClientException("error reading response", e);
         } catch (IOException e) {
@@ -353,13 +354,14 @@ public class SRUSimpleClient {
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_start);
             final long millisNetwork =
                     TimeUnit.NANOSECONDS.toMillis(ts_parsing - ts_start);
-            final long millisParsing =
+            final long millisProcessing =
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
-            logger.debug("{} byte(s) in {} milli(s) ({} milli(s) network / {} milli(s) parsing)",
+            logger.debug("{} byte(s) in {} milli(s) " +
+                    "({} milli(s) network / {} milli(s) processing)",
                     new Object[] { reader.getByteCount(),
-                            millisTotal, millisNetwork, millisParsing });
+                            millisTotal, millisNetwork, millisProcessing });
             handler.onRequestStatistics((int) reader.getByteCount(),
-                    millisTotal, millisNetwork, millisParsing);
+                    millisTotal, millisNetwork, millisProcessing);
         } catch (IllegalStateException e) {
             throw new SRUClientException("error reading response", e);
         } catch (IOException e) {
@@ -434,13 +436,14 @@ public class SRUSimpleClient {
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_start);
             final long millisNetwork =
                     TimeUnit.NANOSECONDS.toMillis(ts_parsing - ts_start);
-            final long millisParsing =
+            final long millisProcessing =
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
-            logger.debug("{} byte(s) in {} milli(s) ({} milli(s) network / {} milli(s) parsing)",
+            logger.debug("{} byte(s) in {} milli(s) " +
+                    "({} milli(s) network / {} milli(s) processing)",
                     new Object[] { reader.getByteCount(),
-                            millisTotal, millisNetwork, millisParsing });
+                            millisTotal, millisNetwork, millisProcessing });
             handler.onRequestStatistics((int) reader.getByteCount(),
-                    millisTotal, millisNetwork, millisParsing);
+                    millisTotal, millisNetwork, millisProcessing);
         } catch (IllegalStateException e) {
             throw new SRUClientException("error reading response", e);
         } catch (IOException e) {

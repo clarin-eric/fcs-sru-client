@@ -32,8 +32,10 @@ public final class SRUExplainResponse extends
 
     SRUExplainResponse(SRUExplainRequest request,
             List<SRUDiagnostic> diagnostics, Document extraResponseData,
-            SRURecord record) {
-        super(request, diagnostics, extraResponseData);
+            int totalBytesTransferred, long timeTotal, long timeQueued,
+            long timeNetwork, long timeProcessing, SRURecord record) {
+        super(request, diagnostics, extraResponseData, totalBytesTransferred,
+                timeTotal, timeQueued, timeNetwork, timeProcessing);
         this.record = record;
     }
 

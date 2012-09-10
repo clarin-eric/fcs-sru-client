@@ -388,8 +388,10 @@ public class SRUThreadedClient {
     }
 
 
-    private abstract class Request<V, S> implements Callable<S> {
+    private abstract class Request<V extends SRUAbstractRequest, S extends SRUAbstractResponse<V>>
+            implements Callable<S> {
         protected final V request;
+        private long now = System.nanoTime();
 
 
         Request(V request) {
@@ -399,7 +401,9 @@ public class SRUThreadedClient {
 
         @Override
         public final S call() throws Exception {
-            return doRequest(client.get());
+            final SRUClient c = client.get();
+            c.setTimeQueued(System.nanoTime() - now);
+            return doRequest(c);
         }
 
 
@@ -412,6 +416,7 @@ public class SRUThreadedClient {
                                         S extends SRUAbstractResponse<V>>
             implements Runnable {
         protected final V request;
+        private long now = System.nanoTime();
         private final SRUCallback<V, S> callback;
 
 
@@ -425,7 +430,9 @@ public class SRUThreadedClient {
         public void run() {
             try {
                 try {
-                    final S response = doRequest(client.get());
+                    final SRUClient c = client.get();
+                    c.setTimeQueued(System.nanoTime() - now);
+                    final S response = doRequest(c);
                     callback.onSuccess(response);
                 } catch (SRUClientException e) {
                     callback.onError(request, e);

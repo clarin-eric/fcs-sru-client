@@ -34,6 +34,11 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
     private final T request;
     private final List<SRUDiagnostic> diagnostics;
     private final Document extraResponseData;
+    private final int totalBytesTransferred;
+    private final long timeTotal;
+    private final long timeQueued;
+    private final long timeNetwork;
+    private final long timeProcessing;
 
 
     /**
@@ -45,13 +50,35 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
      * @param extraResponseData
      *            extra response data for this result or <code>null</code> if
      *            none.
+     * @param totalBytesTransferred
+     *            the total number of bytes transferred for this request
+     * @param timeTotal
+     *            the total number of milliseconds elapsed while performing this
+     *            request
+     * @param timeQueued
+     *            the total number of milliseconds elapsed while this request
+     *            was queued
+     * @param timeNetwork
+     *            the total number of milliseconds elapsed while this request
+     *            waited for network operations to finish
+     * @param timeProcessing
+     *            the total number of milliseconds elapsed while the client
+     *            processed the response from the endpoint
      */
     protected SRUAbstractResponse(T request, List<SRUDiagnostic> diagnostics,
-            Document extraResponseData) {
+            Document extraResponseData, int totalBytesTransferred,
+            long timeTotal, long timeQueued, long timeNetwork,
+            long timeProcessing) {
         this.request = request;
         this.diagnostics = ((diagnostics != null) && !diagnostics.isEmpty())
-                ? Collections.unmodifiableList(diagnostics) : null;
-        this.extraResponseData = extraResponseData;
+                ? Collections.unmodifiableList(diagnostics)
+                : null;
+        this.extraResponseData     = extraResponseData;
+        this.totalBytesTransferred = totalBytesTransferred;
+        this.timeTotal             = timeTotal;
+        this.timeQueued            = timeQueued;
+        this.timeNetwork           = timeNetwork;
+        this.timeProcessing        = timeProcessing;
     }
 
 
@@ -98,6 +125,63 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
      */
     public Document getExtraResponseData() {
         return extraResponseData;
+    }
+
+
+    /**
+     * Get the total number of bytes transferred for this request.
+     *
+     * @return the total number of bytes or <code>-1</code> if not available
+     */
+    public long getTotalBytesTransferred() {
+        return totalBytesTransferred;
+    }
+
+
+    /**
+     * Get the total number of milliseconds elapsed for this request.
+     *
+     * @return the total number of milliseconds or <code>-1</code> if not
+     *         available
+     */
+    public long getTimeTotal() {
+        return timeTotal;
+    }
+
+
+    /**
+     * Get the number of milliseconds this request has been queued before it was
+     * processed by the client.
+     *
+     * @return the number of milliseconds queued or <code>-1</code> if not
+     *         available
+     */
+    public long getTimeWait() {
+        return timeQueued;
+    }
+
+
+    /**
+     * Get the number of milliseconds this request spend waiting for network
+     * operations to finish.
+     *
+     * @return the number of milliseconds spend in waiting on network or
+     *         <code>-1</code> if not available
+     */
+    public long getTimeNetwork() {
+        return timeNetwork;
+    }
+
+
+    /**
+     * Get the number of milliseconds the client was busy processing the results
+     * sent from the endpoint.
+     *
+     * @return the number of milliseconds spend in processing or <code>-1</code>
+     *         if not available
+     */
+    public long getTimeProcessing() {
+        return timeProcessing;
     }
 
 } // class SRUAbstractResponse

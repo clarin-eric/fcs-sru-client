@@ -24,7 +24,7 @@ import javax.xml.stream.XMLStreamReader;
 
 /**
  * Receive notifications to the response of a <em>scan</em> request.
- * 
+ *
  * @see SRUScanRequest
  * @see <a href="http://www.loc.gov/standards/sru/specs/scan.html">SRU
  *      Scan Operation</a>
@@ -32,7 +32,7 @@ import javax.xml.stream.XMLStreamReader;
 public interface SRUScanHandler {
     /**
      * Receive notification of diagnostics.
-     * 
+     *
      * @param diagnostics
      *            a list of {@link SRUDiagnostic}
      * @throws SRUClientException
@@ -45,23 +45,24 @@ public interface SRUScanHandler {
 
     /**
      * Receive notification of request statistics.
-     * 
-     * @param bytes
-     *            the size of the response in bytes
+     *
+     * @param totalBytesTransferred
+     *            the total number of bytes transferred while receiving the
+     *            response
      * @param millisTotal
      *            the total time spend processing the request
      * @param millisNetwork
      *            the time spend performing network operations
-     * @param millisParsing
-     *            the time spend parsing the response
+     * @param millisProcessing
+     *            the time spend processing the response
      */
-    public void onRequestStatistics(int bytes, long millisTotal,
-            long millisNetwork, long millisParsing);
+    public void onRequestStatistics(int totalBytesTransferred,
+            long millisTotal, long millisNetwork, long millisProcessing);
 
 
     /**
      * Receive notification of extra response data.
-     * 
+     *
      * @param reader
      *            a {@link XMLStreamReader} to parse the extra response data
      * @throws XMLStreamException
@@ -78,7 +79,7 @@ public interface SRUScanHandler {
     /**
      * Receive notifications of the start of the enumeration of terms in the
      * response.
-     * 
+     *
      * @throws SRUClientException
      *             any SRU exception, possibly wrapping another exception
      */
@@ -88,7 +89,7 @@ public interface SRUScanHandler {
     /**
      * Receive notifications of the end of the enumeration of terms in the
      * response.
-     * 
+     *
      * @throws SRUClientException
      *             any SRU exception, possibly wrapping another exception
      */
@@ -97,7 +98,7 @@ public interface SRUScanHandler {
 
     /**
      * Receive notification of a term.
-     * 
+     *
      * @param value
      *            the term (exactly) as it appears in the index
      * @param numberOfRecords
@@ -118,7 +119,7 @@ public interface SRUScanHandler {
 
     /**
      * Receive notification of extra term data.
-     * 
+     *
      * @param value
      *            the term (exactly) as it appears in the index
      * @param reader

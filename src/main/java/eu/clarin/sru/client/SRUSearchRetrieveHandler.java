@@ -24,7 +24,7 @@ import javax.xml.stream.XMLStreamReader;
 
 /**
  * Receive notifications to the response of a <em>searchRetrieve</em> request.
- * 
+ *
  * @see SRUSearchRetrieveRequest
  * @see <a href="http://www.loc.gov/standards/sru/specs/search-retrieve.html">
  *      SRU SearchRetrieve Operation</a>
@@ -33,7 +33,7 @@ public interface SRUSearchRetrieveHandler {
 
     /**
      * Receive notification of diagnostics.
-     * 
+     *
      * @param diagnostics
      *            a list of {@link SRUDiagnostic}
      * @throws SRUClientException
@@ -46,23 +46,24 @@ public interface SRUSearchRetrieveHandler {
 
     /**
      * Receive notification of request statistics.
-     * 
-     * @param bytes
-     *            the size of the response in bytes
+     *
+     * @param totalBytesTransferred
+     *            the total number of bytes transferred while receiving the
+     *            response
      * @param millisTotal
      *            the total time spend processing the request
      * @param millisNetwork
      *            the time spend performing network operations
-     * @param millisParsing
-     *            the time spend parsing the response
+     * @param millisProcessing
+     *            the time spend processing the response
      */
-    public void onRequestStatistics(int bytes, long millisTotal,
-            long millisNetwork, long millisParsing);
+    public void onRequestStatistics(int totalBytesTransferred,
+            long millisTotal, long millisNetwork, long millisProcessing);
 
 
     /**
      * Receive notification of extra response data.
-     * 
+     *
      * @param reader
      *            a {@link XMLStreamReader} to parse the extra response data
      * @throws XMLStreamException
@@ -79,7 +80,7 @@ public interface SRUSearchRetrieveHandler {
     /**
      * Receive notifications of the start of the enumeration of records in the
      * response.
-     * 
+     *
      * @param numberOfRecords
      *            the number of records or <code>-1</code> if not available
      * @param resultSetId
@@ -96,7 +97,7 @@ public interface SRUSearchRetrieveHandler {
     /**
      * Receive notifications of the end of the enumeration of records in the
      * response.
-     * 
+     *
      * @param nextRecordPosition
      *            the next record position or <code>-1</code> if not available
      * @throws SRUClientException
@@ -108,7 +109,7 @@ public interface SRUSearchRetrieveHandler {
 
     /**
      * Receive notification of a record in the result set.
-     * 
+     *
      * @param identifier
      *            identifier of the record or <code>null</code> if not available
      * @param position
@@ -127,7 +128,7 @@ public interface SRUSearchRetrieveHandler {
 
     /**
      * Receive notification of a surrogate record in the result set.
-     * 
+     *
      * @param identifier
      *            identifier of the record or <code>null</code> if not available
      * @param position
@@ -145,7 +146,7 @@ public interface SRUSearchRetrieveHandler {
 
     /**
      * Receive notification of extra record data.
-     * 
+     *
      * @param identifier
      *            identifier of the record or <code>null</code> if not available
      * @param position

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -52,7 +53,12 @@ public class SRUClient {
     private int resultSetIdleTime;
     private List<SRURecord> records;
     private int nextRecordPosition;
-
+    /* statistics */
+    private int totalBytesTransferred;
+    private long timeTotal;
+    private long timeQueued;
+    private long timeNetwork;
+    private long timeParsing;
 
     /**
      * Constructor. This constructor will create a <em>strict</em> client and
@@ -170,6 +176,11 @@ public class SRUClient {
             return new SRUExplainResponse(request,
                     diagnostics,
                     extraResponseData,
+                    totalBytesTransferred,
+                    timeTotal,
+                    timeQueued,
+                    timeNetwork,
+                    timeParsing,
                     record);
         } finally {
             reset();
@@ -198,6 +209,11 @@ public class SRUClient {
             return new SRUScanResponse(request,
                     diagnostics,
                     extraResponseData,
+                    totalBytesTransferred,
+                    timeTotal,
+                    timeQueued,
+                    timeNetwork,
+                    timeParsing,
                     terms);
         } finally {
             reset();
@@ -227,6 +243,11 @@ public class SRUClient {
             return new SRUSearchRetrieveResponse(request,
                     diagnostics,
                     extraResponseData,
+                    totalBytesTransferred,
+                    timeTotal,
+                    timeQueued,
+                    timeNetwork,
+                    timeParsing,
                     numberOfRecords,
                     resultSetId,
                     resultSetIdleTime,
@@ -235,6 +256,11 @@ public class SRUClient {
         } finally {
             reset();
         }
+    }
+
+
+    void setTimeQueued(long timeQueued) {
+        this.timeQueued = TimeUnit.NANOSECONDS.toMillis(timeQueued);
     }
 
 
@@ -268,6 +294,12 @@ public class SRUClient {
         resultSetIdleTime  = -1;
         records            = null;
         nextRecordPosition = -1;
+        /* statistics */
+        totalBytesTransferred              = -1;
+        timeQueued         = -1;
+        timeTotal          = -1;
+        timeNetwork        = -1;
+        timeParsing        = -1;
     }
 
 
@@ -339,6 +371,20 @@ public class SRUClient {
                 XMLStreamReader reader) throws XMLStreamException,
                 SRUClientException {
             // TODO: parseExtraRecordData
+        }
+
+
+        @Override
+        public void onRequestStatistics(int totalBytesTransferred,
+                long millisTotal, long millisNetwork, long millisProcessing) {
+            SRUClient.this.totalBytesTransferred = totalBytesTransferred;
+            if (SRUClient.this.timeQueued > 0) {
+                SRUClient.this.timeTotal = timeQueued  + millisTotal;
+            } else {
+                SRUClient.this.timeTotal = millisTotal;
+            }
+            SRUClient.this.timeNetwork = millisNetwork;
+            SRUClient.this.timeParsing = millisProcessing;
         }
     } // inner class Handler
 

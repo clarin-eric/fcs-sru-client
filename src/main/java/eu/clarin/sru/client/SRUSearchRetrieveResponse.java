@@ -37,14 +37,18 @@ public final class SRUSearchRetrieveResponse extends
 
     SRUSearchRetrieveResponse(SRUSearchRetrieveRequest request,
             List<SRUDiagnostic> diagnostics, Document extraResponseData,
-            int numberOfRecords, String resultSetId, int resultSetIdleTime,
-            List<SRURecord> records, int nextRecordPosition) {
-        super(request, diagnostics, extraResponseData);
+            int totalBytesTransferred, long timeTotal, long timeQueued,
+            long timeNetwork, long timeParsing, int numberOfRecords,
+            String resultSetId, int resultSetIdleTime, List<SRURecord> records,
+            int nextRecordPosition) {
+        super(request, diagnostics, extraResponseData, totalBytesTransferred,
+                timeTotal, timeQueued, timeNetwork, timeParsing);
         this.numberOfRecords = numberOfRecords;
         this.resultSetId = resultSetId;
         this.resultSetIdleTime = resultSetIdleTime;
         this.records = (records != null && !records.isEmpty())
-                ? Collections.unmodifiableList(records) : null;
+                ? Collections.unmodifiableList(records)
+                : null;
         this.nextRecordPosition = nextRecordPosition;
     }
 
