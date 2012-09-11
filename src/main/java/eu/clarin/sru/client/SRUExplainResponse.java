@@ -18,7 +18,7 @@ package eu.clarin.sru.client;
 
 import java.util.List;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 
 
@@ -31,9 +31,14 @@ public final class SRUExplainResponse extends
 
 
     SRUExplainResponse(SRUExplainRequest request,
-            List<SRUDiagnostic> diagnostics, Document extraResponseData,
-            int totalBytesTransferred, long timeTotal, long timeQueued,
-            long timeNetwork, long timeProcessing, SRURecord record) {
+            List<SRUDiagnostic> diagnostics,
+            DocumentFragment extraResponseData,
+            int totalBytesTransferred,
+            long timeTotal,
+            long timeQueued,
+            long timeNetwork,
+            long timeProcessing,
+            SRURecord record) {
         super(request, diagnostics, extraResponseData, totalBytesTransferred,
                 timeTotal, timeQueued, timeNetwork, timeProcessing);
         this.record = record;

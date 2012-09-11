@@ -19,7 +19,7 @@ package eu.clarin.sru.client;
 import java.util.Collections;
 import java.util.List;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 
 
@@ -30,10 +30,15 @@ public final class SRUScanResponse extends SRUAbstractResponse<SRUScanRequest> {
     private final List<SRUTerm> terms;
 
 
-    SRUScanResponse(SRUScanRequest request, List<SRUDiagnostic> diagnostics,
-            Document extraResponseData, int totalBytesTransferred,
-            long timeTotal, long timeQueued, long timeNetwork,
-            long timeProcessing, List<SRUTerm> terms) {
+    SRUScanResponse(SRUScanRequest request,
+            List<SRUDiagnostic> diagnostics,
+            DocumentFragment extraResponseData,
+            int totalBytesTransferred,
+            long timeTotal,
+            long timeQueued,
+            long timeNetwork,
+            long timeProcessing,
+            List<SRUTerm> terms) {
         super(request, diagnostics, extraResponseData, totalBytesTransferred,
                 timeTotal, timeQueued, timeNetwork, timeProcessing);
         this.terms = ((terms != null) && !terms.isEmpty())

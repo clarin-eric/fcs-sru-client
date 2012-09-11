@@ -19,7 +19,7 @@ package eu.clarin.sru.client;
 import java.util.Collections;
 import java.util.List;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 
 
@@ -36,10 +36,17 @@ public final class SRUSearchRetrieveResponse extends
 
 
     SRUSearchRetrieveResponse(SRUSearchRetrieveRequest request,
-            List<SRUDiagnostic> diagnostics, Document extraResponseData,
-            int totalBytesTransferred, long timeTotal, long timeQueued,
-            long timeNetwork, long timeParsing, int numberOfRecords,
-            String resultSetId, int resultSetIdleTime, List<SRURecord> records,
+            List<SRUDiagnostic> diagnostics,
+            DocumentFragment extraResponseData,
+            int totalBytesTransferred,
+            long timeTotal,
+            long timeQueued,
+            long timeNetwork,
+            long timeParsing,
+            int numberOfRecords,
+            String resultSetId,
+            int resultSetIdleTime,
+            List<SRURecord> records,
             int nextRecordPosition) {
         super(request, diagnostics, extraResponseData, totalBytesTransferred,
                 timeTotal, timeQueued, timeNetwork, timeParsing);

@@ -19,7 +19,7 @@ package eu.clarin.sru.client;
 import java.util.Collections;
 import java.util.List;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 
 
@@ -33,7 +33,7 @@ import org.w3c.dom.Document;
 class SRUAbstractResponse<T extends SRUAbstractRequest> {
     private final T request;
     private final List<SRUDiagnostic> diagnostics;
-    private final Document extraResponseData;
+    private final DocumentFragment extraResponseData;
     private final int totalBytesTransferred;
     private final long timeTotal;
     private final long timeQueued;
@@ -65,9 +65,13 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
      *            the total number of milliseconds elapsed while the client
      *            processed the response from the endpoint
      */
-    protected SRUAbstractResponse(T request, List<SRUDiagnostic> diagnostics,
-            Document extraResponseData, int totalBytesTransferred,
-            long timeTotal, long timeQueued, long timeNetwork,
+    protected SRUAbstractResponse(T request,
+            List<SRUDiagnostic> diagnostics,
+            DocumentFragment extraResponseData,
+            int totalBytesTransferred,
+            long timeTotal,
+            long timeQueued,
+            long timeNetwork,
             long timeProcessing) {
         this.request = request;
         this.diagnostics = ((diagnostics != null) && !diagnostics.isEmpty())
@@ -120,11 +124,23 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
     /**
      * Get the extra response data for this result.
      *
-     * @return a {@link Document} node for the extra response data or
-     *         <code>null</code> if none
+     * @return get an instance of {@link DocumentFragment} containing the XML
+     *         fragment for the extra response data from the SRU response or
+     *         <code>null</code> if none are available
      */
-    public Document getExtraResponseData() {
+    public DocumentFragment getExtraResponseData() {
         return extraResponseData;
+    }
+
+
+    /**
+     * Check, if this response has any extra response data attached to it.
+     *
+     * @return <code>true</code> if extra response is attached,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasExtraResponseData() {
+        return extraResponseData != null;
     }
 
 

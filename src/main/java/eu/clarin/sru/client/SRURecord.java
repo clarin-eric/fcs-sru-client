@@ -16,30 +16,29 @@
  */
 package eu.clarin.sru.client;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 
 /**
  * Class for holding a single record from a result set.
- * 
+ *
  * @see SRUSearchRetrieveResponse
  */
 public final class SRURecord {
     private final SRURecordData recordData;
     private final String recordIdentifier;
     private final int recordPosition;
-    private final Document extraRecordData;
+    private DocumentFragment extraRecordData = null;
 
 
     SRURecord(SRURecordData recordData, String recordIdentifier,
-            int recordPosition, Document extraRecordData) {
+            int recordPosition) {
         if (recordData == null) {
             throw new NullPointerException("recordData == null");
         }
         this.recordData = recordData;
         this.recordIdentifier = recordIdentifier;
         this.recordPosition = recordPosition;
-        this.extraRecordData = extraRecordData;
     }
 
 
@@ -55,7 +54,7 @@ public final class SRURecord {
 
     /**
      * Check if this record is in a certain record schema.
-     * 
+     *
      * @param recordSchema
      *            the record schema to test against
      * @return <code>true</code> if the record is in the supplied record schema,
@@ -73,7 +72,7 @@ public final class SRURecord {
 
     /**
      * Get the record.
-     * 
+     *
      * @return the record
      */
     public SRURecordData getRecordData() {
@@ -105,10 +104,28 @@ public final class SRURecord {
     /**
      * Get extra record data attached to this record.
      *
-     * @return get the extra record data or <code>null</code> if not available
+     * @return get an instance of {@link DocumentFragment} containing the XML
+     *         fragment for the extra record data from the SRU response or
+     *         <code>null</code> if none are available
      */
-    public Document getExtraRecordData() {
+    public DocumentFragment getExtraRecordData() {
         return extraRecordData;
+    }
+
+
+    /**
+     * Check, if this record has extra record data attached to it.
+     *
+     * @return <code>true</code> if extra record data is attached,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasExtraRecordData() {
+        return extraRecordData != null;
+    }
+
+
+    void setExtraRecordData(DocumentFragment extraRecordData) {
+        this.extraRecordData = extraRecordData;
     }
 
 } // class SRURecord

@@ -24,6 +24,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +42,10 @@ import org.slf4j.LoggerFactory;
 public class SRUThreadedClient {
     private static final Logger logger =
             LoggerFactory.getLogger(SRUThreadedClient.class);
-    private ConcurrentMap<String, SRURecordDataParser> parsers =
+    private final ConcurrentMap<String, SRURecordDataParser> parsers =
             new ConcurrentHashMap<String, SRURecordDataParser>();
+    private final DocumentBuilderFactory documentBuilderFactory =
+            DocumentBuilderFactory.newInstance();
     private final ThreadLocal<SRUClient> client;
     private final ExecutorService executor;
 
@@ -89,7 +93,8 @@ public class SRUThreadedClient {
             @Override
             protected SRUClient initialValue() {
                 logger.debug("instantiated new sru client");
-                return new SRUClient(defaultVersion, strictMode, parsers);
+                return new SRUClient(defaultVersion, strictMode, parsers,
+                        documentBuilderFactory);
             }
         };
         // TODO: make worker count configurable
@@ -438,7 +443,8 @@ public class SRUThreadedClient {
                     callback.onError(request, e);
                 }
             } catch (Throwable t) {
-                logger.error("error while performing async callback", t);
+                callback.onError(request, new SRUClientException(
+                        "unexpected error while processing the request", t));
             }
         }
 

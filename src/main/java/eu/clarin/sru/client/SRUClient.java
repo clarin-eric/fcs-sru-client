@@ -16,16 +16,28 @@
  */
 package eu.clarin.sru.client;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 
 /**
@@ -42,7 +54,7 @@ public class SRUClient {
     private final Handler handler;
     /* common */
     private List<SRUDiagnostic> diagnostics;
-    private Document extraResponseData;
+    private DocumentFragment extraResponseData;
     /* explain */
     private SRURecord record;
     /* scan */
@@ -59,6 +71,10 @@ public class SRUClient {
     private long timeQueued;
     private long timeNetwork;
     private long timeParsing;
+    /* other fields */
+    private final DocumentBuilder documentBuilder;
+    private final Deque<Node> stack = new ArrayDeque<Node>();
+
 
     /**
      * Constructor. This constructor will create a <em>strict</em> client and
@@ -99,7 +115,8 @@ public class SRUClient {
      */
     public SRUClient(SRUVersion defaultVersion, boolean strictMode) {
         this(defaultVersion, strictMode,
-                new HashMap<String, SRURecordDataParser>());
+                new HashMap<String, SRURecordDataParser>(),
+                DocumentBuilderFactory.newInstance());
     }
 
 
@@ -123,7 +140,8 @@ public class SRUClient {
      *            parser mappings
      */
     SRUClient(SRUVersion defaultVersion, boolean strictMode,
-            Map<String, SRURecordDataParser> parsers) {
+            Map<String, SRURecordDataParser> parsers,
+            DocumentBuilderFactory documentBuilderFactory) {
         if (defaultVersion == null) {
             throw new NullPointerException("version == null");
         }
@@ -132,6 +150,16 @@ public class SRUClient {
         }
         this.client = new SRUSimpleClient(defaultVersion, strictMode, parsers);
         this.handler = new Handler();
+        try {
+            synchronized (documentBuilderFactory) {
+                documentBuilderFactory.setNamespaceAware(true);
+                documentBuilderFactory.setCoalescing(true);
+                this.documentBuilder =
+                        documentBuilderFactory.newDocumentBuilder();
+            } // documentBuilderFactory (documentBuilderFactory)
+        } catch (ParserConfigurationException e) {
+            throw new Error("error initialzing document builder factory", e);
+        }
         reset();
     }
 
@@ -314,7 +342,18 @@ public class SRUClient {
         @Override
         public void onExtraResponseData(XMLStreamReader reader)
                 throws XMLStreamException, SRUClientException {
-            // TODO: parse extraResponseData
+            final List<SRURecord> records = SRUClient.this.records;
+            if ((records != null) && !records.isEmpty()) {
+                final SRURecord record = records.get(records.size() - 1);
+                record.setExtraRecordData(copyStaxToDocumentFragment(
+                        documentBuilder, stack, reader));
+            } else {
+                /*
+                 * should never happen ...
+                 */
+                throw new SRUClientException(
+                        "internal error; 'records' are null or empty");
+            }
         }
 
 
@@ -323,14 +362,25 @@ public class SRUClient {
                 String displayTerm, SRUWhereInList whereInList)
                 throws SRUClientException {
             SRUClient.this.addTerm(new SRUTerm(value, numberOfRecords,
-                    displayTerm, whereInList, null));
+                    displayTerm, whereInList));
         }
 
 
         @Override
         public void onExtraTermData(String value, XMLStreamReader reader)
                 throws XMLStreamException, SRUClientException {
-            // TODO: parse extraTermData
+            final List<SRUTerm> terms = SRUClient.this.terms;
+            if ((terms != null) && !terms.isEmpty()) {
+                SRUTerm term = terms.get(terms.size() - 1);
+                term.setExtraTermData(copyStaxToDocumentFragment(
+                        documentBuilder, stack, reader));
+            } else {
+                /*
+                 * should never happen ...
+                 */
+                throw new SRUClientException(
+                        "internal error; 'terms' is null or empty");
+            }
         }
 
 
@@ -352,8 +402,8 @@ public class SRUClient {
         @Override
         public void onRecord(String identifier, int position,
                 SRURecordData data) throws SRUClientException {
-            SRUClient.this.addRecord(new SRURecord(data, identifier,
-                    position, null));
+            SRUClient.this.addRecord(
+                    new SRURecord(data, identifier, position));
         }
 
 
@@ -361,8 +411,7 @@ public class SRUClient {
         public void onSurrogateRecord(String identifier, int position,
                 SRUDiagnostic data) throws SRUClientException {
             SRUClient.this.addRecord(new SRURecord(
-                    new SRUSurrogateRecordData(data), identifier, position,
-                    null));
+                    new SRUSurrogateRecordData(data), identifier, position));
         }
 
 
@@ -370,7 +419,8 @@ public class SRUClient {
         public void onExtraRecordData(String identifier, int position,
                 XMLStreamReader reader) throws XMLStreamException,
                 SRUClientException {
-            // TODO: parseExtraRecordData
+            extraResponseData =
+                    copyStaxToDocumentFragment(documentBuilder, stack, reader);
         }
 
 
@@ -386,6 +436,95 @@ public class SRUClient {
             SRUClient.this.timeNetwork = millisNetwork;
             SRUClient.this.timeParsing = millisProcessing;
         }
+
     } // inner class Handler
+
+
+    private static DocumentFragment copyStaxToDocumentFragment(
+            DocumentBuilder builder, Deque<Node> stack, XMLStreamReader reader)
+            throws XMLStreamException {
+        try {
+            final Document doc = builder.newDocument();
+            stack.push(doc.createDocumentFragment());
+
+            while (reader.hasNext()) {
+                final Node parent = stack.peek();
+                switch (reader.getEventType()) {
+                case XMLStreamConstants.START_ELEMENT:
+                    stack.push(createElementNode(parent, doc, reader));
+                    break;
+                case XMLStreamConstants.END_ELEMENT:
+                    stack.pop();
+                    break;
+                case XMLStreamConstants.CHARACTERS:
+                    parent.appendChild(doc.createTextNode(reader.getText()));
+                    break;
+                case XMLStreamConstants.COMMENT:
+                    parent.appendChild(doc.createComment(reader.getText()));
+                    break;
+                case XMLStreamConstants.CDATA:
+                    parent.appendChild(doc.createCDATASection(reader.getText()));
+                    break;
+                default:
+                    break;
+                }
+                reader.next();
+            } // while
+            if (stack.size() != 1) {
+                throw new XMLStreamException(
+                        "internal error; stack should hold only one element");
+            }
+            return (DocumentFragment) stack.pop();
+        } catch (DOMException e) {
+            throw new XMLStreamException(
+                    "error creating document fragment", e);
+        }
+    }
+
+
+    private static Element createElementNode(Node parent, Document doc,
+            XMLStreamReader reader) throws XMLStreamException, DOMException {
+        Element element = doc.createElementNS(reader.getNamespaceURI(),
+                reader.getLocalName());
+
+        if ((reader.getPrefix() != null) && !reader.getPrefix().isEmpty()) {
+            element.setPrefix(reader.getPrefix());
+        }
+
+        parent.appendChild(element);
+
+        // add namespace declarations
+        for (int i = 0; i < reader.getNamespaceCount(); i++) {
+            final String uri    = reader.getNamespaceURI(i);
+            final String prefix = reader.getNamespacePrefix(i);
+
+            if ((prefix != null) && !prefix.isEmpty()) {
+                element.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI,
+                        XMLConstants.XMLNS_ATTRIBUTE + ":" + prefix,
+                        uri);
+            } else {
+                if (uri != null) {
+                    element.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI,
+                            XMLConstants.XMLNS_ATTRIBUTE,
+                            uri);
+                }
+            }
+        }
+
+        // add other attributes
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String name   = reader.getAttributeLocalName(i);
+            String prefix = reader.getAttributePrefix(i);
+            if (prefix != null && prefix.length() > 0) {
+                name = prefix + ":" + name;
+            }
+
+            Attr attr = doc.createAttributeNS(
+                    reader.getAttributeNamespace(i), name);
+            attr.setValue(reader.getAttributeValue(i));
+            element.setAttributeNode(attr);
+        }
+        return element;
+    }
 
 } // class SRUClient

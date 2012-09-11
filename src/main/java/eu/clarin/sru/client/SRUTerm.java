@@ -16,7 +16,7 @@
  */
 package eu.clarin.sru.client;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 
 /**
@@ -29,7 +29,7 @@ public final class SRUTerm {
     private final int numberOfRecords;
     private final String displayTerm;
     private final SRUWhereInList whereInList;
-    private final Document extraTermData;
+    private DocumentFragment extraTermData = null;
 
 
     /**
@@ -43,11 +43,9 @@ public final class SRUTerm {
      *            a display string or <code>null</code>
      * @param whereInList
      *            flag or <code>null</code>
-     * @param extraTermData
-     *            extra term data or <code>null</code>
      */
     SRUTerm(String value, int numberOfRecords, String displayTerm,
-            SRUWhereInList whereInList, Document extraTermData) {
+            SRUWhereInList whereInList) {
         if (value == null) {
             throw new NullPointerException("value == null");
         }
@@ -55,8 +53,6 @@ public final class SRUTerm {
         this.numberOfRecords = numberOfRecords;
         this.displayTerm = displayTerm;
         this.whereInList = whereInList;
-        this.extraTermData = extraTermData;
-
     }
 
 
@@ -102,12 +98,29 @@ public final class SRUTerm {
 
 
     /**
-     * Get additional information concerning the term.
+     * Get extra term data for this term.
      *
-     * @return the extra term data or <code>null</code> if none where supplied
+     * @return get an instance of {@link DocumentFragment} containing the XML
+     *         fragment for the extra term data from the SRU response or
+     *         <code>null</code> if none are available
      */
-    public Document getExtraTermData() {
+    public DocumentFragment getExtraTermData() {
         return extraTermData;
+    }
+
+
+    /**
+     * Check, if this term has extra term data attached to it.
+     *
+     * @return <code>true</code> if extra term data is attached,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasExtraTermData() {
+        return extraTermData != null;
+    }
+
+    void setExtraTermData(DocumentFragment extraTermData) {
+        this.extraTermData = extraTermData;
     }
 
 } // class SRUTerm
