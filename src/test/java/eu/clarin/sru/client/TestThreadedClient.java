@@ -1,5 +1,6 @@
 package eu.clarin.sru.client;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class TestThreadedClient {
                 logger.info("submitting 'scan' request ...");
                 SRUScanRequest request2 = new SRUScanRequest(args[0]);
                 request2.setScanClause("fcs.resource");
+                request2.setExtraRequestData("x-clarin-resource-info", "true");
                 Future<SRUScanResponse> result2 = client.scan(request2);
 
                 logger.info("submitting 'searchRetrieve' request ...");
@@ -61,9 +63,21 @@ public class TestThreadedClient {
                     }
                 }
 
-                printExplainResponse(result1.get());
-                printScanResponse(result2.get());
-                printSearchResponse(result3.get());
+                try {
+                    printExplainResponse(result1.get());
+                } catch (ExecutionException e) {
+                    logger.error("some error occured while performing 'explain' request", e);
+                }
+                try {
+                    printScanResponse(result2.get());
+                } catch (ExecutionException e) {
+                    logger.error("some error occured while performing 'scan' request", e);
+                }
+                try {
+                    printSearchResponse(result3.get());
+                } catch (ExecutionException e) {
+                    logger.error("some error occured while performing 'searchRetrieve' request", e);
+                }
             } catch (Exception e) {
                 logger.error("a fatal error occured while performing request", e);
             }

@@ -56,6 +56,7 @@ public class TestThreadedClientCallback {
                 logger.info("submitting 'scan' request ...");
                 SRUScanRequest request2 = new SRUScanRequest(args[0]);
                 request2.setScanClause("fcs.resource");
+                request2.setExtraRequestData("x-clarin-resource-info", "true");
                 client.scan(request2, new SRUCallback<SRUScanRequest, SRUScanResponse>() {
                     @Override
                     public void onSuccess(SRUScanResponse response) {
@@ -149,6 +150,9 @@ public class TestThreadedClientCallback {
                         new Object[] { term.getValue(),
                                 term.getNumberOfRecords(),
                                 term.getDisplayTerm() });
+                if (term.hasExtraTermData()) {
+                    logger.debug("extra term data is attached");
+                }
             }
         } else {
             logger.info("no terms");
