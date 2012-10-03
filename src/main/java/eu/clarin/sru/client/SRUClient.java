@@ -17,9 +17,9 @@
 package eu.clarin.sru.client;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -294,7 +294,7 @@ public class SRUClient {
 
     private void addTerm(SRUTerm term) {
         if (terms == null) {
-            terms = new ArrayList<SRUTerm>();
+            terms = new LinkedList<SRUTerm>();
         }
         terms.add(term);
     }
@@ -302,7 +302,7 @@ public class SRUClient {
 
     private void addRecord(SRURecord record) {
         if (records == null) {
-            records = new ArrayList<SRURecord>();
+            records = new LinkedList<SRURecord>();
         }
         records.add(record);
     }
@@ -310,24 +310,24 @@ public class SRUClient {
 
     private void reset() {
         /* common */
-        diagnostics        = null;
-        extraResponseData  = null;
+        diagnostics           = null;
+        extraResponseData     = null;
         /* explain */
-        record             = null;
+        record                = null;
         /* scan */
-        terms              = null;
+        terms                 = null;
         /* searchRetrieve */
-        numberOfRecords    = -1;
-        resultSetId        = null;
-        resultSetIdleTime  = -1;
-        records            = null;
-        nextRecordPosition = -1;
+        numberOfRecords       = -1;
+        resultSetId           = null;
+        resultSetIdleTime     = -1;
+        records               = null;
+        nextRecordPosition    = -1;
         /* statistics */
-        totalBytesTransferred              = -1;
-        timeQueued         = -1;
-        timeTotal          = -1;
-        timeNetwork        = -1;
-        timeParsing        = -1;
+        totalBytesTransferred = -1;
+        timeQueued            = -1;
+        timeTotal             = -1;
+        timeNetwork           = -1;
+        timeParsing           = -1;
     }
 
 
