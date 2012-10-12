@@ -21,8 +21,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordData;
-import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordParser;
+import eu.clarin.sru.fcs.ClarinFCSRecordData;
+import eu.clarin.sru.fcs.ClarinFCSRecordParser;
 import eu.clarin.sru.fcs.DataView;
 import eu.clarin.sru.fcs.KWICDataView;
 import eu.clarin.sru.fcs.Resource;
@@ -37,7 +37,7 @@ public class TestSimpleClient {
             logger.info("initializing client ...");
             SRUSimpleClient client = new SRUSimpleClient(SRUVersion.VERSION_1_2);
             try {
-                client.registerRecordParser(new ClarinFederatedContentSearchRecordParser());
+                client.registerRecordParser(new ClarinFCSRecordParser());
             } catch (SRUClientException e) {
                 logger.error("error adding record parser", e);
                 System.exit(1);
@@ -107,10 +107,10 @@ public class TestSimpleClient {
                     logger.info("onRecord(): identifier = {}, position = {}, schema = {}",
                             new Object[] { identifier, position,
                                     data.getRecordSchema() });
-                    if (ClarinFederatedContentSearchRecordData.RECORD_SCHEMA
+                    if (ClarinFCSRecordData.RECORD_SCHEMA
                             .equals(data.getRecordSchema())) {
-                        ClarinFederatedContentSearchRecordData record =
-                                (ClarinFederatedContentSearchRecordData) data;
+                        ClarinFCSRecordData record =
+                                (ClarinFCSRecordData) data;
                         dumpResource(record.getResource());
                     }
                 }
@@ -153,7 +153,7 @@ public class TestSimpleClient {
                 SRUSearchRetrieveRequest request =
                         new SRUSearchRetrieveRequest(args[0]);
                 request.setQuery("Faustus");
-                request.setRecordSchema(ClarinFederatedContentSearchRecordData.RECORD_SCHEMA);
+                request.setRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA);
                 request.setMaximumRecords(5);
                 request.setRecordPacking(SRURecordPacking.XML);
                 request.setExtraRequestData("x-indent-response", "4");

@@ -24,7 +24,7 @@ import eu.clarin.sru.client.SRURecordData;
 /**
  * A record data implementation for CLARIN FCS.
  */
-public final class ClarinFederatedContentSearchRecordData implements
+public final class ClarinFCSRecordData implements
         SRURecordData {
     /**
      * The record schema for CLARIN FCS records.
@@ -33,7 +33,7 @@ public final class ClarinFederatedContentSearchRecordData implements
     private final Resource resource;
 
 
-    ClarinFederatedContentSearchRecordData(String pid, String ref,
+    ClarinFCSRecordData(String pid, String ref,
             List<DataView> dataviews,
             List<Resource.ResourceFragment> resourceFragments) {
         this.resource = new Resource(pid, ref, dataviews, resourceFragments);

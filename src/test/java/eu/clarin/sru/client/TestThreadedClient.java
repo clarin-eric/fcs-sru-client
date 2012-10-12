@@ -7,8 +7,8 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordData;
-import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordParser;
+import eu.clarin.sru.fcs.ClarinFCSRecordData;
+import eu.clarin.sru.fcs.ClarinFCSRecordParser;
 import eu.clarin.sru.fcs.DataView;
 import eu.clarin.sru.fcs.KWICDataView;
 import eu.clarin.sru.fcs.Resource;
@@ -23,7 +23,7 @@ public class TestThreadedClient {
             SRUThreadedClient client = new SRUThreadedClient();
 
             try {
-                client.registerRecordParser(new ClarinFederatedContentSearchRecordParser());
+                client.registerRecordParser(new ClarinFCSRecordParser());
             } catch (SRUClientException e) {
                 logger.error("error adding record parser", e);
                 System.exit(1);
@@ -48,7 +48,7 @@ public class TestThreadedClient {
                 SRUSearchRetrieveRequest request3 =
                         new SRUSearchRetrieveRequest(args[0]);
                 request3.setQuery("Faustus");
-                request3.setRecordSchema(ClarinFederatedContentSearchRecordData.RECORD_SCHEMA);
+                request3.setRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA);
                 request3.setMaximumRecords(5);
                 Future<SRUSearchRetrieveResponse> result3 =
                         client.searchRetrieve(request3);
@@ -157,9 +157,9 @@ public class TestThreadedClient {
                         new Object[] { record.getRecordSchema(),
                                 record.getRecordIdentifier(),
                                 record.getRecordPosition() });
-                if (record.isRecordSchema(ClarinFederatedContentSearchRecordData.RECORD_SCHEMA)) {
-                    ClarinFederatedContentSearchRecordData rd =
-                            (ClarinFederatedContentSearchRecordData) record.getRecordData();
+                if (record.isRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA)) {
+                    ClarinFCSRecordData rd =
+                            (ClarinFCSRecordData) record.getRecordData();
                     dumpResource(rd.getResource());
                 } else if (record.isRecordSchema(SRUSurrogateRecordData.RECORD_SCHEMA)) {
                     SRUSurrogateRecordData r =

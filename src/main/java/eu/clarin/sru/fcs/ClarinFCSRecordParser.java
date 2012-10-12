@@ -35,19 +35,19 @@ import eu.clarin.sru.client.XmlStreamReaderUtils;
  * A record parse to parse records conforming to CLARIN FCS specification. The
  * parser currently supports the KWIC view.
  */
-public class ClarinFederatedContentSearchRecordParser implements
+public class ClarinFCSRecordParser implements
         SRURecordDataParser {
     private static final Logger logger =
-            LoggerFactory.getLogger(ClarinFederatedContentSearchRecordParser.class);
+            LoggerFactory.getLogger(ClarinFCSRecordParser.class);
     private static final String FCS_NS =
-            ClarinFederatedContentSearchRecordData.RECORD_SCHEMA;
+            ClarinFCSRecordData.RECORD_SCHEMA;
     private static final String FCS_KWIC_NS = "http://clarin.eu/fcs/1.0/kwic";
     private static final String DATAVIEW_KWIC_LEGACY_TYPE = "kwic";
 
 
     @Override
     public String getRecordSchema() {
-        return ClarinFederatedContentSearchRecordData.RECORD_SCHEMA;
+        return ClarinFCSRecordData.RECORD_SCHEMA;
     }
 
 
@@ -76,7 +76,7 @@ public class ClarinFederatedContentSearchRecordParser implements
 
         XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource", true);
 
-        return new ClarinFederatedContentSearchRecordData(pid, ref, dataviews,
+        return new ClarinFCSRecordData(pid, ref, dataviews,
                 resourceFragments);
     }
 
