@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -244,7 +243,7 @@ public class SRUSimpleClient {
             throw new NullPointerException("request == null");
         }
         if (handler == null) {
-            throw new NullArgumentException("handler == null");
+            throw new NullPointerException("handler == null");
         }
         logger.debug("explain");
 
@@ -326,7 +325,7 @@ public class SRUSimpleClient {
             throw new NullPointerException("request == null");
         }
         if (handler == null) {
-            throw new NullArgumentException("handler == null");
+            throw new NullPointerException("handler == null");
         }
         logger.debug("searchRetrieve: scanClause = {}", request.getScanClause());
 
@@ -408,7 +407,7 @@ public class SRUSimpleClient {
             throw new NullPointerException("request == null");
         }
         if (handler == null) {
-            throw new NullArgumentException("handler == null");
+            throw new NullPointerException("handler == null");
         }
         logger.debug("searchRetrieve: query = {}", request.getQuery());
 

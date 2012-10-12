@@ -1,7 +1,5 @@
 package eu.clarin.sru.fcs;
 
-import org.apache.commons.lang.NullArgumentException;
-
 /**
  * Base class for DataView implementations according to the CLARIN FCS record
  * schema.
@@ -14,20 +12,20 @@ public abstract class DataView {
 
     /**
      * Constructor.
-     * 
+     *
      * @param mimetype
      *            the MIME type of this dataview
      * @param pid
      *            a persistent identifier or <code>null</code>
      * @param ref
      *            a reference URI or <code>null</code>
-     * @throws NullArgumentException
+     * @throws NullPointerException
      *             if a mandatory argument was not supplied
-     * 
+     *
      */
     protected DataView(String mimetype, String pid, String ref) {
         if (mimetype == null) {
-            throw new NullArgumentException("mimetype == null");
+            throw new NullPointerException("mimetype == null");
         }
         this.mimetype = mimetype;
         this.pid = ((pid != null) && !pid.isEmpty()) ? pid : null;
@@ -37,7 +35,7 @@ public abstract class DataView {
 
     /**
      * Get the MIME type of this DataView.
-     * 
+     *
      * @return the MIME type of this DataView
      */
     public String getMimeType() {
@@ -47,7 +45,7 @@ public abstract class DataView {
 
     /**
      * Convenience method to check if this DataView is of a certain MIME type.
-     * 
+     *
      * @param mimetype
      *            the MIME type to test against
      * @return <code>true</code> if the DataView is in the supplied MIME type,
@@ -57,14 +55,14 @@ public abstract class DataView {
      */
     public boolean isMimeType(String mimetype) {
         if (mimetype == null) {
-            throw new NullArgumentException("mimetype == null");
+            throw new NullPointerException("mimetype == null");
         }
         return (this.mimetype.equals(mimetype));
     }
 
     /**
      * Get the persistent identifier for this DataView.
-     * 
+     *
      * @return a persistent identifier or <code>null</code> of this DataView has
      *         none
      */
@@ -75,7 +73,7 @@ public abstract class DataView {
 
     /**
      * Get the reference URI for this DataView.
-     * 
+     *
      * @return a reference URI or <code>null</code> of this DataView has
      *         none
      */
