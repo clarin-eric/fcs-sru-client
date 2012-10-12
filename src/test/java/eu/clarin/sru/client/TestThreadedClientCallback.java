@@ -1,5 +1,6 @@
 package eu.clarin.sru.client;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
@@ -7,6 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordData;
 import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordParser;
+import eu.clarin.sru.fcs.DataView;
+import eu.clarin.sru.fcs.KWICDataView;
+import eu.clarin.sru.fcs.Resource;
 
 
 public class TestThreadedClientCallback {
@@ -187,10 +191,9 @@ public class TestThreadedClientCallback {
                                 record.getRecordIdentifier(),
                                 record.getRecordPosition() });
                 if (record.isRecordSchema(ClarinFederatedContentSearchRecordData.RECORD_SCHEMA)) {
-                    ClarinFederatedContentSearchRecordData r =
+                    ClarinFederatedContentSearchRecordData rd =
                             (ClarinFederatedContentSearchRecordData) record.getRecordData();
-                    logger.info("CLARIN-FCS: \"{}\"/\"{}\"/\"{}\"",
-                            new Object[] { r.getLeft(), r.getKeyword(), r.getRight() });
+                    dumpResource(rd.getResource());
                 } else if (record.isRecordSchema(SRUSurrogateRecordData.RECORD_SCHEMA)) {
                     SRUSurrogateRecordData r =
                             (SRUSurrogateRecordData) record.getRecordData();
@@ -198,7 +201,8 @@ public class TestThreadedClientCallback {
                             new Object[] { r.getURI(), r.getMessage(),
                                     r.getDetails() });
                 } else {
-                    logger.info("UNKNOWN RECORD SCHEMA");
+                    logger.info("UNSUPPORTED SCHEMA: {}",
+                            record.getRecordSchema());
                 }
             }
         } else {
@@ -211,6 +215,46 @@ public class TestThreadedClientCallback {
                     response.getTimeNetwork(),
                     response.getTimeProcessing(),
                     response.getTotalBytesTransferred() });
+    }
+
+
+    private static void dumpResource(Resource resource) {
+        logger.info("CLARIN-FCS: pid={}, ref={}",
+                resource.getPid(), resource.getRef());
+        if (resource.hasDataViews()) {
+            dumpDataView("CLARIN-FCS: ", resource.getDataViews());
+        }
+        if (resource.hasResourceFragments()) {
+            for (Resource.ResourceFragment fragment : resource.getResourceFragments()) {
+                logger.debug("CLARIN-FCS: ResourceFragment: pid={}, ref={}",
+                        fragment.getPid(), fragment.getRef());
+                if (fragment.hasDataViews()) {
+                    dumpDataView("CLARIN-FCS: ResourceFragment/", fragment.getDataViews());
+                }
+            }
+        }
+    }
+
+
+    private static void dumpDataView(String s, List<DataView> dataviews) {
+        for (DataView dataview : dataviews) {
+            logger.info("{}DataView: type={}, pid={}, ref={}",
+                    new Object[] {
+                        s,
+                        dataview.getMimeType(),
+                        dataview.getPid(),
+                        dataview.getRef()
+                    });
+            if (dataview.isMimeType(KWICDataView.MIMETYPE)) {
+                final KWICDataView kw = (KWICDataView) dataview;
+                logger.info("{}DataView: {} / {} / {}",
+                        new Object[] {
+                            s,
+                            kw.getLeft(),
+                            kw.getKeyword(),
+                            kw.getRight() });
+            }
+        }
     }
 
 

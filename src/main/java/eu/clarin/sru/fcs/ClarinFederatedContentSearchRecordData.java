@@ -16,12 +16,13 @@
  */
 package eu.clarin.sru.fcs;
 
+import java.util.List;
+
 import eu.clarin.sru.client.SRURecordData;
 
 
 /**
- * A record parse to parse records conforming to CLARIN FCS specification. The
- * parser currently supports the KWIC view.
+ * A record data implementation for CLARIN FCS.
  */
 public final class ClarinFederatedContentSearchRecordData implements
         SRURecordData {
@@ -29,18 +30,13 @@ public final class ClarinFederatedContentSearchRecordData implements
      * The record schema for CLARIN FCS records.
      */
     public static final String RECORD_SCHEMA = "http://clarin.eu/fcs/1.0";
-    private String pid;
-    private String left;
-    private String keyword;
-    private String right;
+    private final Resource resource;
 
 
-    ClarinFederatedContentSearchRecordData(String pid, String left,
-            String keyword, String right) {
-        this.pid = pid;
-        this.left = left;
-        this.keyword = keyword;
-        this.right = right;
+    ClarinFederatedContentSearchRecordData(String pid, String ref,
+            List<DataView> dataviews,
+            List<Resource.ResourceFragment> resourceFragments) {
+        this.resource = new Resource(pid, ref, dataviews, resourceFragments);
     }
 
 
@@ -55,24 +51,13 @@ public final class ClarinFederatedContentSearchRecordData implements
         return RECORD_SCHEMA;
     }
 
-
-    public String getPid() {
-        return pid;
-    }
-
-
-    public String getLeft() {
-        return left;
-    }
-
-
-    public String getKeyword() {
-        return keyword;
-    }
-
-
-    public String getRight() {
-        return right;
+    /**
+     * Get the CLARIN FCS record resource.
+     * 
+     * @return a {@link Resource} object
+     */
+    public Resource getResource() {
+        return resource;
     }
 
 } // class ClarinFederatedContentSearchRecordData

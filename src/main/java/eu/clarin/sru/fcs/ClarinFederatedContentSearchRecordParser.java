@@ -16,6 +16,9 @@
  */
 package eu.clarin.sru.fcs;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -29,7 +32,8 @@ import eu.clarin.sru.client.XmlStreamReaderUtils;
 
 
 /**
- * A record for CLARIN FCS.
+ * A record parse to parse records conforming to CLARIN FCS specification. The
+ * parser currently supports the KWIC view.
  */
 public class ClarinFederatedContentSearchRecordParser implements
         SRURecordDataParser {
@@ -38,7 +42,7 @@ public class ClarinFederatedContentSearchRecordParser implements
     private static final String FCS_NS =
             ClarinFederatedContentSearchRecordData.RECORD_SCHEMA;
     private static final String FCS_KWIC_NS = "http://clarin.eu/fcs/1.0/kwic";
-    private static final String DATAVIEW_KWIC = "kwic";
+    private static final String DATAVIEW_KWIC_LEGACY_TYPE = "kwic";
 
 
     @Override
@@ -50,64 +54,117 @@ public class ClarinFederatedContentSearchRecordParser implements
     @Override
     public SRURecordData parse(XMLStreamReader reader)
             throws XMLStreamException, SRUClientException {
+        logger.debug("parsing CLARIN-FCS record");
+        // Resource
         XmlStreamReaderUtils.readStart(reader, FCS_NS, "Resource", true, true);
-        String pid = XmlStreamReaderUtils.readAttributeValue(reader, null,
-                "pid");
+        String pid = XmlStreamReaderUtils.readAttributeValue(reader, null, "pid");
+        String ref = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref");
         XmlStreamReaderUtils.consumeStart(reader);
 
+        // Resource/Resource (optional)
+        if (XmlStreamReaderUtils.readStart(reader, FCS_NS, "Resource", false)) {
+            logger.info("skipping nested <Resource> element");
+            XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource", true);
+        }
+
+        // Resoutce/DataView
+        List<DataView> dataviews = parseDataViews(reader);
+
+        // Resource/ResourceFragment
+        List<Resource.ResourceFragment> resourceFragments =
+                parseResourceFragments(reader);
+
+        XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource", true);
+
+        return new ClarinFederatedContentSearchRecordData(pid, ref, dataviews,
+                resourceFragments);
+    }
+
+
+    private static List<DataView> parseDataViews(XMLStreamReader reader)
+            throws XMLStreamException, SRUClientException {
+        List<DataView> dataviews = null;
+
+        while (XmlStreamReaderUtils.readStart(reader, FCS_NS, "DataView", false, true)) {
+            String pid = XmlStreamReaderUtils.readAttributeValue(reader, null, "pid");
+            String ref = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref");
+            String type = XmlStreamReaderUtils.readAttributeValue(reader, null, "mime-type");
+            if ((type == null) || type.isEmpty()) {
+                logger.debug("element <DataView> does not carry attribute " +
+                        "'mime-type'; trying attribute 'type' instead");
+                type = XmlStreamReaderUtils.readAttributeValue(reader, null, "type");
+            }
+            XmlStreamReaderUtils.consumeStart(reader);
+            if ((type == null) || type.isEmpty()) {
+                throw new SRUClientException("element <DataView> need as "
+                        + "non-empty 'mime-type' (or 'type') attribute");
+            }
+            logger.debug("found DataView of type = {}", type);
+            DataView dataview = null;
+            if (KWICDataView.MIMETYPE.equals(type) ||
+                    DATAVIEW_KWIC_LEGACY_TYPE.equals(type)) {
+                dataview = parseDataViewKWIC(reader, pid, ref);
+            }
+            XmlStreamReaderUtils.readEnd(reader, FCS_NS, "DataView", true);
+
+            if (dataview != null) {
+                if (dataviews == null) {
+                    dataviews = new LinkedList<DataView>();
+                }
+                dataviews.add(dataview);
+            } else {
+                logger.info("DataView of type = {} skipped", type);
+            }
+        } // while
+        return dataviews;
+    }
+
+
+    private static List<Resource.ResourceFragment> parseResourceFragments(
+            XMLStreamReader reader) throws XMLStreamException,
+            SRUClientException {
+        List<Resource.ResourceFragment> resourceFragments = null;
+        while (XmlStreamReaderUtils.readStart(reader, FCS_NS, "ResourceFragment", false, true)) {
+            logger.debug("found ResourceFragment");
+            String pid = XmlStreamReaderUtils.readAttributeValue(reader, null, "pid");
+            String ref = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref");
+            XmlStreamReaderUtils.consumeStart(reader);
+            List<DataView> dataviews = parseDataViews(reader);
+            XmlStreamReaderUtils.readEnd(reader, FCS_NS, "ResourceFragment", true);
+
+            if (resourceFragments == null) {
+                resourceFragments = new LinkedList<Resource.ResourceFragment>();
+            }
+            resourceFragments.add(new Resource.ResourceFragment(pid, ref, dataviews));
+        } // while
+        return resourceFragments;
+    }
+
+
+    private static DataView parseDataViewKWIC(XMLStreamReader reader,
+            String pid, String ref) throws XMLStreamException,
+            SRUClientException {
         String left = null;
         String keyword = null;
         String right = null;
 
-        boolean first = true;
-        boolean kwic = false;
-
-        while (XmlStreamReaderUtils.readStart(reader, FCS_NS, "DataView",
-                first, true)) {
-            first = false;
-            String type = XmlStreamReaderUtils.readAttributeValue(reader, null,
-                    "type");
-            XmlStreamReaderUtils.consumeStart(reader);
-            if ((type == null) || type.isEmpty()) {
-                throw new SRUClientException(
-                        "DataView element need a non-empty 'type' attribute");
-            }
-            logger.debug("found DataView @type = {}", type);
-            if (DATAVIEW_KWIC.equals(type)) {
-                if (kwic) {
-                    throw new SRUClientException(
-                            "only one KWIC dataview is allowed");
-                }
-                XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "kwic",
-                        true);
-                if (XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "c",
-                        false)) {
-                    left = XmlStreamReaderUtils.readString(reader, false);
-                    XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "c");
-                }
-                keyword = XmlStreamReaderUtils.readContent(reader, FCS_KWIC_NS,
-                        "kw", true);
-                if (XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "c",
-                        false)) {
-                    right = XmlStreamReaderUtils.readString(reader, false);
-                    XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "c");
-                }
-                XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "kwic");
-                kwic = true;
-            } else {
-                logger.warn("skipping dataview of type '{}'", type);
-            }
-            XmlStreamReaderUtils.readEnd(reader, FCS_NS, "DataView", true);
-        } // while
-
-        XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource");
-
-        if (kwic) {
-            return new ClarinFederatedContentSearchRecordData(pid, left,
-                    keyword, right);
-        } else {
-            throw new SRUClientException("no mandatroy kwic dataview found");
+        XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "kwic", true);
+        if (XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "c", false)) {
+            left = XmlStreamReaderUtils.readString(reader, false);
+            XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "c");
         }
+        keyword = XmlStreamReaderUtils.readContent(reader, FCS_KWIC_NS, "kw",
+                true);
+        if (XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "c", false)) {
+            right = XmlStreamReaderUtils.readString(reader, false);
+            XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "c");
+        }
+        XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "kwic");
+
+        logger.debug("left='{}' keyword='{}', right='{}'", new Object[] {
+                left, keyword, right }
+        );
+        return new KWICDataView(pid, ref, left, keyword, right);
     }
 
 } // class ClarinFederatedContentSearchRecordParser

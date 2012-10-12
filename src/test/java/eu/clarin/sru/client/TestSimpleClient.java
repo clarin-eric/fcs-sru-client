@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordData;
 import eu.clarin.sru.fcs.ClarinFederatedContentSearchRecordParser;
+import eu.clarin.sru.fcs.DataView;
+import eu.clarin.sru.fcs.KWICDataView;
+import eu.clarin.sru.fcs.Resource;
 
 
 public class TestSimpleClient {
@@ -106,10 +109,9 @@ public class TestSimpleClient {
                                     data.getRecordSchema() });
                     if (ClarinFederatedContentSearchRecordData.RECORD_SCHEMA
                             .equals(data.getRecordSchema())) {
-                        ClarinFederatedContentSearchRecordData record = (ClarinFederatedContentSearchRecordData) data;
-                        logger.info("CLARIN-FCS: \"{}\"/\"{}\"/\"{}\"",
-                                new Object[] { record.getLeft(),
-                                        record.getKeyword(), record.getRight() });
+                        ClarinFederatedContentSearchRecordData record =
+                                (ClarinFederatedContentSearchRecordData) data;
+                        dumpResource(record.getResource());
                     }
                 }
 
@@ -173,6 +175,47 @@ public class TestSimpleClient {
         }
     }
 
+
+    private static void dumpResource(Resource resource) {
+        logger.info("CLARIN-FCS: pid={}, ref={}",
+                resource.getPid(), resource.getRef());
+        if (resource.hasDataViews()) {
+            dumpDataView("CLARIN-FCS: ", resource.getDataViews());
+        }
+        if (resource.hasResourceFragments()) {
+            for (Resource.ResourceFragment fragment : resource.getResourceFragments()) {
+                logger.debug("CLARIN-FCS: ResourceFragment: pid={}, ref={}",
+                        fragment.getPid(), fragment.getRef());
+                if (fragment.hasDataViews()) {
+                    dumpDataView("CLARIN-FCS: ResourceFragment/", fragment.getDataViews());
+                }
+            }
+        }
+    }
+
+
+    private static void dumpDataView(String s, List<DataView> dataviews) {
+        for (DataView dataview : dataviews) {
+            logger.info("{}DataView: type={}, pid={}, ref={}",
+                    new Object[] {
+                        s,
+                        dataview.getMimeType(),
+                        dataview.getPid(),
+                        dataview.getRef()
+                    });
+            if (dataview.isMimeType(KWICDataView.MIMETYPE)) {
+                final KWICDataView kw = (KWICDataView) dataview;
+                logger.info("{}DataView: {} / {} / {}",
+                        new Object[] {
+                            s,
+                            kw.getLeft(),
+                            kw.getKeyword(),
+                            kw.getRight() });
+            }
+        }
+    }
+
+    
     static {
         org.apache.log4j.BasicConfigurator.configure(
                 new org.apache.log4j.ConsoleAppender(
