@@ -67,11 +67,11 @@ public class ClarinFCSRecordParser implements
             XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource", true);
         }
 
-        // Resoutce/DataView
-        List<DataView> dataviews = parseDataViews(reader);
+        // Resource/DataView
+        final List<DataView> dataviews = parseDataViews(reader);
 
         // Resource/ResourceFragment
-        List<Resource.ResourceFragment> resourceFragments =
+        final List<Resource.ResourceFragment> resourceFragments =
                 parseResourceFragments(reader);
 
         XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource", true);
