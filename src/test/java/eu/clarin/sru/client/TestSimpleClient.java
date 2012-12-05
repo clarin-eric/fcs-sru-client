@@ -126,7 +126,7 @@ public class TestSimpleClient {
 
             try {
                 logger.info("performing 'explain' request ...");
-                SRUExplainRequest request = new SRUExplainRequest(args[0]);
+                SRUExplainRequest request = TestUtils.makeExplainRequest(args[0]);
                 client.explain(request, handler);
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'explain' request", e);
@@ -134,15 +134,7 @@ public class TestSimpleClient {
 
             try {
                 logger.info("performing 'scan' request ...");
-                SRUScanRequest request = new SRUScanRequest(args[0]);
-                request.setScanClause("fcs.resource");
-                request.setMaximumTerms(2);
-//                request.setExtraRequestData(
-//                        SRUAbstractRequest.X_MALFORMED_OPERATION,
-//                        SRUAbstractRequest.MALFORMED_OMIT);
-//                request.setExtraRequestData(
-//                        SRUAbstractRequest.X_MALFORMED_VERSION,
-//                        SRUAbstractRequest.MALFORMED_OMIT);
+                SRUScanRequest request = TestUtils.makeScanRequest(args[0]);
                 client.scan(request, handler);
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'scan' request", e);
@@ -150,19 +142,7 @@ public class TestSimpleClient {
 
             try {
                 logger.info("performing 'searchRetrieve' request ...");
-                SRUSearchRetrieveRequest request =
-                        new SRUSearchRetrieveRequest(args[0]);
-                request.setQuery("Faustus");
-                request.setRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA);
-                request.setMaximumRecords(5);
-                request.setRecordPacking(SRURecordPacking.XML);
-                request.setExtraRequestData("x-indent-response", "4");
-//                request.setExtraRequestData(
-//                        SRUAbstractRequest.X_MALFORMED_OPERATION,
-//                        "invalid");
-//                request.setExtraRequestData(
-//                        SRUAbstractRequest.X_MALFORMED_VERSION,
-//                        SRUAbstractRequest.MALFORMED_OMIT);
+                SRUSearchRetrieveRequest request = TestUtils.makeSearchRequest(args[0], null);
                 client.searchRetrieve(request, handler);
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'searchRetrieve' request", e);
@@ -215,7 +195,7 @@ public class TestSimpleClient {
         }
     }
 
-    
+
     static {
         org.apache.log4j.BasicConfigurator.configure(
                 new org.apache.log4j.ConsoleAppender(

@@ -1,16 +1,11 @@
 package eu.clarin.sru.client;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.fcs.ClarinFCSRecordParser;
-import eu.clarin.sru.fcs.DataView;
-import eu.clarin.sru.fcs.KWICDataView;
-import eu.clarin.sru.fcs.Resource;
 
 
 public class TestThreadedClientCallback {
@@ -41,11 +36,12 @@ public class TestThreadedClientCallback {
                  *     on the requests to be completed)
                  */
                 logger.info("submitting 'explain' request ...");
-                SRUExplainRequest request1 = new SRUExplainRequest(args[0]);
+                SRUExplainRequest request1 =
+                        TestUtils.makeExplainRequest(args[0]);
                 client.explain(request1, new SRUCallback<SRUExplainRequest, SRUExplainResponse>() {
                     @Override
                     public void onSuccess(SRUExplainResponse response) {
-                        printExplainResponse(response);
+                        TestUtils.printExplainResponse(response);
                         latch.countDown();
                     }
 
@@ -58,13 +54,12 @@ public class TestThreadedClientCallback {
                 });
 
                 logger.info("submitting 'scan' request ...");
-                SRUScanRequest request2 = new SRUScanRequest(args[0]);
-                request2.setScanClause("fcs.resource");
-                request2.setExtraRequestData("x-clarin-resource-info", "true");
+                SRUScanRequest request2 =
+                        TestUtils.makeScanRequest(args[0]);
                 client.scan(request2, new SRUCallback<SRUScanRequest, SRUScanResponse>() {
                     @Override
                     public void onSuccess(SRUScanResponse response) {
-                        printScanResponse(response);
+                        TestUtils.printScanResponse(response);
                         latch.countDown();
                     }
 
@@ -78,14 +73,11 @@ public class TestThreadedClientCallback {
 
                 logger.info("submitting 'searchRetrieve' request ...");
                 SRUSearchRetrieveRequest request3 =
-                        new SRUSearchRetrieveRequest(args[0]);
-                request3.setQuery("Faustus");
-                request3.setRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA);
-                request3.setMaximumRecords(5);
+                        TestUtils.makeSearchRequest(args[0], null);
                 client.searchRetrieve(request3, new SRUCallback<SRUSearchRetrieveRequest, SRUSearchRetrieveResponse>() {
                     @Override
                     public void onSuccess(SRUSearchRetrieveResponse response) {
-                        printSearchResponse(response);
+                        TestUtils.printSearchResponse(response);
                         latch.countDown();
                     }
 
@@ -107,153 +99,6 @@ public class TestThreadedClientCallback {
         } else {
             System.err.println("missing args");
             System.exit(64);
-        }
-    }
-
-
-    private static void printExplainResponse(SRUExplainResponse response) {
-        logger.info("displaying results of 'explain' request ...");
-        if (response.hasDiagnostics()) {
-            for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
-                logger.info("uri={}, message={}, detail={}",
-                        new Object[] { diagnostic.getURI(),
-                                diagnostic.getMessage(),
-                                diagnostic.getDetails() });
-            }
-        }
-        if (response.hasRecord()) {
-            SRURecord record = response.getRecord();
-            logger.info("schema = {}", record.getRecordSchema());
-        }
-        logger.info("request time (in millis): {} total, {} queued, {} " +
-                "network, {} processing; {} bytes transferred",
-            new Object[] { response.getTimeTotal(),
-                    response.getTimeWait(),
-                    response.getTimeNetwork(),
-                    response.getTimeProcessing(),
-                    response.getTotalBytesTransferred() });
-    }
-
-
-    private static void printScanResponse(SRUScanResponse response) {
-        logger.info("displaying results of 'scan' request ...");
-        if (response.hasDiagnostics()) {
-            for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
-                logger.info("uri={}, message={}, detail={}",
-                        new Object[] {
-                            diagnostic.getURI(),
-                            diagnostic.getMessage(),
-                            diagnostic.getDetails()
-                            });
-            }
-        }
-        if (response.hasTerms()) {
-            for (SRUTerm term : response.getTerms()) {
-                logger.info(
-                        "value={}, numberOfRecords={}, displayTerm={}",
-                        new Object[] { term.getValue(),
-                                term.getNumberOfRecords(),
-                                term.getDisplayTerm() });
-                if (term.hasExtraTermData()) {
-                    logger.debug("extra term data is attached");
-                }
-            }
-        } else {
-            logger.info("no terms");
-        }
-        logger.info("request time (in millis): {} total, {} queued, {} " +
-                    "network, {} processing; {} bytes transferred",
-                new Object[] { response.getTimeTotal(),
-                        response.getTimeWait(),
-                        response.getTimeNetwork(),
-                        response.getTimeProcessing(),
-                        response.getTotalBytesTransferred() });
-    }
-
-
-    private static void printSearchResponse(SRUSearchRetrieveResponse response) {
-        logger.info("displaying results of 'searchRetrieve' request ...");
-        logger.info("numberOfRecords = {}, nextResultPosition = {}",
-                new Object[] { response.getNumberOfRecords(),
-                        response.getNextRecordPosition() });
-        if (response.hasDiagnostics()) {
-            for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
-                logger.info("uri={}, message={}, detail={}",
-                        new Object[] { diagnostic.getURI(),
-                                diagnostic.getMessage(),
-                                diagnostic.getDetails() });
-            }
-        }
-        if (response.hasRecords()) {
-            for (SRURecord record : response.getRecords()) {
-                logger.info("schema = {}, identifier = {}, position = {}",
-                        new Object[] { record.getRecordSchema(),
-                                record.getRecordIdentifier(),
-                                record.getRecordPosition() });
-                if (record.isRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA)) {
-                    ClarinFCSRecordData rd =
-                            (ClarinFCSRecordData) record.getRecordData();
-                    dumpResource(rd.getResource());
-                } else if (record.isRecordSchema(SRUSurrogateRecordData.RECORD_SCHEMA)) {
-                    SRUSurrogateRecordData r =
-                            (SRUSurrogateRecordData) record.getRecordData();
-                    logger.info("SURROGATE DIAGNOSTIC: uri={}, message={}, detail={}",
-                            new Object[] { r.getURI(), r.getMessage(),
-                                    r.getDetails() });
-                } else {
-                    logger.info("UNSUPPORTED SCHEMA: {}",
-                            record.getRecordSchema());
-                }
-            }
-        } else {
-            logger.info("no results");
-        }
-        logger.info("request time (in millis): {} total, {} queued, {} " +
-                "network, {} processing; {} bytes transferred",
-            new Object[] { response.getTimeTotal(),
-                    response.getTimeWait(),
-                    response.getTimeNetwork(),
-                    response.getTimeProcessing(),
-                    response.getTotalBytesTransferred() });
-    }
-
-
-    private static void dumpResource(Resource resource) {
-        logger.info("CLARIN-FCS: pid={}, ref={}",
-                resource.getPid(), resource.getRef());
-        if (resource.hasDataViews()) {
-            dumpDataView("CLARIN-FCS: ", resource.getDataViews());
-        }
-        if (resource.hasResourceFragments()) {
-            for (Resource.ResourceFragment fragment : resource.getResourceFragments()) {
-                logger.debug("CLARIN-FCS: ResourceFragment: pid={}, ref={}",
-                        fragment.getPid(), fragment.getRef());
-                if (fragment.hasDataViews()) {
-                    dumpDataView("CLARIN-FCS: ResourceFragment/", fragment.getDataViews());
-                }
-            }
-        }
-    }
-
-
-    private static void dumpDataView(String s, List<DataView> dataviews) {
-        for (DataView dataview : dataviews) {
-            logger.info("{}DataView: type={}, pid={}, ref={}",
-                    new Object[] {
-                        s,
-                        dataview.getMimeType(),
-                        dataview.getPid(),
-                        dataview.getRef()
-                    });
-            if (dataview.isMimeType(KWICDataView.MIMETYPE)) {
-                final KWICDataView kw = (KWICDataView) dataview;
-                logger.info("{}DataView: {} / {} / {}",
-                        new Object[] {
-                            s,
-                            kw.getLeft(),
-                            kw.getKeyword(),
-                            kw.getRight() });
-            }
         }
     }
 

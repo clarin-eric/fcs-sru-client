@@ -1,15 +1,9 @@
 package eu.clarin.sru.client;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.fcs.ClarinFCSRecordParser;
-import eu.clarin.sru.fcs.DataView;
-import eu.clarin.sru.fcs.KWICDataView;
-import eu.clarin.sru.fcs.Resource;
 
 
 public class TestClient {
@@ -32,21 +26,9 @@ public class TestClient {
             // explain
             try {
                 logger.info("performing 'explain' request ...");
-                SRUExplainRequest request = new SRUExplainRequest(args[0]);
-                SRUExplainResponse result = client.explain(request);
-                logger.info("displaying results of 'explain' request ...");
-                if (result.hasDiagnostics()) {
-                    for (SRUDiagnostic diagnostic : result.getDiagnostics()) {
-                        logger.info("uri={}, message={}, detail={}",
-                                new Object[] { diagnostic.getURI(),
-                                        diagnostic.getMessage(),
-                                        diagnostic.getDetails() });
-                    }
-                }
-                if (result.hasRecord()) {
-                    SRURecord record = result.getRecord();
-                    logger.info("schema = {}", record.getRecordSchema());
-                }
+                SRUExplainRequest request = TestUtils.makeExplainRequest(args[0]);
+                SRUExplainResponse response = client.explain(request);
+                TestUtils.printExplainResponse(response);
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'explain' request", e);
             }
@@ -54,29 +36,9 @@ public class TestClient {
             // scan
             try {
                 logger.info("performing 'scan' request ...");
-                SRUScanRequest request = new SRUScanRequest(args[0]);
-                request.setScanClause("fcs.resource");
-                SRUScanResponse result = client.scan(request);
-                logger.info("displaying results of 'scan' request ...");
-                if (result.hasDiagnostics()) {
-                    for (SRUDiagnostic diagnostic : result.getDiagnostics()) {
-                        logger.info("uri={}, message={}, detail={}",
-                                new Object[] { diagnostic.getURI(),
-                                        diagnostic.getMessage(),
-                                        diagnostic.getDetails() });
-                    }
-                }
-                if (result.hasTerms()) {
-                    for (SRUTerm term : result.getTerms()) {
-                        logger.info(
-                                "value={}, numberOfRecords={}, displayTerm={}",
-                                new Object[] { term.getValue(),
-                                        term.getNumberOfRecords(),
-                                        term.getDisplayTerm() });
-                    }
-                } else {
-                    logger.info("no terms");
-                }
+                SRUScanRequest request = TestUtils.makeScanRequest(args[0]);
+                SRUScanResponse response = client.scan(request);
+                TestUtils.printScanResponse(response);
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'scan' request", e);
             }
@@ -84,55 +46,14 @@ public class TestClient {
             // searchRetrieve
             try {
                 logger.info("performing 'searchRetrieve' request ...");
-                SRUSearchRetrieveRequest request =
-                        new SRUSearchRetrieveRequest(args[0]);
-                request.setQuery("Faustus");
-                request.setRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA);
-                request.setMaximumRecords(5);
-                request.setRecordPacking(SRURecordPacking.XML);
-                request.setExtraRequestData("x-indent-response", "4");
-                SRUSearchRetrieveResponse result = client.searchRetrieve(request);
-                logger.info("displaying results of 'searchRetrieve' request ...");
-                logger.info("numberOfRecords = {}, nextResultPosition = {}",
-                        new Object[] { result.getNumberOfRecords(),
-                                result.getNextRecordPosition() });
-                if (result.hasDiagnostics()) {
-                    for (SRUDiagnostic diagnostic : result.getDiagnostics()) {
-                        logger.info("uri={}, message={}, detail={}",
-                                new Object[] { diagnostic.getURI(),
-                                        diagnostic.getMessage(),
-                                        diagnostic.getDetails() });
-                    }
-                }
-                if (result.hasRecords()) {
-                    for (SRURecord record : result.getRecords()) {
-                        logger.info("schema = {}, identifier = {}, position = {}",
-                                new Object[] { record.getRecordSchema(),
-                                        record.getRecordIdentifier(),
-                                        record.getRecordPosition() });
-                        if (record.isRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA)) {
-                            final ClarinFCSRecordData cd =
-                                    (ClarinFCSRecordData) record.getRecordData();
-                            dumpResource(cd.getResource());
-                        } else if (record.isRecordSchema(SRUSurrogateRecordData.RECORD_SCHEMA)) {
-                            SRUSurrogateRecordData r =
-                                    (SRUSurrogateRecordData) record.getRecordData();
-                            logger.info("SURROGATE DIAGNOSTIC: uri={}, message={}, detail={}",
-                                    new Object[] { r.getURI(), r.getMessage(),
-                                            r.getDetails() });
-                        } else {
-                            logger.info("UNSUPPORTED SCHEMA: {}",
-                                    record.getRecordSchema());
-                        }
-                    }
-                } else {
-                    logger.info("no results");
-                }
-
-                logger.info("done");
+                SRUSearchRetrieveRequest request = TestUtils.makeSearchRequest(args[0], null);
+                SRUSearchRetrieveResponse response = client.searchRetrieve(request);
+                TestUtils.printSearchResponse(response);
             } catch (SRUClientException e) {
                 logger.error("a fatal error occured while performing 'searchRetrieve' request", e);
             }
+
+            logger.info("done");
         } else {
             System.err.println("missing args");
             System.exit(64);
@@ -140,46 +61,6 @@ public class TestClient {
     }
 
 
-    private static void dumpResource(Resource resource) {
-        logger.info("CLARIN-FCS: pid={}, ref={}",
-                resource.getPid(), resource.getRef());
-        if (resource.hasDataViews()) {
-            dumpDataView("CLARIN-FCS: ", resource.getDataViews());
-        }
-        if (resource.hasResourceFragments()) {
-            for (Resource.ResourceFragment fragment : resource.getResourceFragments()) {
-                logger.debug("CLARIN-FCS: ResourceFragment: pid={}, ref={}",
-                        fragment.getPid(), fragment.getRef());
-                if (fragment.hasDataViews()) {
-                    dumpDataView("CLARIN-FCS: ResourceFragment/", fragment.getDataViews());
-                }
-            }
-        }
-    }
-
-
-    private static void dumpDataView(String s, List<DataView> dataviews) {
-        for (DataView dataview : dataviews) {
-            logger.info("{}DataView: type={}, pid={}, ref={}",
-                    new Object[] {
-                        s,
-                        dataview.getMimeType(),
-                        dataview.getPid(),
-                        dataview.getRef()
-                    });
-            if (dataview.isMimeType(KWICDataView.MIMETYPE)) {
-                final KWICDataView kw = (KWICDataView) dataview;
-                logger.info("{}DataView: {} / {} / {}",
-                        new Object[] {
-                            s,
-                            kw.getLeft(),
-                            kw.getKeyword(),
-                            kw.getRight() });
-            }
-        }
-    }
-    
-    
     static {
         org.apache.log4j.BasicConfigurator
                 .configure(new org.apache.log4j.ConsoleAppender(
