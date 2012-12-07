@@ -23,9 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.fcs.ClarinFCSRecordParser;
-import eu.clarin.sru.fcs.DataView;
-import eu.clarin.sru.fcs.KWICDataView;
-import eu.clarin.sru.fcs.Resource;
 
 
 public class TestSimpleClient {
@@ -111,7 +108,7 @@ public class TestSimpleClient {
                             .equals(data.getRecordSchema())) {
                         ClarinFCSRecordData record =
                                 (ClarinFCSRecordData) data;
-                        dumpResource(record.getResource());
+                        TestUtils.dumpResource(record.getResource());
                     }
                 }
 
@@ -152,46 +149,6 @@ public class TestSimpleClient {
         } else {
             System.err.println("missing args");
             System.exit(64);
-        }
-    }
-
-
-    private static void dumpResource(Resource resource) {
-        logger.info("CLARIN-FCS: pid={}, ref={}",
-                resource.getPid(), resource.getRef());
-        if (resource.hasDataViews()) {
-            dumpDataView("CLARIN-FCS: ", resource.getDataViews());
-        }
-        if (resource.hasResourceFragments()) {
-            for (Resource.ResourceFragment fragment : resource.getResourceFragments()) {
-                logger.debug("CLARIN-FCS: ResourceFragment: pid={}, ref={}",
-                        fragment.getPid(), fragment.getRef());
-                if (fragment.hasDataViews()) {
-                    dumpDataView("CLARIN-FCS: ResourceFragment/", fragment.getDataViews());
-                }
-            }
-        }
-    }
-
-
-    private static void dumpDataView(String s, List<DataView> dataviews) {
-        for (DataView dataview : dataviews) {
-            logger.info("{}DataView: type={}, pid={}, ref={}",
-                    new Object[] {
-                        s,
-                        dataview.getMimeType(),
-                        dataview.getPid(),
-                        dataview.getRef()
-                    });
-            if (dataview.isMimeType(KWICDataView.MIMETYPE)) {
-                final KWICDataView kw = (KWICDataView) dataview;
-                logger.info("{}DataView: {} / {} / {}",
-                        new Object[] {
-                            s,
-                            kw.getLeft(),
-                            kw.getKeyword(),
-                            kw.getRight() });
-            }
         }
     }
 

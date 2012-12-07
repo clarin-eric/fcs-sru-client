@@ -1,3 +1,19 @@
+/**
+ * This software is copyright (c) 2011-2012 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.fcs;
 
 import java.util.Collections;
@@ -29,7 +45,7 @@ public class Resource {
 
         /**
          * Get the persistent identifier for this resource fragment.
-         * 
+         *
          * @return a persistent identifier or <code>null</code> of this resource
          *         fragment has none
          */
@@ -40,7 +56,7 @@ public class Resource {
 
         /**
          * Get the reference URI for this resource fragment.
-         * 
+         *
          * @return a reference URI or <code>null</code> of this resource
          *         fragment has none
          */
@@ -52,7 +68,7 @@ public class Resource {
         /**
          * Convenience method to check if this resource fragment has any
          * dataviews.
-         * 
+         *
          * @return <code>true</code> if this resource fragment has dataviews,
          *         <code>false</code> otherwise
          */
@@ -63,7 +79,7 @@ public class Resource {
 
         /**
          * Get the list of dataview objects for this this resource fragment.
-         * 
+         *
          * @return a list of {@link DataView} objects or <code>null</code>,
          *         or <code>null</code> if this resource fragment has
          *         none
@@ -98,7 +114,7 @@ public class Resource {
 
     /**
      * Get the persistent identifier for this resource.
-     * 
+     *
      * @return a persistent identifier or <code>null</code> of this resource has
      *         none
      */
@@ -109,7 +125,7 @@ public class Resource {
 
     /**
      * Get the reference URI for this resource.
-     * 
+     *
      * @return a reference URI or <code>null</code> of this resource has
      *         none
      */
@@ -120,7 +136,7 @@ public class Resource {
 
     /**
      * Convenience method to check if this resource has any dataviews.
-     * 
+     *
      * @return <code>true</code> if this resource has dataviews,
      *         <code>false</code> otherwise
      */
@@ -131,7 +147,7 @@ public class Resource {
 
     /**
      * Get the list of dataview objects for this this resource.
-     * 
+     *
      * @return a list of {@link DataView} objects or <code>null</code>, or
      *         <code>null</code> if this resource has none
      */
@@ -142,7 +158,7 @@ public class Resource {
 
     /**
      * Convenience method to check if this resource has any resource fragments.
-     * 
+     *
      * @return <code>true</code> if this resource has resource fragments,
      *         <code>false</code> otherwise
      */
@@ -153,7 +169,7 @@ public class Resource {
 
     /**
      * Get the list of resource fragment objects for this this resource.
-     * 
+     *
      * @return a list of {@link ResourceFragment} objects or <code>null</code>,
      *         or <code>null</code> if this resource has none
      */

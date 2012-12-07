@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011 by
+ * This software is copyright (c) 2011-2012 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -19,24 +19,10 @@ package eu.clarin.sru.fcs;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stax.StAXSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.NodeList;
-
 import eu.clarin.sru.client.SRUClientException;
 import eu.clarin.sru.client.SRURecordData;
 import eu.clarin.sru.client.SRURecordDataParser;
@@ -44,86 +30,18 @@ import eu.clarin.sru.client.XmlStreamReaderUtils;
 
 
 /**
- * A record parse to parse records conforming to CLARIN FCS specification. The
- * parser currently supports the KWIC view.
+ * A record parse to parse records conforming to CLARIN FCS specification.
  */
 public class ClarinFCSRecordParser implements SRURecordDataParser {
-    private static class TransformHelper {
-        private final DocumentBuilder builder;
-        private final Transformer transformer;
-        private Document document;
-
-
-        private TransformHelper(DocumentBuilder builder,
-                Transformer transformer) {
-            if (builder == null) {
-                throw new NullPointerException("builder == null");
-            }
-            this.builder = builder;
-            if (transformer == null) {
-                throw new NullPointerException("transformer == null");
-            }
-            this.transformer = transformer;
-        }
-
-
-        private DocumentFragment transform(XMLStreamReader reader)
-                throws XMLStreamException, TransformerException {
-            if (document == null) {
-                document = builder.newDocument();
-            }
-
-            // parse STAX to DOM fragment
-            DocumentFragment fragment = document.createDocumentFragment();
-            DOMResult result = new DOMResult(fragment);
-            transformer.transform(new StAXSource(reader), result);
-            return fragment;
-        }
-
-
-        private void reset() {
-            builder.reset();
-            transformer.reset();
-            document = null;
-        }
-    } // private class TransformHelper
     private static final Logger logger =
             LoggerFactory.getLogger(ClarinFCSRecordParser.class);
     private static final String FCS_NS =
             ClarinFCSRecordData.RECORD_SCHEMA;
-    private static final String FCS_KWIC_NS = "http://clarin.eu/fcs/1.0/kwic";
-    private static final String DATAVIEW_KWIC_LEGACY_TYPE = "kwic";
-    private final ThreadLocal<TransformHelper> transformHelper;
-
-
-    public ClarinFCSRecordParser() {
-        this(DocumentBuilderFactory.newInstance(),
-                TransformerFactory.newInstance());
-    }
-
-
-    public ClarinFCSRecordParser(final DocumentBuilderFactory builderFactory,
-            final TransformerFactory transformerFactory) {
-        if (builderFactory == null) {
-            throw new NullPointerException("builderFactory == null");
-        }
-        if (transformerFactory == null) {
-            throw new NullPointerException("transformerFactory == null");
-        }
-        this.transformHelper = new ThreadLocal<TransformHelper>() {
-            @Override
-            protected TransformHelper initialValue() {
-                try {
-                    return new TransformHelper(builderFactory.newDocumentBuilder(),
-                                   transformerFactory.newTransformer());
-                } catch (TransformerConfigurationException e) {
-                    throw new InternalError("unexpected error creating new transformer");
-                } catch (ParserConfigurationException e) {
-                    throw new InternalError("unexpected error creating new document builder");
-                }
-            }
-        };
-    }
+    // TODO: make this configurable
+    private final DataViewParser[] parsers = new DataViewParser[] {
+            new DataViewParserGenericDOM(),
+            new DataViewParserKWIC()
+    };
 
 
     @Override
@@ -137,40 +55,33 @@ public class ClarinFCSRecordParser implements SRURecordDataParser {
             throws XMLStreamException, SRUClientException {
         logger.debug("parsing CLARIN-FCS record");
 
-        final TransformHelper helper = transformHelper.get();
-        try {
-            // Resource
-            XmlStreamReaderUtils.readStart(reader, FCS_NS, "Resource", true, true);
-            String pid = XmlStreamReaderUtils.readAttributeValue(reader, null, "pid");
-            String ref = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref");
-            XmlStreamReaderUtils.consumeStart(reader);
+        // Resource
+        XmlStreamReaderUtils.readStart(reader, FCS_NS, "Resource", true, true);
+        String pid = XmlStreamReaderUtils.readAttributeValue(reader, null, "pid");
+        String ref = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref");
+        XmlStreamReaderUtils.consumeStart(reader);
 
-            // Resource/Resource (optional)
-            if (XmlStreamReaderUtils.readStart(reader, FCS_NS, "Resource", false)) {
-                logger.info("skipping nested <Resource> element");
-                XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource", true);
-            }
-
-            // Resource/DataView
-            final List<DataView> dataviews = parseDataViews(reader, helper);
-
-            // Resource/ResourceFragment
-            final List<Resource.ResourceFragment> resourceFragments =
-                    parseResourceFragments(reader, helper);
-
+        // Resource/Resource (optional)
+        if (XmlStreamReaderUtils.readStart(reader, FCS_NS, "Resource", false)) {
+            logger.info("skipping nested <Resource> element");
             XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource", true);
-
-            return new ClarinFCSRecordData(pid, ref, dataviews,
-                    resourceFragments);
-        } finally {
-            // make sure, we reset the helper
-            helper.reset();
         }
+
+        // Resource/DataView
+        final List<DataView> dataviews = parseDataViews(reader);
+
+        // Resource/ResourceFragment
+        final List<Resource.ResourceFragment> resourceFragments =
+                parseResourceFragments(reader);
+
+        XmlStreamReaderUtils.readEnd(reader, FCS_NS, "Resource", true);
+
+        return new ClarinFCSRecordData(pid, ref, dataviews, resourceFragments);
     }
 
 
-    private static List<DataView> parseDataViews(XMLStreamReader reader,
-            TransformHelper foo) throws XMLStreamException, SRUClientException {
+    private List<DataView> parseDataViews(XMLStreamReader reader)
+            throws XMLStreamException, SRUClientException {
         List<DataView> dataviews = null;
 
         while (XmlStreamReaderUtils.readStart(reader, FCS_NS, "DataView", false, true)) {
@@ -195,15 +106,22 @@ public class ClarinFCSRecordParser implements SRURecordDataParser {
             XmlStreamReaderUtils.consumeStart(reader);
             XmlStreamReaderUtils.consumeWhitespace(reader);
 
-            logger.debug("found DataView of type = {}", type);
+            logger.debug("processing <DataView> of type = {}", type);
+
+            DataViewParser parser = null;
+            for (int i = 0; i < parsers.length; i++) {
+                if (parsers[i].acceptType(type) &&
+                        ((parser == null) ||
+                         (parser.getPriority() < parsers[i].getPriority()))) {
+                    parser = parsers[i];
+                }
+            }
+
             DataView dataview = null;
-            if (KWICDataView.MIMETYPE.equals(type) ||
-                    DATAVIEW_KWIC_LEGACY_TYPE.equals(type)) {
-                logger.debug("parsing dataview using FCS-KWIC parser");
-                dataview = parseDataViewKWIC(reader, pid, ref);
+            if (parser != null) {
+                dataview = parser.parse(reader, type, pid, ref);
             } else {
-                logger.debug("parsing dataview using generic parser");
-                dataview = parseDataViewGeneric(reader, foo, type, pid, ref);
+                logger.warn("no parser found for <DataView> of type = {}", type);
             }
 
             XmlStreamReaderUtils.readEnd(reader, FCS_NS, "DataView", true);
@@ -214,23 +132,23 @@ public class ClarinFCSRecordParser implements SRURecordDataParser {
                 }
                 dataviews.add(dataview);
             } else {
-                logger.info("DataView of type = {} skipped", type);
+                logger.warn("skipped <DataView> of type = {}", type);
             }
         } // while
         return dataviews;
     }
 
 
-    private static List<Resource.ResourceFragment> parseResourceFragments(
-            XMLStreamReader reader, TransformHelper foo)
-            throws XMLStreamException, SRUClientException {
+    private List<Resource.ResourceFragment> parseResourceFragments(
+            XMLStreamReader reader) throws XMLStreamException,
+            SRUClientException {
         List<Resource.ResourceFragment> resourceFragments = null;
         while (XmlStreamReaderUtils.readStart(reader, FCS_NS, "ResourceFragment", false, true)) {
             logger.debug("found ResourceFragment");
             String pid = XmlStreamReaderUtils.readAttributeValue(reader, null, "pid");
             String ref = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref");
             XmlStreamReaderUtils.consumeStart(reader);
-            final List<DataView> dataviews = parseDataViews(reader, foo);
+            final List<DataView> dataviews = parseDataViews(reader);
             XmlStreamReaderUtils.readEnd(reader, FCS_NS, "ResourceFragment", true);
 
             if (resourceFragments == null) {
@@ -241,48 +159,4 @@ public class ClarinFCSRecordParser implements SRURecordDataParser {
         return resourceFragments;
     }
 
-
-    private static DataView parseDataViewGeneric(XMLStreamReader reader,
-            TransformHelper helper, String type, String pid, String ref)
-            throws XMLStreamException, SRUClientException {
-        try {
-            final DocumentFragment fragment = helper.transform(reader);
-            final NodeList children = fragment.getChildNodes();
-            if ((children != null) && (children.getLength() > 0)) {
-                return new GenericDataView(type, pid, ref, fragment);
-            } else {
-                throw new SRUClientException("element <DataView> does not " +
-                        "contain any nested elements");
-            }
-        } catch (TransformerException e) {
-            throw new SRUClientException("error while parsing dataview", e);
-        }
-    }
-
-
-    private static DataView parseDataViewKWIC(XMLStreamReader reader,
-            String pid, String ref) throws XMLStreamException,
-            SRUClientException {
-        String left = null;
-        String keyword = null;
-        String right = null;
-
-        XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "kwic", true);
-        if (XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "c", false)) {
-            left = XmlStreamReaderUtils.readString(reader, false);
-            XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "c");
-        }
-        keyword = XmlStreamReaderUtils.readContent(reader, FCS_KWIC_NS, "kw", true);
-        if (XmlStreamReaderUtils.readStart(reader, FCS_KWIC_NS, "c", false)) {
-            right = XmlStreamReaderUtils.readString(reader, false);
-            XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "c");
-        }
-        XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "kwic");
-
-        logger.debug("left='{}' keyword='{}', right='{}'", new Object[] {
-                left, keyword, right }
-        );
-        return new KWICDataView(pid, ref, left, keyword, right);
-    }
-
-} // class ClarinFederatedContentSearchRecordParser
+} // class ClarinFCSRecordParser

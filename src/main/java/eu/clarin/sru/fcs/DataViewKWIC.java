@@ -1,9 +1,25 @@
+/**
+ * This software is copyright (c) 2011-2012 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.fcs;
 
 /**
  * A CLARIN FCS KWIC DataView.
  */
-public final class KWICDataView extends DataView {
+public final class DataViewKWIC extends DataView {
     /**
      * The MIME type for CLARIN FCS KWIC dataviews.
      */
@@ -15,7 +31,7 @@ public final class KWICDataView extends DataView {
 
     /**
      * Constructor.
-     * 
+     *
      * @param pid
      *            a persistent identifier or <code>null</code>
      * @param ref
@@ -27,7 +43,7 @@ public final class KWICDataView extends DataView {
      * @param right
      *            the right KWIC context
      */
-    KWICDataView(String pid, String ref, String left, String keyword,
+    DataViewKWIC(String pid, String ref, String left, String keyword,
             String right) {
         super(MIMETYPE, pid, ref);
         this.left    = (left    != null) ? left    : "";

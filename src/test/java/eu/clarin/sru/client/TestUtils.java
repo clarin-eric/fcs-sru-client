@@ -1,14 +1,31 @@
+/**
+ * This software is copyright (c) 2011-2012 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.client;
 
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import eu.clarin.sru.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.fcs.DataView;
-import eu.clarin.sru.fcs.GenericDataView;
-import eu.clarin.sru.fcs.KWICDataView;
+import eu.clarin.sru.fcs.DataViewGenericDOM;
+import eu.clarin.sru.fcs.DataViewKWIC;
 import eu.clarin.sru.fcs.Resource;
 
 class TestUtils {
@@ -125,7 +142,7 @@ class TestUtils {
     }
 
 
-    private static void dumpResource(Resource resource) {
+    public static void dumpResource(Resource resource) {
         logger.info("CLARIN-FCS: pid={}, ref={}",
                 resource.getPid(), resource.getRef());
         if (resource.hasDataViews()) {
@@ -152,12 +169,16 @@ class TestUtils {
                         dataview.getPid(),
                         dataview.getRef()
                     });
-            if (dataview instanceof GenericDataView) {
-                final GenericDataView view = (GenericDataView) dataview;
-                logger.info("{}DataView: DocumentFragment with root element <{}>",
-                            s, view.getDocumentFragment().getFirstChild().getNodeName());
-            } else  if (dataview.isMimeType(KWICDataView.MIMETYPE)) {
-                final KWICDataView kw = (KWICDataView) dataview;
+            if (dataview instanceof DataViewGenericDOM) {
+                final DataViewGenericDOM view = (DataViewGenericDOM) dataview;
+                final Node root = view.getDocument().getFirstChild();
+                logger.info("{}DataView: root element <{}> / {}",
+                        new Object[] {
+                            s,
+                            root.getNodeName(),
+                            root.getOwnerDocument().hashCode() });
+            } else  if (dataview.isMimeType(DataViewKWIC.MIMETYPE)) {
+                final DataViewKWIC kw = (DataViewKWIC) dataview;
                 logger.info("{}DataView: {} / {} / {}",
                         new Object[] {
                             s,
@@ -168,4 +189,4 @@ class TestUtils {
         }
     }
 
-}
+} // class TestUtils
