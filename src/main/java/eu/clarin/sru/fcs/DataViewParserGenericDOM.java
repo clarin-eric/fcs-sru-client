@@ -110,10 +110,10 @@ public class DataViewParserGenericDOM implements DataViewParser {
             String ref) throws XMLStreamException, SRUClientException {
         final TransformHelper helper = transformHelper.get();
         try {
-            final Document fragment = helper.transform(reader);
-            final NodeList children = fragment.getChildNodes();
+            final Document document = helper.transform(reader);
+            final NodeList children = document.getChildNodes();
             if ((children != null) && (children.getLength() > 0)) {
-                return new DataViewGenericDOM(type, pid, ref, fragment);
+                return new DataViewGenericDOM(type, pid, ref, document);
             } else {
                 throw new SRUClientException("element <DataView> does not "
                         + "contain any nested elements");
