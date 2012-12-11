@@ -40,6 +40,7 @@ public class ClarinFCSRecordParser implements SRURecordDataParser {
     // TODO: make this configurable
     private final DataViewParser[] parsers = new DataViewParser[] {
             new DataViewParserGenericDOM(),
+//            new DataViewParserGenericString(),
             new DataViewParserKWIC()
     };
 

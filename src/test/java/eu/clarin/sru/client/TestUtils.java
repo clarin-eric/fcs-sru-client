@@ -25,6 +25,7 @@ import org.w3c.dom.Node;
 import eu.clarin.sru.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.fcs.DataView;
 import eu.clarin.sru.fcs.DataViewGenericDOM;
+import eu.clarin.sru.fcs.DataViewGenericString;
 import eu.clarin.sru.fcs.DataViewKWIC;
 import eu.clarin.sru.fcs.Resource;
 
@@ -177,7 +178,13 @@ class TestUtils {
                             s,
                             root.getNodeName(),
                             root.getOwnerDocument().hashCode() });
-            } else  if (dataview.isMimeType(DataViewKWIC.MIMETYPE)) {
+            } else if (dataview instanceof DataViewGenericString) {
+                final DataViewGenericString view = (DataViewGenericString) dataview;
+                logger.info("{}DataView: data = {}",
+                        new Object[] {
+                            s,
+                            view.getContent() });
+            } else if (dataview.isMimeType(DataViewKWIC.MIMETYPE)) {
                 final DataViewKWIC kw = (DataViewKWIC) dataview;
                 logger.info("{}DataView: {} / {} / {}",
                         new Object[] {
