@@ -19,7 +19,7 @@ package eu.clarin.sru.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.fcs.ClarinFCSRecordParser;
+import eu.clarin.sru.client.fcs.ClarinFCSRecordParser;
 
 
 public class TestClient {
