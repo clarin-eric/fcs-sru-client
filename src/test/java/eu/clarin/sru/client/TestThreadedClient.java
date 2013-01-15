@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.fcs.ClarinFCSRecordParser;
+import eu.clarin.sru.client.fcs.ClarinFCSRecordParser;
 
 public class TestThreadedClient {
     private static final Logger logger =

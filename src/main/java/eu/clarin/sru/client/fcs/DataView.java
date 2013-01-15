@@ -14,7 +14,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  *  GNU General Public License v3
  */
-package eu.clarin.sru.fcs;
+package eu.clarin.sru.client.fcs;
 
 /**
  * Base class for DataView implementations according to the CLARIN-FCS record

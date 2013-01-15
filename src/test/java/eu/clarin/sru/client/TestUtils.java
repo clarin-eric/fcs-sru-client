@@ -23,12 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
-import eu.clarin.sru.fcs.ClarinFCSRecordData;
-import eu.clarin.sru.fcs.DataView;
-import eu.clarin.sru.fcs.DataViewGenericDOM;
-import eu.clarin.sru.fcs.DataViewGenericString;
-import eu.clarin.sru.fcs.DataViewKWIC;
-import eu.clarin.sru.fcs.Resource;
+import eu.clarin.sru.client.fcs.ClarinFCSRecordData;
+import eu.clarin.sru.client.fcs.DataView;
+import eu.clarin.sru.client.fcs.DataViewGenericDOM;
+import eu.clarin.sru.client.fcs.DataViewGenericString;
+import eu.clarin.sru.client.fcs.DataViewKWIC;
+import eu.clarin.sru.client.fcs.Resource;
 
 class TestUtils {
     private static final Logger logger =
