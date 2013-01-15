@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2012 by
+ * This software is copyright (c) 2012-2013 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -17,13 +17,13 @@
 package eu.clarin.sru.fcs;
 
 /**
- * A CLARIN FCS KWIC DataView.
+ * A CLARIN-FCS KWIC DataView.
  */
 public final class DataViewKWIC extends DataView {
     /**
-     * The MIME type for CLARIN FCS KWIC dataviews.
+     * The MIME type for CLARIN-FCS KWIC data views.
      */
-    public static final String MIMETYPE = "application/x-clarin-fcs-kwic+xml";
+    public static final String TYPE = "application/x-clarin-fcs-kwic+xml";
     private final String left;
     private final String keyword;
     private final String right;
@@ -45,7 +45,7 @@ public final class DataViewKWIC extends DataView {
      */
     DataViewKWIC(String pid, String ref, String left, String keyword,
             String right) {
-        super(MIMETYPE, pid, ref);
+        super(TYPE, pid, ref);
         this.left    = (left    != null) ? left    : "";
         this.keyword = (keyword != null) ? keyword : "";
         this.right   = (right   != null) ? right   : "";

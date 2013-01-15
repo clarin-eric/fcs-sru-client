@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2012 by
+ * This software is copyright (c) 2012-2013 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -33,7 +33,7 @@ public class DataViewParserKWIC implements DataViewParser {
 
     @Override
     public boolean acceptType(String type) {
-        return DataViewKWIC.MIMETYPE.equals(type) ||
+        return DataViewKWIC.TYPE.equals(type) ||
                 KWIC_LEGACY_TYPE.equals(type);
     }
 
@@ -46,7 +46,7 @@ public class DataViewParserKWIC implements DataViewParser {
     public DataView parse(XMLStreamReader reader, String type, String pid,
             String ref) throws XMLStreamException, SRUClientException {
         if (KWIC_LEGACY_TYPE.equals(type)) {
-            logger.warn("type '" + KWIC_LEGACY_TYPE + "' is deprecteded for a KWIC <DataView>, please use '" + DataViewKWIC.MIMETYPE + "' instead");
+            logger.warn("type '" + KWIC_LEGACY_TYPE + "' is deprecteded for a KWIC <DataView>, please use '" + DataViewKWIC.TYPE + "' instead");
         }
         String left = null;
         String keyword = null;

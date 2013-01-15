@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2012 by
+ * This software is copyright (c) 2012-2013 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -20,11 +20,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A CLARIN FCS resource
+ * A CLARIN-FCS resource
  */
 public class Resource {
     /**
-     * A CLARIN FCS resource fragment
+     * A CLARIN-FCS resource fragment
      */
     public final static class ResourceFragment {
         private final String pid;
@@ -67,9 +67,9 @@ public class Resource {
 
         /**
          * Convenience method to check if this resource fragment has any
-         * dataviews.
+         * data views.
          *
-         * @return <code>true</code> if this resource fragment has dataviews,
+         * @return <code>true</code> if this resource fragment has data views,
          *         <code>false</code> otherwise
          */
         public boolean hasDataViews() {
@@ -78,7 +78,7 @@ public class Resource {
 
 
         /**
-         * Get the list of dataview objects for this this resource fragment.
+         * Get the list of data view objects for this this resource fragment.
          *
          * @return a list of {@link DataView} objects or <code>null</code>,
          *         or <code>null</code> if this resource fragment has

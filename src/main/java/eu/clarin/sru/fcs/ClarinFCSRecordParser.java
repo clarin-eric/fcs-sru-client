@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2012 by
+ * This software is copyright (c) 2012-2013 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -30,7 +30,7 @@ import eu.clarin.sru.client.XmlStreamReaderUtils;
 
 
 /**
- * A record parse to parse records conforming to CLARIN FCS specification.
+ * A record parse to parse records conforming to CLARIN-FCS specification.
  */
 public class ClarinFCSRecordParser implements SRURecordDataParser {
     private static final Logger logger =
@@ -88,19 +88,10 @@ public class ClarinFCSRecordParser implements SRURecordDataParser {
         while (XmlStreamReaderUtils.readStart(reader, FCS_NS, "DataView", false, true)) {
             String pid = XmlStreamReaderUtils.readAttributeValue(reader, null, "pid");
             String ref = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref");
-            String type = XmlStreamReaderUtils.readAttributeValue(reader, null, "mime-type");
-            if ((type == null) || type.isEmpty()) {
-                logger.debug("element <DataView> does not carry attribute " +
-                        "'mime-type'; trying attribute 'type' instead");
-                type = XmlStreamReaderUtils.readAttributeValue(reader, null, "type");
-                if (type != null) {
-                    logger.warn("attribute 'type' is deprecated for element " +
-                            "<DataView>; please use 'mime-type' attribute");
-                }
-            }
+            String type = XmlStreamReaderUtils.readAttributeValue(reader, null, "type");
             if ((type == null) || type.isEmpty()) {
                 throw new SRUClientException("element <DataView> needs a "
-                        + "non-empty 'mime-type' (or 'type') attribute");
+                        + "non-empty 'type' attribute");
             }
 
             // consume start element and get rid of any whitespace

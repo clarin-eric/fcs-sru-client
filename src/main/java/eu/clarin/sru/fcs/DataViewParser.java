@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2012 by
+ * This software is copyright (c) 2012-2013 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -24,7 +24,7 @@ import eu.clarin.sru.client.SRUClientException;
 
 /**
  * Base class for implementing parsers for parsing a specific DataView in a
- * CLARIN FCS record.
+ * CLARIN-FCS record.
  * <p>If multiple record parsers support a certain type, the one
  * with the highest priority is selected.</p>
  */

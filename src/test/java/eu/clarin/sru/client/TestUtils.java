@@ -184,7 +184,7 @@ class TestUtils {
                         new Object[] {
                             s,
                             view.getContent() });
-            } else if (dataview.isMimeType(DataViewKWIC.MIMETYPE)) {
+            } else if (dataview.isMimeType(DataViewKWIC.TYPE)) {
                 final DataViewKWIC kw = (DataViewKWIC) dataview;
                 logger.info("{}DataView: {} / {} / {}",
                         new Object[] {

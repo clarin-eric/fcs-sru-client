@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2012 by
+ * This software is copyright (c) 2012-2013 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -17,11 +17,11 @@
 package eu.clarin.sru.fcs;
 
 /**
- * Base class for DataView implementations according to the CLARIN FCS record
+ * Base class for DataView implementations according to the CLARIN-FCS record
  * schema.
  */
 public abstract class DataView {
-    private final String mimetype;
+    private final String type;
     private final String pid;
     private final String ref;
 
@@ -29,8 +29,8 @@ public abstract class DataView {
     /**
      * Constructor.
      *
-     * @param mimetype
-     *            the MIME type of this dataview
+     * @param type
+     *            the MIME type of this DataView
      * @param pid
      *            a persistent identifier or <code>null</code>
      * @param ref
@@ -39,13 +39,13 @@ public abstract class DataView {
      *             if a mandatory argument was not supplied
      *
      */
-    protected DataView(String mimetype, String pid, String ref) {
-        if (mimetype == null) {
-            throw new NullPointerException("mimetype == null");
+    protected DataView(String type, String pid, String ref) {
+        if (type == null) {
+            throw new NullPointerException("type == null");
         }
-        this.mimetype = mimetype;
-        this.pid = ((pid != null) && !pid.isEmpty()) ? pid : null;
-        this.ref = ((ref != null) && !ref.isEmpty()) ? ref : null;
+        this.type = type;
+        this.pid  = ((pid != null) && !pid.isEmpty()) ? pid : null;
+        this.ref  = ((ref != null) && !ref.isEmpty()) ? ref : null;
     }
 
 
@@ -55,25 +55,25 @@ public abstract class DataView {
      * @return the MIME type of this DataView
      */
     public String getMimeType() {
-        return mimetype;
+        return type;
     }
 
 
     /**
      * Convenience method to check if this DataView is of a certain MIME type.
      *
-     * @param mimetype
+     * @param type
      *            the MIME type to test against
      * @return <code>true</code> if the DataView is in the supplied MIME type,
      *         <code>false</code> otherwise
      * @throws NullPointerException
      *             if any required arguments are not supplied
      */
-    public boolean isMimeType(String mimetype) {
-        if (mimetype == null) {
+    public boolean isMimeType(String type) {
+        if (type == null) {
             throw new NullPointerException("mimetype == null");
         }
-        return (this.mimetype.equals(mimetype));
+        return (this.type.equals(type));
     }
 
     /**
