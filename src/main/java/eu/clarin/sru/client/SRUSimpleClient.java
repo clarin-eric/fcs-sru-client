@@ -575,7 +575,8 @@ public class SRUSimpleClient {
             }
 
             // explainResponse/diagnostics
-            final List<SRUDiagnostic> diagnostics = parseDiagnostics(reader);
+            final List<SRUDiagnostic> diagnostics =
+                    parseDiagnostics(reader, strictMode);
             if (diagnostics != null) {
                 handler.onDiagnostics(diagnostics);
             }
@@ -724,7 +725,8 @@ public class SRUSimpleClient {
                 }
 
                 // scanResponse/diagnostics
-                final List<SRUDiagnostic> diagnostics = parseDiagnostics(reader);
+                final List<SRUDiagnostic> diagnostics =
+                        parseDiagnostics(reader, strictMode);
                 if (diagnostics != null) {
                     handler.onDiagnostics(diagnostics);
                 }
@@ -871,7 +873,8 @@ public class SRUSimpleClient {
                         }
 
                         if (SRU_DIAGNOSTIC_RECORD_SCHEMA.equals(schema)) {
-                            surrogate = parseDiagnostic(recordReader, true);
+                            surrogate = parseDiagnostic(recordReader,
+                                    true, strictMode);
                         } else {
                             SRURecordDataParser parser = findParser(schema);
                             if (parser != null) {
@@ -1023,7 +1026,8 @@ public class SRUSimpleClient {
                 }
 
                 // searchRetrieveResponse/diagnostics
-                final List<SRUDiagnostic> diagnostics = parseDiagnostics(reader);
+                final List<SRUDiagnostic> diagnostics =
+                        parseDiagnostics(reader, strictMode);
                 if (diagnostics != null) {
                     handler.onDiagnostics(diagnostics);
                 }
@@ -1066,14 +1070,14 @@ public class SRUSimpleClient {
 
 
     private static List<SRUDiagnostic> parseDiagnostics(
-            SRUXMLStreamReader reader) throws XMLStreamException,
-            SRUClientException {
+            SRUXMLStreamReader reader, boolean strictMode)
+            throws XMLStreamException, SRUClientException {
         if (reader.readStart(SRU_NS, "diagnostics", false)) {
             List<SRUDiagnostic> diagnostics = null;
 
             SRUDiagnostic diagnostic = null;
             while ((diagnostic = parseDiagnostic(reader,
-                    (diagnostics == null))) != null) {
+                    (diagnostics == null), strictMode)) != null) {
                 if (diagnostics == null) {
                     diagnostics = new ArrayList<SRUDiagnostic>();
                 }
@@ -1088,19 +1092,30 @@ public class SRUSimpleClient {
 
 
     private static SRUDiagnostic parseDiagnostic(SRUXMLStreamReader reader,
-            boolean required) throws XMLStreamException, SRUClientException {
+            boolean required, boolean stictMode) throws XMLStreamException,
+            SRUClientException {
         if (reader.readStart(SRU_DIAGNOSIC_NS, "diagnostic", required)) {
 
             // diagnostic/uri
             String uri = reader.readContent(SRU_DIAGNOSIC_NS, "uri", true);
 
             // diagnostic/details
-            String details =
-                    reader.readContent(SRU_DIAGNOSIC_NS, "details", false);
+            String details = reader.readContent(SRU_DIAGNOSIC_NS, "details",
+                    false, stictMode);
+            if ((details != null) && details.isEmpty()) {
+                details = null;
+                logger.warn("omitting empty element <details> " +
+                        "within element <diagnostic>");
+            }
 
             // diagnostic/message
-            String message =
-                    reader.readContent(SRU_DIAGNOSIC_NS, "message", false);
+            String message = reader.readContent(SRU_DIAGNOSIC_NS, "message",
+                    false, stictMode);
+            if ((message != null) && message.isEmpty()) {
+                message = null;
+                logger.warn("omitting empty element <message> " +
+                        "within element <diagnostic>");
+            }
 
             reader.readEnd(SRU_DIAGNOSIC_NS, "diagnostic");
 
