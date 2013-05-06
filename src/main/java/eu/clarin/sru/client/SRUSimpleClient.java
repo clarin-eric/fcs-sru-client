@@ -886,13 +886,14 @@ public class SRUSimpleClient {
                                             "error parsing record", e);
                                 }
                                 if (recordData == null) {
-                                    logger.debug("parser did not parse " +
+                                    logger.debug("record parser did not parse " +
                                             "record correctly and returned " +
-                                            "null.");
+                                            "null; injecting client side " +
+                                            "surrogate diagnostic");
                                     surrogate = new SRUDiagnostic(
                                             SRUClientDiagnostics.DIAG_RECORD_PARSER_NULL,
                                             null, "Record parser for schema '" +
-                                                    schema + "' did nor " +
+                                                    schema + "' did not " +
                                                     "parse record correctly " +
                                                     "and errornously " +
                                                     "returned null.");
@@ -903,7 +904,8 @@ public class SRUSimpleClient {
                                  * surrogate diagnostic
                                  */
                                 logger.debug("no record data parser found " +
-                                        "for schema '{}'", schema);
+                                        "for schema '{}'; injecting client " +
+                                        "side surrogate diagnostic", schema);
                                 surrogate = new SRUDiagnostic(
                                         SRUClientDiagnostics.DIAG_NO_RECORD_PARSER,
                                         schema,
