@@ -1119,7 +1119,7 @@ public class SRUSimpleClient {
 
             reader.readEnd(SRU_DIAGNOSIC_NS, "diagnostic");
 
-            logger.debug("diagostic: uri={}, detail={}, message={}",
+            logger.debug("diagnostic: uri={}, detail={}, message={}",
                     new Object[] { uri, details, message });
             return new SRUDiagnostic(uri, details, message);
         } else {
