@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.client.fcs.ClarinFCSRecordParser;
 
+@Deprecated
 public class TestThreadedClient {
     private static final Logger logger =
             LoggerFactory.getLogger(TestThreadedClient.class);

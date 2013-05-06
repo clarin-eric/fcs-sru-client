@@ -150,7 +150,11 @@ public class SRUThreadedClient {
      *             if an unrecoverable error occurred
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
+     * @deprecated Use asynchronous callback interface
+     *             {@link #explain(SRUExplainRequest, SRUCallback)}. This method
+     *             will be removed in the future.
      */
+    @Deprecated
     public Future<SRUExplainResponse> explain(SRUExplainRequest request)
             throws SRUClientException {
         if (request == null) {
@@ -217,7 +221,11 @@ public class SRUThreadedClient {
      *             if an unrecoverable error occurred
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
+     * @deprecated Use asynchronous callback interface
+     *             {@link #scan(SRUScanRequest, SRUCallback)}. This method
+     *             will be removed in the future.
      */
+    @Deprecated
     public Future<SRUScanResponse> scan(SRUScanRequest request)
             throws SRUClientException {
         if (request == null) {
@@ -285,7 +293,11 @@ public class SRUThreadedClient {
      *             if an unrecoverable error occurred
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
+     * @deprecated Use asynchronous callback interface
+     *             {@link #searchRetrieve(SRUSearchRetrieveRequest, SRUCallback)}
+     *             . This method will be removed in the future.
      */
+    @Deprecated
     public Future<SRUSearchRetrieveResponse> searchRetrieve(
             SRUSearchRetrieveRequest request) throws SRUClientException {
         if (request == null) {
