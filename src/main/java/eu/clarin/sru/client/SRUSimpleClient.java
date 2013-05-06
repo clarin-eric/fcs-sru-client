@@ -782,7 +782,7 @@ public class SRUSimpleClient {
                     }
                 });
             } else {
-                logger.debug("parsing 'serarchRetrieve' response");
+                logger.debug("parsing 'searchRetrieve' response");
 
                 // searchRetrieveResponse
                 reader.readStart(SRU_NS, "searchRetrieveResponse", true);
