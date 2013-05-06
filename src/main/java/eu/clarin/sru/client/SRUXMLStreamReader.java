@@ -514,10 +514,19 @@ class SRUXMLStreamReader implements XMLStreamReader {
 
     String readContent(String namespaceURI, String localName, boolean required)
             throws XMLStreamException {
+        return readContent(namespaceURI, localName, required, true);
+    }
+
+        
+    String readContent(String namespaceURI, String localName, boolean required,
+            boolean contentRequired) throws XMLStreamException {
         String result = null;
         if (readStart(namespaceURI, localName, required)) {
             try {
-                result = readString(true);
+                result = readString(contentRequired);
+                if (!contentRequired && (result == null)) {
+                    result = "";
+                }
             } catch (XMLStreamException e) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("element '");

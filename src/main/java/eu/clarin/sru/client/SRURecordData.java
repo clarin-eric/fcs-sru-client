@@ -27,7 +27,7 @@ public interface SRURecordData {
      * later, you need to create a copy of the data.
      * 
      * @return <code>true</code>, if record is transient,
-     *         <code>false<code> otherwis
+     *         <code>false</code> otherwise
      */
     public boolean isTransient();
 
