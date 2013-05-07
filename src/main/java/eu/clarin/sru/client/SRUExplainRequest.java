@@ -18,7 +18,7 @@ package eu.clarin.sru.client;
 
 /**
  * An object for performing a <em>explain</em> operation.
- * 
+ *
  * @see SRUExplainHandler
  * @see <a href="http://www.loc.gov/standards/sru/specs/explain.html">SRU Explain Operation</a>
  */
@@ -28,7 +28,7 @@ public final class SRUExplainRequest extends SRUAbstractRequest {
 
     /**
      * Constructor.
-     * 
+     *
      * @param baseURI
      *            the baseURI of the endpoint
      */
@@ -39,7 +39,7 @@ public final class SRUExplainRequest extends SRUAbstractRequest {
 
     /**
      * Set the requested record packing.
-     * 
+     *
      * @param recordPacking
      *            the requested record packing
      * @see SRURecordPacking
@@ -54,7 +54,7 @@ public final class SRUExplainRequest extends SRUAbstractRequest {
 
     /**
      * Get the requested record packing.
-     * 
+     *
      * @return the requested record packing
      * @see SRURecordPacking
      */
@@ -70,15 +70,15 @@ public final class SRUExplainRequest extends SRUAbstractRequest {
 
 
     @Override
-    void addParametersToURI(URIBuilder uriBuilder) throws SRUClientException {
+    void addParametersToURI(URIHelper uriHelper) throws SRUClientException {
         // recordPacking
         if (recordPacking != null) {
             switch (recordPacking) {
             case XML:
-                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
+                uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
                 break;
             case STRING:
-                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_STRING);
+                uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_STRING);
                 break;
             default:
                 throw new SRUClientException("unsupported record packing: " +
