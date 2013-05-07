@@ -37,6 +37,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
@@ -300,6 +301,9 @@ public class SRUSimpleClient {
                     /* IGNORE */
                 }
             }
+
+            /* make sure to release allocated resources */
+            HttpClientUtils.closeQuietly(response);
         }
     }
 
@@ -382,6 +386,9 @@ public class SRUSimpleClient {
                     /* IGNORE */
                 }
             }
+
+            /* make sure to release allocated resources */
+            HttpClientUtils.closeQuietly(response);
         }
     }
 
@@ -464,6 +471,9 @@ public class SRUSimpleClient {
                     /* IGNORE */
                 }
             }
+
+            /* make sure to release allocated resources */
+            HttpClientUtils.closeQuietly(response);
         }
     }
 
@@ -511,6 +521,9 @@ public class SRUSimpleClient {
                 } catch (IOException ex) {
                     /* IGNORE */
                 }
+
+                /* make sure to release allocated resources */
+                HttpClientUtils.closeQuietly(response);
             }
             if (request != null) {
                 request.abort();
