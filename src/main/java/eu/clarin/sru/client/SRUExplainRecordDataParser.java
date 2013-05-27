@@ -33,7 +33,8 @@ import eu.clarin.sru.client.SRUExplainRecordData.ServerInfo;
  * data conforming to the ZEEREX schema
  */
 public class SRUExplainRecordDataParser implements SRURecordDataParser {
-    private static final String ZEEREX_NS = SRUExplainRecordData.RECORD_SCHEMA;
+    static final String ZEEREX_NS       = SRUExplainRecordData.RECORD_SCHEMA;
+    static final String ZEEREX_NS_QUIRK = "http://explain.z3950.org/dtd/2.1/";
     private static final String VERSION_1_1     = "1.1";
     private static final String VERSION_1_2     = "1.2";
     private static final String TRANSPORT_HTTP  = "http";
@@ -48,62 +49,81 @@ public class SRUExplainRecordDataParser implements SRURecordDataParser {
 
 
     @Override
-    public SRURecordData parse(XMLStreamReader reader, SRUVersion version)
+    public SRURecordData parse(final XMLStreamReader reader, SRUVersion version)
             throws XMLStreamException, SRUClientException {
         logger.debug("parsing explain record data for version {}", version);
 
         // explain
-        XmlStreamReaderUtils.readStart(reader, ZEEREX_NS, "explain", true);
+        if (XmlStreamReaderUtils.readStart(reader, ZEEREX_NS,
+                "explain", false)) {
+            return parseExplain(reader, ZEEREX_NS, version);
+        } else if (XmlStreamReaderUtils.readStart(reader,
+                ZEEREX_NS_QUIRK, "explain", false)) {
+            logger.warn("namespace '{}' is not defined by ZeeRex, enabling " +
+                    "quirk mode (consider using namespace '{}' which is defined)",
+                    ZEEREX_NS_QUIRK, ZEEREX_NS);
+            return parseExplain(reader, ZEEREX_NS_QUIRK, version);
+        } else {
+            throw new XMLStreamException("expected element '{" + ZEEREX_NS +
+                    "}explain' at this position", reader.getLocation());
+        }
+    }
+
+
+    private static SRURecordData parseExplain(XMLStreamReader reader,
+            final String namespace, final SRUVersion version)
+            throws XMLStreamException, SRUClientException {
 
         // explain/serverInfo
-        ServerInfo serverInfo = parseServerInfo(reader);
+        ServerInfo serverInfo = parseServerInfo(reader, namespace);
 
         // explain/databaseInfo
-        if (XmlStreamReaderUtils.readStart(reader, ZEEREX_NS, "databaseInfo", false)) {
+        if (XmlStreamReaderUtils.readStart(reader, namespace, "databaseInfo", false)) {
             logger.debug("databaseInfo");
-            XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS, "databaseInfo", true);
+            XmlStreamReaderUtils.readEnd(reader, namespace, "databaseInfo", true);
         }
 
         // explain/metaInfo
-        if (XmlStreamReaderUtils.readStart(reader, ZEEREX_NS, "metaInfo", false)) {
+        if (XmlStreamReaderUtils.readStart(reader, namespace, "metaInfo", false)) {
             logger.debug("metaInfo");
-            XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS, "metaInfo", true);
+            XmlStreamReaderUtils.readEnd(reader, namespace, "metaInfo", true);
         }
 
         // explain/indexInfo
-        while (XmlStreamReaderUtils.readStart(reader, ZEEREX_NS, "indexInfo", false)) {
+        while (XmlStreamReaderUtils.readStart(reader, namespace, "indexInfo", false)) {
             logger.debug("indexInfo");
             for (;;) {
                 /*
                  * FIXME: SRU 2.0 has *either* <set> or <index>
                  * check with SRU 1.2 ...
                  */
-                if (XmlStreamReaderUtils.readStart(reader, ZEEREX_NS, "set", false, true)) {
+                if (XmlStreamReaderUtils.readStart(reader, namespace, "set", false, true)) {
                     logger.debug("set");
                     // FIXME: read attributes
                     XmlStreamReaderUtils.consumeStart(reader);
 
-                    XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS, "set", true);
-                } else if (XmlStreamReaderUtils.readStart(reader, ZEEREX_NS, "index", false, true)) {
+                    XmlStreamReaderUtils.readEnd(reader, namespace, "set", true);
+                } else if (XmlStreamReaderUtils.readStart(reader, namespace, "index", false, true)) {
                     logger.debug("index");
                     // FIXME: read attributes
                     XmlStreamReaderUtils.consumeStart(reader);
-                    XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS, "index", true);
+                    XmlStreamReaderUtils.readEnd(reader, namespace, "index", true);
                 } else {
                     break;
                 }
             }
-            XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS, "indexInfo", true);
+            XmlStreamReaderUtils.readEnd(reader, namespace, "indexInfo", true);
         } // while
 
-        XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS, "explain", true);
+        XmlStreamReaderUtils.readEnd(reader, namespace, "explain", true);
         return new SRUExplainRecordData(serverInfo);
     }
 
 
-    private static ServerInfo parseServerInfo(XMLStreamReader reader)
-            throws XMLStreamException, SRUClientException {
-        XmlStreamReaderUtils.readStart(reader, ZEEREX_NS,
+    private static ServerInfo parseServerInfo(final XMLStreamReader reader,
+            final String namespace) throws XMLStreamException,
+            SRUClientException {
+        XmlStreamReaderUtils.readStart(reader, namespace,
                 "serverInfo", true, true);
         String protocol = XmlStreamReaderUtils.readAttributeValue(reader,
                 null, "protocol");
@@ -117,8 +137,9 @@ public class SRUExplainRecordDataParser implements SRURecordDataParser {
             } else if (VERSION_1_2.equals(s)) {
                 version = SRUVersion.VERSION_1_2;
             } else {
-                throw new SRUClientException(
-                        "invalid or unsupported version: " + s);
+                throw new SRUClientException("invalid or unsupported value '" +
+                        s + "'for attribute 'version' on element '" +
+                        reader.getName() + "'");
             }
         }
 
@@ -126,6 +147,7 @@ public class SRUExplainRecordDataParser implements SRURecordDataParser {
         s = XmlStreamReaderUtils.readAttributeValue(reader,
                 null, "transport");
         if (s != null) {
+            s = s + " http";
             for (String i : s.split("\\s+")) {
                 String t = null;
                 if (TRANSPORT_HTTP.equalsIgnoreCase(i)) {
@@ -133,14 +155,19 @@ public class SRUExplainRecordDataParser implements SRURecordDataParser {
                 } else if (TRANSPORT_HTTPS.equalsIgnoreCase(i)) {
                     t = TRANSPORT_HTTPS;
                 } else {
-                    throw new SRUClientException("invalid transport: " + i);
+                    throw new SRUClientException("invalid value '" + i +
+                            "' for attribute 'transport' on element '" +
+                            reader.getName() +
+                            " (use either 'http' of 'https' or both " +
+                            "seperated by whitespace");
                 }
                 if (t != null) {
                     if (!transports.contains(t)) {
                         transports.add(t);
                     } else {
-                        // FIXME: error message
-                        logger.warn("transport  {} was already listed", s);
+                        logger.warn("value '{}' already listed in " +
+                                "'transport' attribute of element '{}'",
+                                t, reader.getName());
                     }
                 }
 
@@ -150,22 +177,22 @@ public class SRUExplainRecordDataParser implements SRURecordDataParser {
         }
         XmlStreamReaderUtils.consumeStart(reader);
 
-        String host = XmlStreamReaderUtils.readContent(reader, ZEEREX_NS,
+        String host = XmlStreamReaderUtils.readContent(reader, namespace,
                 "host", true);
-        int port = XmlStreamReaderUtils.readContent(reader, ZEEREX_NS,
+        int port = XmlStreamReaderUtils.readContent(reader, namespace,
                 "port", true, -1);
         if ((port < 0) || (port > 65535)) {
             // FIXME: error message
             throw new SRUClientException("invalid port number (" + port + ")");
         }
-        String database = XmlStreamReaderUtils.readContent(reader, ZEEREX_NS,
+        String database = XmlStreamReaderUtils.readContent(reader, namespace,
                 "database", true);
-        if (XmlStreamReaderUtils.readStart(reader, ZEEREX_NS,
+        if (XmlStreamReaderUtils.readStart(reader, namespace,
                 "authentication", false)) {
-            XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS,
+            XmlStreamReaderUtils.readEnd(reader, namespace,
                     "authentication", true);
         }
-        XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS, "serverInfo", true);
+        XmlStreamReaderUtils.readEnd(reader, namespace, "serverInfo", true);
         logger.debug("serverInfo: host={}, port={}, database={}, version={}, protocol={}, transport={}",
                 host, port, database, version, protocol, transports);
         return new ServerInfo(host, port, database, protocol, version,

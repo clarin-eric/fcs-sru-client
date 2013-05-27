@@ -594,10 +594,15 @@ public class SRUSimpleClient {
                     recordReader = reader;
                 }
 
-                if (!SRUExplainRecordData.RECORD_SCHEMA.equals(schema)) {
-                    // FIXME: message
-                    throw new SRUClientException("bad record schema");
+                /*
+                 * Hard-coded record schema identifiers for explain
+                 */
+                if (!(SRUExplainRecordDataParser.ZEEREX_NS.equals(schema) ||
+                      SRUExplainRecordDataParser.ZEEREX_NS_QUIRK.equals(schema))) {
+                    throw new SRUClientException("record schema '" + schema +
+                            "' not supported in explain response");
                 }
+
                 try {
                     proxy.reset(recordReader);
                     recordData = explainRecordParser.parse(proxy, version);
