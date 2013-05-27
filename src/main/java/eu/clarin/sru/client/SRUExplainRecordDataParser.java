@@ -30,7 +30,9 @@ import eu.clarin.sru.client.SRUExplainRecordData.ServerInfo;
 
 /**
  * This class implements a (partial) record data parser for SRU explain record
- * data conforming to the ZEEREX schema
+ * data conforming to the ZeeRex schema.
+ *
+ * @see <a href="http://zeerex.z3950.org/dtd/">The ZeeRex DTD</a>
  */
 public class SRUExplainRecordDataParser implements SRURecordDataParser {
     static final String ZEEREX_NS       = SRUExplainRecordData.RECORD_SCHEMA;
