@@ -38,6 +38,8 @@ public interface SRURecordDataParser {
      *
      * @param reader
      *            a {@link XMLStreamReader} to parse the record data
+     * @param version
+     *            the {@link SRUVersion} that was used to encode the record
      * @return the parsed record
      * @throws XMLStreamException
      *             an error occurred while parsing the response
@@ -45,7 +47,7 @@ public interface SRURecordDataParser {
      *             any SRU exception, possibly wrapping another exception
      * @see SRURecordData
      */
-    public SRURecordData parse(XMLStreamReader reader)
+    public SRURecordData parse(XMLStreamReader reader, SRUVersion version)
             throws XMLStreamException, SRUClientException;
 
 } // interface SRURecordDataParser

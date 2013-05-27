@@ -32,12 +32,8 @@ public class TestClient {
             logger.info("initializing client ...");
             SRUClient client = new SRUClient();
 
-            try {
-                client.registerRecordParser(new ClarinFCSRecordParser());
-            } catch (SRUClientException e) {
-                logger.error("error adding record parser", e);
-                System.exit(1);
-            }
+            // register record data parsers
+            client.registerRecordParser(new ClarinFCSRecordParser());
 
             // explain
             try {

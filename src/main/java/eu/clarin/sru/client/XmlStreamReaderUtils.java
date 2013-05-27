@@ -31,13 +31,16 @@ public final class XmlStreamReaderUtils {
     private XmlStreamReaderUtils() {
     }
 
-    public static boolean readStart(XMLStreamReader reader, String namespaceURI, String localName, boolean required)
+
+    public static boolean readStart(XMLStreamReader reader,
+            String namespaceURI, String localName, boolean required)
             throws XMLStreamException {
         return readStart(reader, namespaceURI, localName, required, false);
     }
 
 
-    public static boolean readStart(XMLStreamReader reader, String namespaceURI, String localName, boolean required,
+    public static boolean readStart(XMLStreamReader reader,
+            String namespaceURI, String localName, boolean required,
             boolean attributes) throws XMLStreamException {
         // System.err.println("readStart (" + localName + ", required = " +
         // required + ") @ " + toReadable(reader));
@@ -79,14 +82,14 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static void readEnd(XMLStreamReader reader, String namespaceURI, String localName)
-            throws XMLStreamException {
+    public static void readEnd(XMLStreamReader reader, String namespaceURI,
+            String localName) throws XMLStreamException {
         readEnd(reader, namespaceURI, localName, false);
     }
 
 
-    public static void readEnd(XMLStreamReader reader, String namespaceURI, String localName, boolean skipContent)
-            throws XMLStreamException {
+    public static void readEnd(XMLStreamReader reader, String namespaceURI,
+            String localName, boolean skipContent) throws XMLStreamException {
         // System.err.println("readEnd (" + localName + ") @ " + dumpState() +
         // ", skipContent = " + skipContent);
         int level = 1;
@@ -134,7 +137,8 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static String readContent(XMLStreamReader reader, String namespaceURI, String localName, boolean required)
+    public static String readContent(XMLStreamReader reader,
+            String namespaceURI, String localName, boolean required)
             throws XMLStreamException {
         String result = null;
         if (readStart(reader, namespaceURI, localName, required)) {
@@ -145,8 +149,9 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static int readContent(XMLStreamReader reader, String namespaceURI, String localName, boolean required,
-            int defaultValue) throws XMLStreamException {
+    public static int readContent(XMLStreamReader reader, String namespaceURI,
+            String localName, boolean required, int defaultValue)
+            throws XMLStreamException {
         if (readStart(reader, namespaceURI, localName, required)) {
             String s = readString(reader, true);
             readEnd(reader, namespaceURI, localName);
@@ -161,7 +166,8 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static String readString(XMLStreamReader reader, boolean required) throws XMLStreamException {
+    public static String readString(XMLStreamReader reader, boolean required)
+            throws XMLStreamException {
         // System.err.println("readString @ " + toReadable(reader));
         String s = null;
         if (reader.isCharacters()) {
@@ -180,7 +186,8 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static String readAttributeValue(XMLStreamReader reader, String namespaceURI, String localName)
+    public static String readAttributeValue(XMLStreamReader reader,
+            String namespaceURI, String localName, boolean required)
             throws XMLStreamException {
         if (!reader.isStartElement()) {
             throw new XMLStreamException("not at a start elment event",
@@ -188,13 +195,28 @@ public final class XmlStreamReaderUtils {
         }
         String attr = reader.getAttributeValue(namespaceURI, localName);
         if (attr != null) {
-            attr = attr.trim().intern();
+            attr = attr.trim();
+            if (attr.isEmpty()) {
+                attr = null;
+            }
+        }
+        if ((attr == null) && required) {
+            throw new XMLStreamException("expected non-empty attribute '" +
+                    new QName(namespaceURI, localName) + "' on element '" +
+                    reader.getName() + "'", reader.getLocation());
         }
         return attr;
     }
 
 
-    public static String readNamespaceURI(XMLStreamReader reader) throws XMLStreamException {
+    public static String readAttributeValue(XMLStreamReader reader,
+            String namespaceURI, String localName) throws XMLStreamException {
+        return readAttributeValue(reader, namespaceURI, localName, false);
+    }
+
+
+    public static String readNamespaceURI(XMLStreamReader reader)
+            throws XMLStreamException {
         if (!reader.isStartElement()) {
             throw new XMLStreamException("not at a start elment event",
                     reader.getLocation());
@@ -203,7 +225,8 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static String peekElementLocalName(XMLStreamReader reader) throws XMLStreamException {
+    public static String peekElementLocalName(XMLStreamReader reader)
+            throws XMLStreamException {
         if (!reader.isStartElement()) {
             throw new XMLStreamException("not at a start elment event",
                     reader.getLocation());
@@ -212,7 +235,8 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static void consumeStart(XMLStreamReader reader) throws XMLStreamException {
+    public static void consumeStart(XMLStreamReader reader)
+            throws XMLStreamException {
         if (!reader.isStartElement()) {
             throw new XMLStreamException("not at a start elment event",
                     reader.getLocation());
@@ -221,7 +245,8 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static void consumeWhitespace(XMLStreamReader reader) throws XMLStreamException {
+    public static void consumeWhitespace(XMLStreamReader reader)
+            throws XMLStreamException {
         while (reader.isWhiteSpace() && reader.hasNext()) {
             reader.next();
             continue;

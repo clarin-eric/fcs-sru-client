@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import eu.clarin.sru.client.SRUClientException;
 import eu.clarin.sru.client.SRURecordData;
 import eu.clarin.sru.client.SRURecordDataParser;
+import eu.clarin.sru.client.SRUVersion;
 import eu.clarin.sru.client.XmlStreamReaderUtils;
 
 
@@ -52,7 +53,7 @@ public class ClarinFCSRecordParser implements SRURecordDataParser {
 
 
     @Override
-    public SRURecordData parse(XMLStreamReader reader)
+    public SRURecordData parse(XMLStreamReader reader, SRUVersion version)
             throws XMLStreamException, SRUClientException {
         logger.debug("parsing CLARIN-FCS record");
 

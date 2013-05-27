@@ -41,7 +41,7 @@ class TestUtils {
 
     public static SRUScanRequest makeScanRequest(String baseURI) {
         SRUScanRequest request = new SRUScanRequest(baseURI);
-        request.setScanClause("fcs.resource");
+        request.setScanClause("fcs.resource = root");
         request.setExtraRequestData("x-clarin-resource-info", "true");
         return request;
     }
@@ -74,6 +74,9 @@ class TestUtils {
         if (response.hasRecord()) {
             SRURecord record = response.getRecord();
             logger.info("schema = {}", record.getRecordSchema());
+            if (record.isRecordSchema(SRUExplainRecordData.RECORD_SCHEMA)) {
+                dumpExplainRecordData(record.getRecordData());
+            }
         }
     }
 
@@ -140,6 +143,19 @@ class TestUtils {
             }
         } else {
             logger.info("no results");
+        }
+    }
+
+
+    public static void dumpExplainRecordData(SRURecordData recordData) {
+        if (SRUExplainRecordData.RECORD_SCHEMA.equals(recordData.getRecordSchema())) {
+            SRUExplainRecordData data = (SRUExplainRecordData) recordData;
+            logger.info("host={}, port={}, database={}", new Object[] {
+                    data.getServerInfo().getHost(),
+                    data.getServerInfo().getPort(),
+                    data.getServerInfo().getDatabase()
+            });
+            
         }
     }
 

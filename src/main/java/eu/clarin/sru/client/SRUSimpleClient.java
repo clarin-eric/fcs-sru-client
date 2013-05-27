@@ -83,7 +83,8 @@ public class SRUSimpleClient {
     private final Map<String, SRURecordDataParser> parsers;
     private final HttpClient httpClient;
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
-
+    private final SRUExplainRecordDataParser explainRecordParser =
+            new SRUExplainRecordDataParser();
 
     /**
      * Constructor. This constructor will create a <em>strict</em> client and
@@ -192,16 +193,13 @@ public class SRUSimpleClient {
      *
      * @param parser
      *            a parser instance
-     * @throws SRUClientException
-     *             if a parser handing the same record schema is already
-     *             registered
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
      * @throws IllegalArgumentException
-     *             if the supplied parser is invalid
+     *             if the supplied parser is invalid or a parser handing the
+     *             same record schema is already registered
      */
-    public void registerRecordParser(SRURecordDataParser parser)
-            throws SRUClientException {
+    public void registerRecordParser(SRURecordDataParser parser) {
         if (parser == null) {
             throw new NullPointerException("parser == null");
         }
@@ -217,7 +215,7 @@ public class SRUSimpleClient {
         if (!parsers.containsKey(recordSchema)) {
             parsers.put(recordSchema, parser);
         } else {
-            throw new SRUClientException(
+            throw new IllegalArgumentException(
                     "record data parser already registered: " + recordSchema);
         }
     }
@@ -246,7 +244,7 @@ public class SRUSimpleClient {
         if (handler == null) {
             throw new NullPointerException("handler == null");
         }
-        logger.debug("explain");
+        logger.debug("performing explain request");
 
         final long ts_start = System.nanoTime();
 
@@ -331,7 +329,8 @@ public class SRUSimpleClient {
         if (handler == null) {
             throw new NullPointerException("handler == null");
         }
-        logger.debug("searchRetrieve: scanClause = {}", request.getScanClause());
+        logger.debug("performing scan request: scanClause = {}",
+                request.getScanClause());
 
         final long ts_start = System.nanoTime();
 
@@ -416,7 +415,8 @@ public class SRUSimpleClient {
         if (handler == null) {
             throw new NullPointerException("handler == null");
         }
-        logger.debug("searchRetrieve: query = {}", request.getQuery());
+        logger.debug("performing searchRetrieve request: query = {}",
+                request.getQuery());
 
         final long ts_start = System.nanoTime();
 
@@ -482,7 +482,7 @@ public class SRUSimpleClient {
         HttpGet request = null;
         HttpResponse response = null;
         try {
-            logger.debug("performing HTTP request: {}", uri.toString());
+            logger.debug("submitting HTTP request: {}", uri.toString());
             try {
                 request = new HttpGet(uri);
                 response = httpClient.execute(request);
@@ -534,9 +534,18 @@ public class SRUSimpleClient {
 
 
     private void parseExplainResponse(final SRUXMLStreamReader reader,
-            final SRUAbstractRequest request, final SRUExplainHandler handler)
+            final SRUExplainRequest request, final SRUExplainHandler handler)
             throws SRUClientException {
         logger.debug("parsing 'explain' response");
+// FIXME: ship explain record data for now
+//        doParseExplainResponse(reader, request, handler, true);
+        doParseExplainResponse(reader, request, handler, false);
+    }
+
+
+    private void doParseExplainResponse(SRUXMLStreamReader reader,
+            SRUAbstractRequest request, SRUExplainHandler handler,
+            boolean parseRecordData) throws SRUClientException {
         try {
             // explainResponse
             reader.readStart(SRU_NS, "explainResponse", true);
@@ -548,28 +557,97 @@ public class SRUSimpleClient {
 
             // explainResponse/record
             reader.readStart(SRU_NS, "record", true);
+            if (parseRecordData) {
+                handler.onStartRecords(-1, null, -1);
 
-            String schema = reader.readContent(SRU_NS, "recordSchema", true);
+                SRURecordPacking packing = null;
+                if (!strictMode && reader.peekStart(SRU_NS, "recordPacking")) {
+                    packing = parseRecordPacking(reader, false);
+                    if (packing != null) {
+                        logger.error("element <recordPacking> must apperear after element <recordSchema> within element <record>");
+                    }
+                }
+                String schema =
+                        reader.readContent(SRU_NS, "recordSchema", true);
+                if (packing == null) {
+                    packing = parseRecordPacking(reader, strictMode);
+                }
+                logger.debug("schema = {}, packing = {}", schema, packing);
 
-            SRURecordPacking packing = parseRecordPacking(reader, strictMode);
+                // explainResponse/record/recordData
+                reader.readStart(SRU_NS, "recordData", true);
+                reader.consumeWhitespace();
 
-            logger.debug("schema = {}, packing = {}", schema, packing);
+                SRURecordData recordData = null;
+                SRUXMLStreamReader recordReader = null;
 
-            // explainResponse/record/recordData
-            reader.readStart(SRU_NS, "recordData", true);
-            reader.readEnd(SRU_NS, "recordData", true);
+                if (packing == SRURecordPacking.STRING) {
+                    /*
+                     * read content into temporary buffer and then use a new XML
+                     * reader to parse record data
+                     */
+                    final String data = reader.readString(true);
+                    InputStream in = new ByteArrayInputStream(data.getBytes());
+                    // FIXME: namespace context?
+                    recordReader = createReader(in, false);
+                } else {
+                    recordReader = reader;
+                }
 
-            // explainResponse/record/recordPosition
-            if (reader.readStart(SRU_NS, "recordPosition", false)) {
-                reader.readEnd(SRU_NS, "recordPosition", true);
+                if (!SRUExplainRecordData.RECORD_SCHEMA.equals(schema)) {
+                    // FIXME: message
+                    throw new SRUClientException("bad record schema");
+                }
+                try {
+                    proxy.reset(recordReader);
+                    recordData = explainRecordParser.parse(proxy, version);
+                } catch (XMLStreamException e) {
+                    throw new SRUClientException(
+                            "error parsing explain record", e);
+                }
+                if (recordData == null) {
+                    // FIXME: error message
+                    throw new SRUClientException(
+                            "error parsing explain record");
+                }
+                if (packing == SRURecordPacking.STRING) {
+                    recordReader.closeCompletly();
+                }
+                reader.consumeWhitespace();
+                reader.readEnd(SRU_NS, "recordData", true);
+
+                if (version == SRUVersion.VERSION_1_2) {
+                    reader.readContent(SRU_NS, "recordIdentifier", false);
+                }
+                reader.readContent(SRU_NS, "recordPosition", false, -1);
+
+                // notify handler
+                handler.onRecord(null, -1, recordData);
+
+                if (reader.readStart(SRU_NS, "extraRecordData", false)) {
+                    reader.consumeWhitespace();
+                    proxy.reset(reader);
+                    try {
+                        handler.onExtraRecordData(null, -1, proxy);
+                    } catch (XMLStreamException e) {
+                        throw new SRUClientException("handler "
+                                + "triggered error while parsing "
+                                + "'extraRecordData'", e);
+                    }
+                    reader.consumeWhitespace();
+                    reader.readEnd(SRU_NS, "extraRecordData", true);
+                }
+
+                handler.onFinishRecords(-1);
+
+                reader.readEnd(SRU_NS, "record");
+            } else {
+                /*
+                 * do not really parse record and skip everything until <record>
+                 * end tag
+                 */
+                reader.readEnd(SRU_NS, "record", true);
             }
-
-            // explainResponse/record/extraRecordData
-            if (reader.readStart(SRU_NS, "extraRecordData", false)) {
-                reader.readEnd(SRU_NS, "extraRecordData", true);
-            }
-
-            reader.readEnd(SRU_NS, "record");
 
             // explainResponse/echoedExplainRequest
             if (reader.readStart(SRU_NS, "echoedExplainRequest", false)) {
@@ -624,7 +702,7 @@ public class SRUSimpleClient {
              * a explain response.
              */
             if (reader.peekStart(SRU_NS, "explainResponse")) {
-                parseExplainResponse(reader, request, new SRUExplainHandler() {
+                doParseExplainResponse(reader, request, new SRUExplainHandler() {
                     @Override
                     public void onRequestStatistics(int bytes, long millisTotal,
                             long millisNetwork, long millisParsing) {
@@ -642,7 +720,33 @@ public class SRUSimpleClient {
                             throws SRUClientException {
                         handler.onDiagnostics(diagnostics);
                     }
-                });
+
+
+                    @Override
+                    public void onStartRecords(int numberOfRecords,
+                            String resultSetId, int resultSetIdleTime)
+                            throws SRUClientException {
+                    }
+
+
+                    @Override
+                    public void onFinishRecords(int nextRecordPosition)
+                            throws SRUClientException {
+                    }
+
+
+                    @Override
+                    public void onRecord(String identifier, int position,
+                            SRURecordData data) throws SRUClientException {
+                    }
+
+
+                    @Override
+                    public void onExtraRecordData(String identifier,
+                            int position, XMLStreamReader reader)
+                            throws XMLStreamException, SRUClientException {
+                    }
+                }, false);
             } else {
                 logger.debug("parsing 'scanResponse' response");
 
@@ -664,8 +768,8 @@ public class SRUSimpleClient {
                         }
 
                         // scanResponse/terms/value
-                        String value = reader
-                                .readContent(SRU_NS, "value", true);
+                        String value =
+                                reader.readContent(SRU_NS, "value", true);
 
                         // scanResponse/terms/numberOfRecords
                         int numberOfRecords = reader.readContent(SRU_NS,
@@ -775,7 +879,7 @@ public class SRUSimpleClient {
              * a explain response.
              */
             if (reader.peekStart(SRU_NS, "explainResponse")) {
-                parseExplainResponse(reader, request, new SRUExplainHandler() {
+                doParseExplainResponse(reader, request, new SRUExplainHandler() {
                     @Override
                     public void onRequestStatistics(int bytes, long millisTotal,
                             long millisNetwork, long millisParsing) {
@@ -793,7 +897,33 @@ public class SRUSimpleClient {
                             throws SRUClientException {
                         handler.onDiagnostics(diagnostics);
                     }
-                });
+
+
+                    @Override
+                    public void onStartRecords(int numberOfRecords,
+                            String resultSetId, int resultSetIdleTime)
+                            throws SRUClientException {
+                    }
+
+
+                    @Override
+                    public void onFinishRecords(int nextRecordPosition)
+                            throws SRUClientException {
+                    }
+
+
+                    @Override
+                    public void onRecord(String identifier, int position,
+                            SRURecordData data) throws SRUClientException {
+                    }
+
+
+                    @Override
+                    public void onExtraRecordData(String identifier,
+                            int position, XMLStreamReader reader)
+                            throws XMLStreamException, SRUClientException {
+                    }
+                }, false);
             } else {
                 logger.debug("parsing 'searchRetrieve' response");
 
@@ -823,161 +953,196 @@ public class SRUSimpleClient {
 
                 // searchRetrieveResponse/results
                 if (numberOfRecords > 0) {
-                    reader.readStart(SRU_NS, "records", true);
-
-                    // searchRetrieveResponse/records/record
-                    boolean first = true;
-                    while (reader.readStart(SRU_NS, "record", first)) {
-                        if (first) {
-                            first = false;
-                            handler.onStartRecords(numberOfRecords,
-                                    resultSetId, resultSetIdleTime);
-                        }
-
-                        String schema = reader.readContent(SRU_NS,
-                                "recordSchema", true);
-
-                        SRURecordPacking packing =
-                                parseRecordPacking(reader, strictMode);
-
-                        logger.debug("schema = {}, packing = {}, " +
-                                "requested packing = {}",
-                                new Object[] { schema, packing,
-                                        request.getRecordPacking() });
-
-                        if ((request.getRecordPacking() != null) &&
-                                (packing != request.getRecordPacking())) {
-                            final SRURecordPacking p =
-                                    request.getRecordPacking();
-                            logger.error("requested '{}' record packing, but " +
-                                "server responded with '{}' record packing",
-                                    p.getStringValue(),
-                                    packing.getStringValue());
-                            if (strictMode) {
-                                throw new SRUClientException("requested '" +
-                                        p.getStringValue() +
-                                        "' record packing, but server " +
-                                        "responded with '" +
-                                        packing.getStringValue() +
-                                        "' record packing");
+                    /*
+                     * some endpoints set numberOfRecords but do not serialize
+                     * any records, e.g if requested record schema is not
+                     * supported
+                     */
+                    int recordCount = 0;
+                    if (reader.readStart(SRU_NS, "records", false)) {
+                        // searchRetrieveResponse/records/record
+                        boolean first = true;
+                        while (reader.readStart(SRU_NS, "record", first)) {
+                            if (first) {
+                                first = false;
+                                handler.onStartRecords(numberOfRecords,
+                                        resultSetId, resultSetIdleTime);
                             }
-                        }
 
-                        // searchRetrieveResponse/record/recordData
-                        reader.readStart(SRU_NS, "recordData", true);
-                        reader.consumeWhitespace();
-
-                        SRURecordData recordData = null;
-                        SRUDiagnostic surrogate = null;
-                        SRUXMLStreamReader recordReader = null;
-
-                        if (packing == SRURecordPacking.STRING) {
                             /*
-                             * read content into temporary buffer and then use
-                             * a new XML reader to parse record data
+                             * common error: recordPacking before recordSchema
                              */
-                            final String data = reader.readString(true);
-                            InputStream in =
-                                    new ByteArrayInputStream(data.getBytes());
-                            // FIXME: namespace context?
-                            recordReader = createReader(in, false);
-                        } else {
-                            recordReader = reader;
-                        }
+                            SRURecordPacking packing = null;
+                            if (!strictMode &&
+                                    reader.peekStart(SRU_NS, "recordPacking")) {
+                                packing = parseRecordPacking(reader, false);
+                                if (packing != null) {
+                                    logger.error("element <recordPacking> " +
+                                            "must appear after element " +
+                                            "<recordSchema> within " +
+                                            "element <record>");
+                                }
+                            }
+                            String schema = reader.readContent(SRU_NS,
+                                    "recordSchema", true);
+                            if (packing == null) {
+                                packing = parseRecordPacking(reader, strictMode);
+                            }
 
-                        if (SRU_DIAGNOSTIC_RECORD_SCHEMA.equals(schema)) {
-                            surrogate = parseDiagnostic(recordReader,
-                                    true, strictMode);
-                        } else {
-                            SRURecordDataParser parser = findParser(schema);
-                            if (parser != null) {
-                                try {
-                                    proxy.reset(recordReader);
-                                    recordData = parser.parse(proxy);
-                                } catch (XMLStreamException e) {
-                                    throw new SRUClientException(
-                                            "error parsing record", e);
+                            logger.debug("schema = {}, packing = {}, " +
+                                    "requested packing = {}",
+                                    new Object[] { schema, packing,
+                                            request.getRecordPacking() });
+
+                            if ((request.getRecordPacking() != null) &&
+                                    (packing != request.getRecordPacking())) {
+                                final SRURecordPacking p =
+                                        request.getRecordPacking();
+                                logger.error("requested '{}' record packing, " +
+                                        "but server responded with '{}' " +
+                                        "record packing",
+                                        p.getStringValue(),
+                                        packing.getStringValue());
+                                if (strictMode) {
+                                    throw new SRUClientException("requested '" +
+                                            p.getStringValue() +
+                                            "' record packing, but server " +
+                                            "responded with '" +
+                                            packing.getStringValue() +
+                                            "' record packing");
                                 }
-                                if (recordData == null) {
-                                    logger.debug("record parser did not parse " +
-                                            "record correctly and returned " +
-                                            "null; injecting client side " +
-                                            "surrogate diagnostic");
-                                    surrogate = new SRUDiagnostic(
-                                            SRUClientDiagnostics.DIAG_RECORD_PARSER_NULL,
-                                            null, "Record parser for schema '" +
-                                                    schema + "' did not " +
-                                                    "parse record correctly " +
-                                                    "and errornously " +
-                                                    "returned null.");
-                                }
-                            } else {
+                            }
+
+                            // searchRetrieveResponse/record/recordData
+                            reader.readStart(SRU_NS, "recordData", true);
+                            reader.consumeWhitespace();
+
+                            SRURecordData recordData = null;
+                            SRUDiagnostic surrogate = null;
+                            SRUXMLStreamReader recordReader = null;
+
+                            if (packing == SRURecordPacking.STRING) {
                                 /*
-                                 * no record parser found, inject a
-                                 * surrogate diagnostic
+                                 * read content into temporary buffer and then
+                                 * use a new XML reader to parse record data
                                  */
-                                logger.debug("no record data parser found " +
-                                        "for schema '{}'; injecting client " +
-                                        "side surrogate diagnostic", schema);
-                                surrogate = new SRUDiagnostic(
-                                        SRUClientDiagnostics.DIAG_NO_RECORD_PARSER,
-                                        schema,
-                                        "No record data parser for schema '" +
-                                                schema + "' found.");
+                                final String data = reader.readString(true);
+                                InputStream in = new ByteArrayInputStream(
+                                        data.getBytes());
+                                // FIXME: namespace context?
+                                recordReader = createReader(in, false);
+                            } else {
+                                recordReader = reader;
                             }
-                        }
 
-                        if (packing == SRURecordPacking.STRING) {
-                            recordReader.closeCompletly();
-                        }
-
-                        reader.consumeWhitespace();
-                        reader.readEnd(SRU_NS, "recordData", true);
-
-                        String identifier = null;
-                        if (version == SRUVersion.VERSION_1_2) {
-                            identifier = reader.readContent(SRU_NS,
-                                    "recordIdentifier", false);
-                        }
-
-                        int position = reader.readContent(SRU_NS,
-                                "recordPosition", false, -1);
-
-                        logger.debug("recordIdentifier = {}, recordPosition = {}",
-                                identifier, position);
-
-                        // notify handler
-                        if (surrogate != null) {
-                            handler.onSurrogateRecord(identifier,
-                                    position, surrogate);
-                        } else {
-                            if (recordData != null) {
-                                handler.onRecord(identifier,
-                                        position, recordData);
+                            if (SRU_DIAGNOSTIC_RECORD_SCHEMA.equals(schema)) {
+                                surrogate = parseDiagnostic(recordReader, true,
+                                        strictMode);
+                            } else {
+                                SRURecordDataParser parser = findParser(schema);
+                                if (parser != null) {
+                                    try {
+                                        proxy.reset(recordReader);
+                                        recordData =
+                                                parser.parse(proxy, version);
+                                    } catch (XMLStreamException e) {
+                                        throw new SRUClientException(
+                                                "error parsing record", e);
+                                    }
+                                    if (recordData == null) {
+                                        logger.debug("record parser did not parse "
+                                                + "record correctly and returned "
+                                                + "null; injecting client side "
+                                                + "surrogate diagnostic");
+                                        surrogate = new SRUDiagnostic(
+                                                SRUClientDiagnostics.DIAG_RECORD_PARSER_NULL,
+                                                null,
+                                                "Record parser for schema '" +
+                                                        schema +
+                                                        "' did not " +
+                                                        "parse record correctly " +
+                                                        "and errornously " +
+                                                        "returned null.");
+                                    }
+                                } else {
+                                    /*
+                                     * no record parser found, inject a
+                                     * surrogate diagnostic
+                                     */
+                                    logger.debug(
+                                            "no record data parser found "
+                                                    + "for schema '{}'; injecting client "
+                                                    + "side surrogate diagnostic",
+                                            schema);
+                                    surrogate = new SRUDiagnostic(
+                                            SRUClientDiagnostics.DIAG_NO_RECORD_PARSER,
+                                            schema,
+                                            "No record data parser for schema '" +
+                                                    schema + "' found.");
+                                }
                             }
-                        }
 
-                        if (reader.readStart(SRU_NS, "extraRecordData", false)) {
+                            if (packing == SRURecordPacking.STRING) {
+                                recordReader.closeCompletly();
+                            }
+
                             reader.consumeWhitespace();
-                            proxy.reset(reader);
-                            try {
-                                handler.onExtraRecordData(identifier,
-                                        position, proxy);
-                            } catch (XMLStreamException e) {
-                                throw new SRUClientException("handler "
-                                        + "triggered error while parsing "
-                                        + "'extraRecordData'", e);
-                            }
-                            reader.consumeWhitespace();
-                            reader.readEnd(SRU_NS, "extraRecordData", true);
-                        }
+                            reader.readEnd(SRU_NS, "recordData", true);
 
-                        reader.readEnd(SRU_NS, "record");
-                    } // while
-                    reader.readEnd(SRU_NS, "records");
+                            String identifier = null;
+                            if (version == SRUVersion.VERSION_1_2) {
+                                identifier = reader.readContent(SRU_NS,
+                                        "recordIdentifier", false);
+                            }
+
+                            int position = reader.readContent(SRU_NS,
+                                    "recordPosition", false, -1);
+
+                            logger.debug("recordIdentifier = {}, " +
+                                    "recordPosition = {}",
+                                    identifier, position);
+
+                            // notify handler
+                            if (surrogate != null) {
+                                handler.onSurrogateRecord(identifier,
+                                        position, surrogate);
+                            } else {
+                                if (recordData != null) {
+                                    handler.onRecord(identifier,
+                                            position, recordData);
+                                }
+                            }
+
+                            if (reader.readStart(SRU_NS,
+                                    "extraRecordData", false)) {
+                                reader.consumeWhitespace();
+                                proxy.reset(reader);
+                                try {
+                                    handler.onExtraRecordData(identifier,
+                                            position, proxy);
+                                } catch (XMLStreamException e) {
+                                    throw new SRUClientException("handler " +
+                                            "triggered error while parsing " +
+                                            "'extraRecordData'", e);
+                                }
+                                reader.consumeWhitespace();
+                                reader.readEnd(SRU_NS, "extraRecordData", true);
+                            }
+
+                            reader.readEnd(SRU_NS, "record");
+                            recordCount++;
+                        } // while
+                        reader.readEnd(SRU_NS, "records");
+                    }
+                    if (recordCount == 0) {
+                        logger.error("endpoint declared {} results, but response contained no <record> elements (behavior may violate SRU specification)", numberOfRecords);
+                    } else if ((request.getMaximumRecords() != -1) && (recordCount > request.getMaximumRecords())) {
+                        logger.error("endpoint did not honour 'maximumRecords' request parameter and responded with {} records instead of a maximum of {}", recordCount, request.getMaximumRecords());
+                    }
                 } else {
                     /*
-                     * provide a better error format, if
+                     * provide a better error format, if endpoints responds with
+                     * an empty <records> element
                      */
                     if (reader.readStart(SRU_NS, "records", false)) {
                         int bad = 0;
@@ -999,7 +1164,7 @@ public class SRUSimpleClient {
                             }
                         } else {
                             logger.error("endpoint declared 0 results, but " +
-                                    "response contained an " + bad +
+                                    "response contained " + bad +
                                     " record(s)");
                             if (strictMode) {
                                 throw new SRUClientException(
@@ -1107,28 +1272,54 @@ public class SRUSimpleClient {
 
 
     private static SRUDiagnostic parseDiagnostic(SRUXMLStreamReader reader,
-            boolean required, boolean stictMode) throws XMLStreamException,
+            boolean required, boolean strictMode) throws XMLStreamException,
             SRUClientException {
         if (reader.readStart(SRU_DIAGNOSIC_NS, "diagnostic", required)) {
 
             // diagnostic/uri
             String uri = reader.readContent(SRU_DIAGNOSIC_NS, "uri", true);
 
-            // diagnostic/details
-            String details = reader.readContent(SRU_DIAGNOSIC_NS, "details",
-                    false, stictMode);
-            if ((details != null) && details.isEmpty()) {
-                details = null;
-                logger.warn("omitting empty element <details> " +
-                        "within element <diagnostic>");
+            String details = null;
+            String message = null;
+            if (strictMode) {
+                // diagnostic/details
+                details = reader.readContent(SRU_DIAGNOSIC_NS, "details",
+                        false, true);
+
+                // diagnostic/message
+                message = reader.readContent(SRU_DIAGNOSIC_NS, "message",
+                        false, true);
+            } else {
+                /*
+                 * common error: diagnostic/details and diagnostic/message may
+                 * appear in any order
+                 */
+                if (reader.peekStart(SRU_DIAGNOSIC_NS, "details")) {
+                    details = reader.readContent(SRU_DIAGNOSIC_NS, "details",
+                            false, false);
+                    message = reader.readContent(SRU_DIAGNOSIC_NS, "message",
+                            false, false);
+                } else {
+                    message = reader.readContent(SRU_DIAGNOSIC_NS, "message",
+                            false, false);
+                    details = reader.readContent(SRU_DIAGNOSIC_NS, "details",
+                            false, false);
+                    if ((message != null) && (details != null)) {
+                        logger.error("element <message> and element " +
+                                "<details> within element <diagnostic> " +
+                                "appeared in wrong order");
+                    }
+                }
             }
 
-            // diagnostic/message
-            String message = reader.readContent(SRU_DIAGNOSIC_NS, "message",
-                    false, stictMode);
+            if ((details != null) && details.isEmpty()) {
+                details = null;
+                logger.debug("omitting empty element <details> " +
+                        "within element <diagnostic>");
+            }
             if ((message != null) && message.isEmpty()) {
                 message = null;
-                logger.warn("omitting empty element <message> " +
+                logger.debug("omitting empty element <message> " +
                         "within element <diagnostic>");
             }
 

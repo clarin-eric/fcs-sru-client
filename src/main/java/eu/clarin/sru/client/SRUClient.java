@@ -55,16 +55,15 @@ public class SRUClient {
     /* common */
     private List<SRUDiagnostic> diagnostics;
     private DocumentFragment extraResponseData;
-    /* explain */
-    private SRURecord record;
     /* scan */
     private List<SRUTerm> terms;
     /* searchRetrieve */
     private int numberOfRecords;
     private String resultSetId;
     private int resultSetIdleTime;
-    private List<SRURecord> records;
     private int nextRecordPosition;
+    /* explain/searchRetrieve */
+    private List<SRURecord> records;
     /* statistics */
     private int totalBytesTransferred;
     private long timeTotal;
@@ -166,19 +165,16 @@ public class SRUClient {
 
     /**
      * Register a record data parser.
-     *
+     * 
      * @param parser
      *            a parser instance
-     * @throws SRUClientException
-     *             if a parser handing the same record schema is already
-     *             registered
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
      * @throws IllegalArgumentException
-     *             if the supplied parser is invalid
+     *             if the supplied parser is invalid or a parser handing the
+     *             same record schema is already registered
      */
-    public void registerRecordParser(SRURecordDataParser parser)
-            throws SRUClientException {
+    public void registerRecordParser(SRURecordDataParser parser) {
         client.registerRecordParser(parser);
     }
 
@@ -201,6 +197,10 @@ public class SRUClient {
         }
         try {
             client.explain(request, handler);
+            SRURecord record = null;
+            if ((records != null) && !records.isEmpty()) {
+                record = records.get(0);
+            }
             return new SRUExplainResponse(request,
                     diagnostics,
                     extraResponseData,
@@ -312,16 +312,15 @@ public class SRUClient {
         /* common */
         diagnostics           = null;
         extraResponseData     = null;
-        /* explain */
-        record                = null;
         /* scan */
         terms                 = null;
         /* searchRetrieve */
         numberOfRecords       = -1;
         resultSetId           = null;
         resultSetIdleTime     = -1;
-        records               = null;
         nextRecordPosition    = -1;
+        /* explain/searchRetrieve */
+        records               = null;
         /* statistics */
         totalBytesTransferred = -1;
         timeQueued            = -1;

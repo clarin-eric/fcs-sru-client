@@ -106,19 +106,16 @@ public class SRUThreadedClient {
 
     /**
      * Register a record data parser.
-     *
+     * 
      * @param parser
      *            a parser instance
-     * @throws SRUClientException
-     *             if a parser handing the same record schema is already
-     *             registered
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
      * @throws IllegalArgumentException
-     *             if the supplied parser is invalid
+     *             if the supplied parser is invalid or a parser handing the
+     *             same record schema is already registered
      */
-    public void registerRecordParser(SRURecordDataParser parser)
-            throws SRUClientException {
+    public void registerRecordParser(SRURecordDataParser parser) {
         if (parser == null) {
             throw new NullPointerException("parser == null");
         }
@@ -132,7 +129,7 @@ public class SRUThreadedClient {
         }
 
         if (parsers.putIfAbsent(recordSchema, parser) != null) {
-            throw new SRUClientException(
+            throw new IllegalArgumentException(
                     "record data parser already registered: " + recordSchema);
 
         }

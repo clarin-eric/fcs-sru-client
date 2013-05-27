@@ -32,13 +32,10 @@ public class TestSimpleClient {
     public static void main(String[] args) {
         if (args.length > 0) {
             logger.info("initializing client ...");
-            SRUSimpleClient client = new SRUSimpleClient(SRUVersion.VERSION_1_2);
-            try {
-                client.registerRecordParser(new ClarinFCSRecordParser());
-            } catch (SRUClientException e) {
-                logger.error("error adding record parser", e);
-                System.exit(1);
-            }
+            SRUSimpleClient client = new SRUSimpleClient();
+
+            // register record data parsers
+            client.registerRecordParser(new ClarinFCSRecordParser());
 
             /*
              * just use one dump handler for each request.
@@ -109,6 +106,9 @@ public class TestSimpleClient {
                         ClarinFCSRecordData record =
                                 (ClarinFCSRecordData) data;
                         TestUtils.dumpResource(record.getResource());
+                    } else if (SRUExplainRecordData.RECORD_SCHEMA
+                            .equals(data.getRecordSchema())) {
+                        TestUtils.dumpExplainRecordData(data);
                     }
                 }
 
