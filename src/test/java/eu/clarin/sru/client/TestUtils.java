@@ -66,9 +66,9 @@ class TestUtils {
         if (response.hasDiagnostics()) {
             for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
                 logger.info("uri={}, message={}, detail={}",
-                        new Object[] { diagnostic.getURI(),
-                                diagnostic.getMessage(),
-                                diagnostic.getDetails() });
+                        diagnostic.getURI(),
+                        diagnostic.getMessage(),
+                        diagnostic.getDetails());
             }
         }
         if (response.hasRecord()) {
@@ -86,20 +86,17 @@ class TestUtils {
         if (response.hasDiagnostics()) {
             for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
                 logger.info("uri={}, message={}, detail={}",
-                        new Object[] {
-                            diagnostic.getURI(),
-                            diagnostic.getMessage(),
-                            diagnostic.getDetails()
-                            });
+                        diagnostic.getURI(),
+                        diagnostic.getMessage(),
+                        diagnostic.getDetails());
             }
         }
         if (response.hasTerms()) {
             for (SRUTerm term : response.getTerms()) {
-                logger.info(
-                        "value={}, numberOfRecords={}, displayTerm={}",
-                        new Object[] { term.getValue(),
-                                term.getNumberOfRecords(),
-                                term.getDisplayTerm() });
+                logger.info("value={}, numberOfRecords={}, displayTerm={}",
+                            term.getValue(),
+                            term.getNumberOfRecords(),
+                            term.getDisplayTerm());
             }
         } else {
             logger.info("no terms");
@@ -110,22 +107,22 @@ class TestUtils {
     public static void printSearchResponse(SRUSearchRetrieveResponse response) {
         logger.info("displaying results of 'searchRetrieve' request ...");
         logger.info("numberOfRecords = {}, nextResultPosition = {}",
-                new Object[] { response.getNumberOfRecords(),
-                        response.getNextRecordPosition() });
+                response.getNumberOfRecords(),
+                response.getNextRecordPosition());
         if (response.hasDiagnostics()) {
             for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
                 logger.info("uri={}, message={}, detail={}",
-                        new Object[] { diagnostic.getURI(),
-                                diagnostic.getMessage(),
-                                diagnostic.getDetails() });
+                        diagnostic.getURI(),
+                        diagnostic.getMessage(),
+                        diagnostic.getDetails());
             }
         }
         if (response.hasRecords()) {
             for (SRURecord record : response.getRecords()) {
                 logger.info("schema = {}, identifier = {}, position = {}",
-                        new Object[] { record.getRecordSchema(),
-                                record.getRecordIdentifier(),
-                                record.getRecordPosition() });
+                        record.getRecordSchema(),
+                        record.getRecordIdentifier(),
+                        record.getRecordPosition());
                 if (record.isRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA)) {
                     ClarinFCSRecordData rd =
                             (ClarinFCSRecordData) record.getRecordData();
@@ -134,8 +131,7 @@ class TestUtils {
                     SRUSurrogateRecordData r =
                             (SRUSurrogateRecordData) record.getRecordData();
                     logger.info("SURROGATE DIAGNOSTIC: uri={}, message={}, detail={}",
-                            new Object[] { r.getURI(), r.getMessage(),
-                                    r.getDetails() });
+                                r.getURI(), r.getMessage(), r.getDetails());
                 } else {
                     logger.info("UNSUPPORTED SCHEMA: {}",
                             record.getRecordSchema());
@@ -150,12 +146,10 @@ class TestUtils {
     public static void dumpExplainRecordData(SRURecordData recordData) {
         if (SRUExplainRecordData.RECORD_SCHEMA.equals(recordData.getRecordSchema())) {
             SRUExplainRecordData data = (SRUExplainRecordData) recordData;
-            logger.info("host={}, port={}, database={}", new Object[] {
+            logger.info("host={}, port={}, database={}",
                     data.getServerInfo().getHost(),
                     data.getServerInfo().getPort(),
-                    data.getServerInfo().getDatabase()
-            });
-            
+                    data.getServerInfo().getDatabase());
         }
     }
 
@@ -181,34 +175,21 @@ class TestUtils {
     private static void dumpDataView(String s, List<DataView> dataviews) {
         for (DataView dataview : dataviews) {
             logger.info("{}DataView: type={}, pid={}, ref={}",
-                    new Object[] {
-                        s,
-                        dataview.getMimeType(),
-                        dataview.getPid(),
-                        dataview.getRef()
-                    });
+                    s, dataview.getMimeType(), dataview.getPid(),
+                    dataview.getRef());
             if (dataview instanceof DataViewGenericDOM) {
                 final DataViewGenericDOM view = (DataViewGenericDOM) dataview;
                 final Node root = view.getDocument().getFirstChild();
                 logger.info("{}DataView: root element <{}> / {}",
-                        new Object[] {
-                            s,
-                            root.getNodeName(),
-                            root.getOwnerDocument().hashCode() });
+                        s, root.getNodeName(),
+                        root.getOwnerDocument().hashCode());
             } else if (dataview instanceof DataViewGenericString) {
                 final DataViewGenericString view = (DataViewGenericString) dataview;
-                logger.info("{}DataView: data = {}",
-                        new Object[] {
-                            s,
-                            view.getContent() });
+                logger.info("{}DataView: data = {}", s, view.getContent());
             } else if (dataview.isMimeType(DataViewKWIC.TYPE)) {
                 final DataViewKWIC kw = (DataViewKWIC) dataview;
                 logger.info("{}DataView: {} / {} / {}",
-                        new Object[] {
-                            s,
-                            kw.getLeft(),
-                            kw.getKeyword(),
-                            kw.getRight() });
+                        s, kw.getLeft(), kw.getKeyword(), kw.getRight());
             }
         }
     }

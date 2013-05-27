@@ -48,9 +48,8 @@ public class TestSimpleClient {
                         throws SRUClientException {
                     for (SRUDiagnostic diagnostic : diagnostics) {
                         logger.info("onDiagnostics: uri={}, detail={}, message={}",
-                                new Object[] { diagnostic.getURI(),
-                                        diagnostic.getDetails(),
-                                        diagnostic.getMessage() });
+                                diagnostic.getURI(), diagnostic.getDetails(),
+                                diagnostic.getMessage());
                     }
                 }
 
@@ -75,9 +74,9 @@ public class TestSimpleClient {
                 public void onTerm(String value, int numberOfRecords,
                         String displayTerm, SRUWhereInList whereInList)
                         throws SRUClientException {
-                    logger.info("onTerm(): value = {}, numberOfRecords = {}, displayTerm = {}, whereInList = {}",
-                            new Object[] { value, numberOfRecords, displayTerm,
-                                    whereInList });
+                    logger.info("onTerm(): value = {}, numberOfRecords = {}, " +
+                            "displayTerm = {}, whereInList = {}",
+                            value, numberOfRecords, displayTerm, whereInList);
                 }
 
                 @Override
@@ -99,15 +98,12 @@ public class TestSimpleClient {
                 public void onRecord(String identifier, int position,
                         SRURecordData data) throws SRUClientException {
                     logger.info("onRecord(): identifier = {}, position = {}, schema = {}",
-                            new Object[] { identifier, position,
-                                    data.getRecordSchema() });
-                    if (ClarinFCSRecordData.RECORD_SCHEMA
-                            .equals(data.getRecordSchema())) {
+                                identifier, position, data.getRecordSchema());
+                    if (ClarinFCSRecordData.RECORD_SCHEMA.equals(data.getRecordSchema())) {
                         ClarinFCSRecordData record =
                                 (ClarinFCSRecordData) data;
                         TestUtils.dumpResource(record.getResource());
-                    } else if (SRUExplainRecordData.RECORD_SCHEMA
-                            .equals(data.getRecordSchema())) {
+                    } else if (SRUExplainRecordData.RECORD_SCHEMA.equals(data.getRecordSchema())) {
                         TestUtils.dumpExplainRecordData(data);
                     }
                 }
@@ -116,8 +112,7 @@ public class TestSimpleClient {
                 public void onSurrogateRecord(String identifier, int position,
                         SRUDiagnostic data) throws SRUClientException {
                     logger.info("onSurrogateRecord: identifier = {}, position = {}, uri={}, detail={}, message={}",
-                            new Object[] { identifier, position, data.getURI(),
-                                    data.getDetails(), data.getMessage() });
+                            identifier, position, data.getURI(), data.getDetails(), data.getMessage());
                 }
             };
 

@@ -274,8 +274,8 @@ public class SRUSimpleClient {
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
             logger.debug("{} byte(s) in {} milli(s) " +
                     "({} milli(s) network / {} milli(s) processing)",
-                    new Object[] { reader.getByteCount(),
-                            millisTotal, millisNetwork, millisProcessing });
+                    reader.getByteCount(), millisTotal, millisNetwork,
+                    millisProcessing);
             handler.onRequestStatistics((int) reader.getByteCount(),
                     millisTotal, millisNetwork, millisProcessing);
         } catch (IllegalStateException e) {
@@ -360,8 +360,8 @@ public class SRUSimpleClient {
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
             logger.debug("{} byte(s) in {} milli(s) " +
                     "({} milli(s) network / {} milli(s) processing)",
-                    new Object[] { reader.getByteCount(),
-                            millisTotal, millisNetwork, millisProcessing });
+                    reader.getByteCount(), millisTotal, millisNetwork,
+                    millisProcessing);
             handler.onRequestStatistics((int) reader.getByteCount(),
                     millisTotal, millisNetwork, millisProcessing);
         } catch (IllegalStateException e) {
@@ -446,8 +446,8 @@ public class SRUSimpleClient {
                     TimeUnit.NANOSECONDS.toMillis(ts_end - ts_parsing);
             logger.debug("{} byte(s) in {} milli(s) " +
                     "({} milli(s) network / {} milli(s) processing)",
-                    new Object[] { reader.getByteCount(),
-                            millisTotal, millisNetwork, millisProcessing });
+                    reader.getByteCount(), millisTotal, millisNetwork,
+                    millisProcessing);
             handler.onRequestStatistics((int) reader.getByteCount(),
                     millisTotal, millisNetwork, millisProcessing);
         } catch (IllegalStateException e) {
@@ -797,10 +797,9 @@ public class SRUSimpleClient {
                                         "invalid value for 'whereInList': " + s);
                             }
                         }
-                        logger.debug("value = {}, numberOfRecords = {}, "
-                                + "displayTerm = {}, whereInList = {}",
-                                new Object[] { value, numberOfRecords,
-                                        displayTerm, whereInList });
+                        logger.debug("value = {}, numberOfRecords = {}, " +
+                                "displayTerm = {}, whereInList = {}", value,
+                                numberOfRecords, displayTerm, whereInList);
                         handler.onTerm(value, numberOfRecords, displayTerm,
                                 whereInList);
 
@@ -947,9 +946,9 @@ public class SRUSimpleClient {
                 int resultSetIdleTime = reader.readContent(SRU_NS,
                         "resultSetIdleTime", false, -1);
 
-                logger.debug("numberOfRecords = {}, resultSetId = {}, "
-                        + "resultSetIdleTime = {}", new Object[] {
-                        numberOfRecords, resultSetId, resultSetIdleTime });
+                logger.debug("numberOfRecords = {}, resultSetId = {}, " +
+                        "resultSetIdleTime = {}", numberOfRecords,
+                        resultSetId, resultSetIdleTime);
 
                 // searchRetrieveResponse/results
                 if (numberOfRecords > 0) {
@@ -991,8 +990,8 @@ public class SRUSimpleClient {
 
                             logger.debug("schema = {}, packing = {}, " +
                                     "requested packing = {}",
-                                    new Object[] { schema, packing,
-                                            request.getRecordPacking() });
+                                    schema, packing,
+                                    request.getRecordPacking());
 
                             if ((request.getRecordPacking() != null) &&
                                     (packing != request.getRecordPacking())) {
@@ -1326,7 +1325,7 @@ public class SRUSimpleClient {
             reader.readEnd(SRU_DIAGNOSIC_NS, "diagnostic");
 
             logger.debug("diagnostic: uri={}, detail={}, message={}",
-                    new Object[] { uri, details, message });
+                    uri, details, message);
             return new SRUDiagnostic(uri, details, message);
         } else {
             return null;

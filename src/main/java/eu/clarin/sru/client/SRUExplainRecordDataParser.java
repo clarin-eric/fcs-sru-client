@@ -166,10 +166,8 @@ public class SRUExplainRecordDataParser implements SRURecordDataParser {
                     "authentication", true);
         }
         XmlStreamReaderUtils.readEnd(reader, ZEEREX_NS, "serverInfo", true);
-        logger.debug(
-                "serverInfo: host={}, port={}, database={}, version={}, protocol={}, transport={}",
-                new Object[] { host, port, database, version, protocol,
-                        transports });
+        logger.debug("serverInfo: host={}, port={}, database={}, version={}, protocol={}, transport={}",
+                host, port, database, version, protocol, transports);
         return new ServerInfo(host, port, database, protocol, version,
                 transports);
     }
