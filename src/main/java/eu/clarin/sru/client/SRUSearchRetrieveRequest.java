@@ -29,7 +29,7 @@ package eu.clarin.sru.client;
  * @see <a href="http://www.loc.gov/standards/sru/specs/search-retrieve.html">
  *      SRU SearchRetrieve Operation</a>
  */
-public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
+public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
     /** for end-point conformance testing only. never use in production. */
     public static final String X_MALFORMED_QUERY =
             "x-malformed-query";

@@ -22,7 +22,7 @@ package eu.clarin.sru.client;
  * @see SRUExplainHandler
  * @see <a href="http://www.loc.gov/standards/sru/specs/explain.html">SRU Explain Operation</a>
  */
-public final class SRUExplainRequest extends SRUAbstractRequest {
+public class SRUExplainRequest extends SRUAbstractRequest {
     private SRURecordPacking recordPacking;
 
 

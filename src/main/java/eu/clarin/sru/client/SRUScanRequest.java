@@ -27,7 +27,7 @@ package eu.clarin.sru.client;
  * @see <a href="http://www.loc.gov/standards/sru/specs/scan.html">SRU Scan
  *      Operation</a>
  */
-public final class SRUScanRequest extends SRUAbstractRequest {
+public class SRUScanRequest extends SRUAbstractRequest {
     /** for end-point conformance testing only. never use in production. */
     public static final String X_MALFORMED_SCAN_CLAUSE =
             "x-malformed-scanClause";
