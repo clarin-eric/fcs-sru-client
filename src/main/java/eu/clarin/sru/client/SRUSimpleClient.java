@@ -491,8 +491,10 @@ public class SRUSimpleClient {
     private void parseExplainResponse(final SRUXMLStreamReader reader,
             final SRUExplainRequest request, final SRUExplainHandler handler)
             throws SRUClientException {
-        logger.debug("parsing 'explain' response");
-// FIXME: ship explain record data for now
+        logger.debug("parsing 'explain' response (mode = {})",
+                (request.isStrictMode() ? "strict" : "non-strict"));
+
+        // FIXME: ship explain record data for now
 //        doParseExplainResponse(reader, request, handler, true);
         doParseExplainResponse(reader, request, handler, false);
     }
@@ -521,7 +523,9 @@ public class SRUSimpleClient {
                 if (!strictMode && reader.peekStart(SRU_NS, "recordPacking")) {
                     packing = parseRecordPacking(reader, false);
                     if (packing != null) {
-                        logger.error("element <recordPacking> must apperear after element <recordSchema> within element <record>");
+                        logger.error("element <recordPacking> must apperear " +
+                                "after element <recordSchema> within " +
+                                "element <record>");
                     }
                 }
                 String schema =
@@ -620,9 +624,12 @@ public class SRUSimpleClient {
              * common error: echoedExplainRequest in default namespace
              */
             if (reader.readStart("", "echoedExplainRequest", false)) {
-                logger.error("Element 'echoedExplainRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                logger.error("Element 'echoedExplainRequest' must be in SRU " +
+                        "namespace, but endpoint put it into default namespace");
                 if (strictMode) {
-                    throw new SRUClientException("Element 'echoedExplainRequest' must be in SRU namespace, but endpoint put it into default namespace");
+                    throw new SRUClientException("Element " +
+                            "'echoedExplainRequest' must be in SRU namespace,"+
+                            " but endpoint put it into default namespace");
                 }
                 reader.readEnd("", "echoedExplainRequest", true);
             }
@@ -710,9 +717,11 @@ public class SRUSimpleClient {
                     }
                 }, false);
             } else {
-                logger.debug("parsing 'scanResponse' response");
-
                 final boolean strictMode = request.isStrictMode();
+
+                logger.debug("parsing 'scan' response (mode = {})",
+                        (strictMode ? "strict" : "non-strict"));
+
 
                 // scanResponse
                 reader.readStart(SRU_NS, "scanResponse", true);
@@ -888,9 +897,10 @@ public class SRUSimpleClient {
                     }
                 }, false);
             } else {
-                logger.debug("parsing 'searchRetrieve' response");
-
                 final boolean strictMode = request.isStrictMode();
+
+                logger.debug("parsing 'searchRetrieve' response (mode = {}",
+                        (strictMode ? "strict" : "non-strict"));
 
                 // searchRetrieveResponse
                 reader.readStart(SRU_NS, "searchRetrieveResponse", true);
