@@ -79,7 +79,6 @@ public class SRUSimpleClient {
     private static final Logger logger =
             LoggerFactory.getLogger(SRUSimpleClient.class);
     private final SRUVersion defaultVersion;
-    private boolean strictMode;
     private final Map<String, SRURecordDataParser> parsers;
     private final HttpClient httpClient;
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
@@ -90,11 +89,10 @@ public class SRUSimpleClient {
      * Constructor. This constructor will create a <em>strict</em> client and
      * use the default SRU version.
      *
-     * @see #SRUSimpleClient(SRUVersion, boolean)
      * @see #DEFAULT_SRU_VERSION
      */
     public SRUSimpleClient() {
-        this(DEFAULT_SRU_VERSION, true);
+        this(DEFAULT_SRU_VERSION, new HashMap<String, SRURecordDataParser>());
     }
 
 
@@ -104,28 +102,9 @@ public class SRUSimpleClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
-     * @see #SRUSimpleClient(SRUVersion, boolean)
      */
     public SRUSimpleClient(SRUVersion defaultVersion) {
-        this(defaultVersion, true);
-    }
-
-
-    /**
-     * Constructor.
-     *
-     * @param defaultVersion
-     *            the default version to use for SRU requests; may be overridden
-     *            by individual requests
-     * @param strictMode
-     *            if <code>true</code> the client will strictly adhere to the
-     *            SRU standard and raise fatal errors on violations, if
-     *            <code>false</code> it will act more forgiving and ignore
-     *            certain violations
-     */
-    public SRUSimpleClient(SRUVersion defaultVersion, boolean strictMode) {
-        this(defaultVersion, strictMode,
-                new HashMap<String, SRURecordDataParser>());
+        this(defaultVersion, new HashMap<String, SRURecordDataParser>());
     }
 
 
@@ -148,7 +127,7 @@ public class SRUSimpleClient {
      *            a <code>Map</code> to store record schema to record data
      *            parser mappings
      */
-    SRUSimpleClient(SRUVersion defaultVersion, boolean strictMode,
+    SRUSimpleClient(SRUVersion defaultVersion,
             Map<String, SRURecordDataParser> parsers) {
         if (defaultVersion == null) {
             throw new NullPointerException("version == null");
@@ -157,34 +136,10 @@ public class SRUSimpleClient {
             throw new NullPointerException("parsers == null");
         }
         this.defaultVersion = defaultVersion;
-        this.strictMode     = strictMode;
         this.parsers        = parsers;
-        this.httpClient = new DefaultHttpClient();
+        this.httpClient     = new DefaultHttpClient();
         this.httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT,
                     "eu.clarin.sru.client/0.0.1");
-    }
-
-
-    /**
-     * Get the SRU protocol conformance mode of the client.
-     *
-     * @return <code>true</code> if the client operation in strict mode,
-     *         <code>false</code> otherwise
-     */
-    public boolean isStrictMode() {
-        return strictMode;
-    }
-
-
-    /**
-     * Set the SRU protocol conformance mode of the client.
-     *
-     * @param strictMode
-     *            <code>true</code> if the client should operate in strict mode,
-     *            <code>false</code> if the client should be more tolerant
-     */
-    public void setStrictMode(boolean strictMode) {
-        this.strictMode = strictMode;
     }
 
 
@@ -547,6 +502,8 @@ public class SRUSimpleClient {
             SRUAbstractRequest request, SRUExplainHandler handler,
             boolean parseRecordData) throws SRUClientException {
         try {
+            final boolean strictMode = request.isStrictMode();
+
             // explainResponse
             reader.readStart(SRU_NS, "explainResponse", true);
 
@@ -755,6 +712,8 @@ public class SRUSimpleClient {
             } else {
                 logger.debug("parsing 'scanResponse' response");
 
+                final boolean strictMode = request.isStrictMode();
+
                 // scanResponse
                 reader.readStart(SRU_NS, "scanResponse", true);
 
@@ -930,6 +889,8 @@ public class SRUSimpleClient {
                 }, false);
             } else {
                 logger.debug("parsing 'searchRetrieve' response");
+
+                final boolean strictMode = request.isStrictMode();
 
                 // searchRetrieveResponse
                 reader.readStart(SRU_NS, "searchRetrieveResponse", true);

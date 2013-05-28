@@ -110,7 +110,9 @@ abstract class SRUAbstractRequest {
     } // class URIHelper
     /** The URL of the endpoint. */
     protected final String endpointURI;
-    /** The version to be sued  for this request. */
+    /** The request should be performed in strict SRU protocol conformance mode */
+    private boolean strictMode;
+    /** The version to be used for this request. */
     protected SRUVersion version;
     /** A map of extra request data parameters. */
     protected Map<String, String> extraRequestData;
@@ -140,6 +142,31 @@ abstract class SRUAbstractRequest {
      */
     public String getEndpointURI() {
         return endpointURI;
+    }
+
+
+    /**
+     * Get the SRU protocol conformance mode for this request
+     *
+     * @return <code>true</code> if the request will be performed in strict
+     *         mode, <code>false</code> if the request will be performed in a
+     *         more tolerant mode
+     */
+    public boolean isStrictMode() {
+        return strictMode;
+    }
+
+
+    /**
+     * Set the SRU protocol conformance mode for this request
+     *
+     * @param strictMode
+     *            <code>true</code> if the request should be performed in strict
+     *            mode, <code>false</code> if the request should be performed
+     *            client should in a more tolerant mode
+     */
+    public void setStrictMode(boolean strictMode) {
+        this.strictMode = strictMode;
     }
 
 

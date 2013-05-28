@@ -79,11 +79,12 @@ public class SRUClient {
      * Constructor. This constructor will create a <em>strict</em> client and
      * use the default SRU version.
      *
-     * @see #SRUClient(SRUVersion, boolean)
      * @see SRUSimpleClient#DEFAULT_SRU_VERSION
      */
     public SRUClient() {
-        this(SRUSimpleClient.DEFAULT_SRU_VERSION, true);
+        this(SRUSimpleClient.DEFAULT_SRU_VERSION,
+                new HashMap<String, SRURecordDataParser>(),
+                DocumentBuilderFactory.newInstance());
     }
 
 
@@ -93,27 +94,9 @@ public class SRUClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
-     * @see #SRUClient(SRUVersion, boolean)
      */
     public SRUClient(SRUVersion defaultVersion) {
-        this(defaultVersion, true);
-    }
-
-
-    /**
-     * Constructor.
-     *
-     * @param defaultVersion
-     *            the default version to use for SRU requests; may be overridden
-     *            by individual requests
-     * @param strictMode
-     *            if <code>true</code> the client will strictly adhere to the
-     *            SRU standard and raise fatal errors on violations, if
-     *            <code>false</code> it will act more forgiving and ignore
-     *            certain violations
-     */
-    public SRUClient(SRUVersion defaultVersion, boolean strictMode) {
-        this(defaultVersion, strictMode,
+        this(defaultVersion,
                 new HashMap<String, SRURecordDataParser>(),
                 DocumentBuilderFactory.newInstance());
     }
@@ -129,16 +112,14 @@ public class SRUClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
-     * @param strictMode
-     *            if <code>true</code> the client will strictly adhere to the
-     *            SRU standard and raise fatal errors on violations, if
-     *            <code>false</code> it will act more forgiving and ignore
-     *            certain violations
      * @param parsers
      *            a <code>Map</code> to store record schema to record data
      *            parser mappings
+     * @param documentBuilderFactory
+     *            the Document Builder factory to be used to create Document
+     *            Builders
      */
-    SRUClient(SRUVersion defaultVersion, boolean strictMode,
+    SRUClient(SRUVersion defaultVersion,
             Map<String, SRURecordDataParser> parsers,
             DocumentBuilderFactory documentBuilderFactory) {
         if (defaultVersion == null) {
@@ -147,7 +128,10 @@ public class SRUClient {
         if (parsers == null) {
             throw new NullPointerException("parsers == null");
         }
-        this.client = new SRUSimpleClient(defaultVersion, strictMode, parsers);
+        if (documentBuilderFactory == null) {
+            throw new NullPointerException("documentBuilderFactory == null");
+        }
+        this.client = new SRUSimpleClient(defaultVersion, parsers);
         this.handler = new Handler();
         try {
             synchronized (documentBuilderFactory) {
@@ -165,7 +149,7 @@ public class SRUClient {
 
     /**
      * Register a record data parser.
-     * 
+     *
      * @param parser
      *            a parser instance
      * @throws NullPointerException
