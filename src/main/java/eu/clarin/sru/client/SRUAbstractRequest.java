@@ -116,7 +116,7 @@ abstract class SRUAbstractRequest {
     protected SRUVersion version;
     /** A map of extra request data parameters. */
     protected Map<String, String> extraRequestData;
-    private SRUVersion versionPreformed;
+    private SRUVersion versionPerformed;
 
 
     /**
@@ -262,7 +262,7 @@ abstract class SRUAbstractRequest {
 
 
     final SRUVersion getVersionPerformed() {
-        return versionPreformed;
+        return versionPerformed;
     }
 
 
@@ -318,8 +318,8 @@ abstract class SRUAbstractRequest {
             final String malformedVersion =
                     getExtraRequestData(X_MALFORMED_VERSION);
             if (malformedVersion == null) {
-                versionPreformed = (version != null) ? version : defaultVersion;
-                switch (versionPreformed) {
+                versionPerformed = (version != null) ? version : defaultVersion;
+                switch (versionPerformed) {
                 case VERSION_1_1:
                     uriBuilder.append(PARAM_VERSION, VERSION_1_1);
                     break;
@@ -328,7 +328,7 @@ abstract class SRUAbstractRequest {
                     break;
                 default:
                     throw new SRUClientException("unsupported version: " +
-                            versionPreformed);
+                            versionPerformed);
                 } // switch
             } else {
                 if (!malformedVersion.equalsIgnoreCase(MALFORMED_OMIT)) {
