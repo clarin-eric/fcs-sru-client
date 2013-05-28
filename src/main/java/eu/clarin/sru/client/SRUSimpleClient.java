@@ -570,14 +570,19 @@ public class SRUSimpleClient {
                 } catch (XMLStreamException e) {
                     throw new SRUClientException(
                             "error parsing explain record", e);
+                } finally {
+                    /*
+                     * make sure, we're deallocate the record reader in case of
+                     * string record packing
+                     */
+                    if (packing == SRURecordPacking.STRING) {
+                        recordReader.closeCompletly();
+                    }
                 }
                 if (recordData == null) {
                     // FIXME: error message
                     throw new SRUClientException(
                             "error parsing explain record");
-                }
-                if (packing == SRURecordPacking.STRING) {
-                    recordReader.closeCompletly();
                 }
                 reader.consumeWhitespace();
                 reader.readEnd(SRU_NS, "recordData", true);
@@ -1023,6 +1028,15 @@ public class SRUSimpleClient {
                                     } catch (XMLStreamException e) {
                                         throw new SRUClientException(
                                                 "error parsing record", e);
+                                    } finally {
+                                        /*
+                                         * make sure, we deallocate the record
+                                         * reader in case of string record
+                                         * packing
+                                         */
+                                        if (packing == SRURecordPacking.STRING) {
+                                            recordReader.closeCompletly();
+                                        }
                                     }
                                     if (recordData == null) {
                                         logger.debug("record parser did not parse "
@@ -1055,10 +1069,6 @@ public class SRUSimpleClient {
                                             "No record data parser for schema '" +
                                                     schema + "' found.");
                                 }
-                            }
-
-                            if (packing == SRURecordPacking.STRING) {
-                                recordReader.closeCompletly();
                             }
 
                             reader.consumeWhitespace();
