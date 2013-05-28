@@ -495,8 +495,8 @@ public class SRUSimpleClient {
                 (request.isStrictMode() ? "strict" : "non-strict"));
 
         // FIXME: ship explain record data for now
-        doParseExplainResponse(reader, request, handler, true);
-//        doParseExplainResponse(reader, request, handler, false);
+//        doParseExplainResponse(reader, request, handler, true);
+        doParseExplainResponse(reader, request, handler, false);
     }
 
 
