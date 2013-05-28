@@ -495,8 +495,8 @@ public class SRUSimpleClient {
                 (request.isStrictMode() ? "strict" : "non-strict"));
 
         // FIXME: ship explain record data for now
-//        doParseExplainResponse(reader, request, handler, true);
-        doParseExplainResponse(reader, request, handler, false);
+        doParseExplainResponse(reader, request, handler, true);
+//        doParseExplainResponse(reader, request, handler, false);
     }
 
 
@@ -555,18 +555,15 @@ public class SRUSimpleClient {
                     recordReader = reader;
                 }
 
-                /*
-                 * Hard-coded record schema identifiers for explain
-                 */
-                if (!(SRUExplainRecordDataParser.ZEEREX_NS.equals(schema) ||
-                      SRUExplainRecordDataParser.ZEEREX_NS_QUIRK.equals(schema))) {
-                    throw new SRUClientException("record schema '" + schema +
-                            "' not supported in explain response");
-                }
-
                 try {
                     proxy.reset(recordReader);
-                    recordData = explainRecordParser.parse(proxy, version);
+                    /*
+                     * Try to parse explain record data with explain record
+                     * parser. It will throw an exception, if it cannot handle
+                     * the data.
+                     */
+                    recordData =
+                            explainRecordParser.parse(proxy, version, schema);
                 } catch (XMLStreamException e) {
                     throw new SRUClientException(
                             "error parsing explain record", e);
@@ -1023,8 +1020,7 @@ public class SRUSimpleClient {
                                 if (parser != null) {
                                     try {
                                         proxy.reset(recordReader);
-                                        recordData =
-                                                parser.parse(proxy, version);
+                                        recordData = parser.parse(proxy);
                                     } catch (XMLStreamException e) {
                                         throw new SRUClientException(
                                                 "error parsing record", e);

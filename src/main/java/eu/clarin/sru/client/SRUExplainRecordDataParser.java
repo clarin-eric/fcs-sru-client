@@ -34,9 +34,11 @@ import eu.clarin.sru.client.SRUExplainRecordData.ServerInfo;
  *
  * @see <a href="http://zeerex.z3950.org/dtd/">The ZeeRex DTD</a>
  */
-public class SRUExplainRecordDataParser implements SRURecordDataParser {
-    static final String ZEEREX_NS       = SRUExplainRecordData.RECORD_SCHEMA;
-    static final String ZEEREX_NS_QUIRK = "http://explain.z3950.org/dtd/2.1/";
+class SRUExplainRecordDataParser {
+    private static final String ZEEREX_NS       =
+            SRUExplainRecordData.RECORD_SCHEMA;
+    private static final String ZEEREX_NS_QUIRK =
+            "http://explain.z3950.org/dtd/2.1/";
     private static final String VERSION_1_1     = "1.1";
     private static final String VERSION_1_2     = "1.2";
     private static final String TRANSPORT_HTTP  = "http";
@@ -44,16 +46,19 @@ public class SRUExplainRecordDataParser implements SRURecordDataParser {
     private static final Logger logger =
             LoggerFactory.getLogger(SRUExplainRecordDataParser.class);
 
-    @Override
-    public String getRecordSchema() {
-        return SRUExplainRecordData.RECORD_SCHEMA;
-    }
 
+    public SRURecordData parse(XMLStreamReader reader,
+            SRUVersion version, String recordSchema) throws XMLStreamException,
+            SRUClientException {
+        // sanity check, if we are dealing with the expected record schema
+        if (!(ZEEREX_NS.equals(recordSchema) ||
+                ZEEREX_NS_QUIRK.equals(recordSchema))) {
+            throw new SRUClientException("record schema '" + recordSchema +
+                    "' not supported in explain response record data");
+        }
 
-    @Override
-    public SRURecordData parse(final XMLStreamReader reader, SRUVersion version)
-            throws XMLStreamException, SRUClientException {
-        logger.debug("parsing explain record data for version {}", version);
+        logger.debug("parsing explain record data (version={} schema={})",
+                version, recordSchema);
 
         // explain
         if (XmlStreamReaderUtils.readStart(reader, ZEEREX_NS,
