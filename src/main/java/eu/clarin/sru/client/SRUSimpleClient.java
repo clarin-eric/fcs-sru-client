@@ -562,8 +562,8 @@ public class SRUSimpleClient {
                      * parser. It will throw an exception, if it cannot handle
                      * the data.
                      */
-                    recordData =
-                            explainRecordParser.parse(proxy, version, schema);
+                    recordData = explainRecordParser.parse(proxy,
+                            version, strictMode, schema);
                 } catch (XMLStreamException e) {
                     throw new SRUClientException(
                             "error parsing explain record", e);
@@ -611,8 +611,8 @@ public class SRUSimpleClient {
                 reader.readEnd(SRU_NS, "record");
             } else {
                 /*
-                 * do not really parse record and skip everything until <record>
-                 * end tag
+                 * do not really parse record and skip everything
+                 * until <record> end tag
                  */
                 reader.readEnd(SRU_NS, "record", true);
             }
