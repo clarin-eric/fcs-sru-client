@@ -16,6 +16,8 @@
  */
 package eu.clarin.sru.client;
 
+import java.net.URI;
+
 /**
  * An object for performing a <em>explain</em> operation.
  *
@@ -32,6 +34,17 @@ public class SRUExplainRequest extends SRUAbstractRequest {
      * @param baseURI
      *            the baseURI of the endpoint
      */
+    public SRUExplainRequest(URI baseURI) {
+        super(baseURI);
+    }
+
+
+    /**
+     * Constructor.
+     * 
+     * @param baseURI
+     *            the baseURI of the endpoint
+     */
     public SRUExplainRequest(String baseURI) {
         super(baseURI);
     }
@@ -39,7 +52,7 @@ public class SRUExplainRequest extends SRUAbstractRequest {
 
     /**
      * Set the requested record packing.
-     *
+     * 
      * @param recordPacking
      *            the requested record packing
      * @see SRURecordPacking

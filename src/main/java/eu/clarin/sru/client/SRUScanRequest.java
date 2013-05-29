@@ -16,6 +16,8 @@
  */
 package eu.clarin.sru.client;
 
+import java.net.URI;
+
 /**
  * An object for performing a <em>explain</em> operation.
  * <p>The following argument arguments are mandatory:</p>
@@ -42,6 +44,17 @@ public class SRUScanRequest extends SRUAbstractRequest {
     private int maximumTerms = -1;
 
 
+    /**
+     * Constructor.
+     *
+     * @param baseURI
+     *            the baseURI of the endpoint
+     */
+    public SRUScanRequest(URI baseURI) {
+        super(baseURI);
+    }
+
+    
     /**
      * Constructor.
      *

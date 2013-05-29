@@ -108,8 +108,8 @@ abstract class SRUAbstractRequest {
             return uriBuilder.build();
         }
     } // class URIHelper
-    /** The URL of the endpoint. */
-    protected final String endpointURI;
+    /** The baseURI of the SRU server. */
+    protected final URI baseURI;
     /**
      * The request should be processed in strict or non-strict SRU protocol
      * conformance mode. Default value is <code>true</code>.
@@ -125,26 +125,50 @@ abstract class SRUAbstractRequest {
     /**
      * Constructor.
      *
-     * @param endpointURI
-     *            the URI of the endpoint
+     * @param baseURI
+     *            the baseURI of the SRU server
      * @throws NullPointerException
      *             if any required argument is null
      */
-    protected SRUAbstractRequest(String endpointURI) {
-        if (endpointURI == null) {
-            throw new NullPointerException("endpointURI == null");
+    protected SRUAbstractRequest(URI baseURI) {
+        if (baseURI == null) {
+            throw new NullPointerException("baseURI == null");
         }
-        this.endpointURI = endpointURI;
+        this.baseURI = baseURI;
     }
 
 
     /**
-     * Get the endpoint URI.
+     * Constructor.
      *
-     * @return the endpoint URI
+     * @param baseURI
+     *            the baseURI of the SRU server
+     * @throws NullPointerException
+     *             if any required argument is null
+     * @throw IllegalArgumentException if the URI is invalid
      */
-    public String getEndpointURI() {
-        return endpointURI;
+    protected SRUAbstractRequest(String baseURI) {
+        if (baseURI == null) {
+            throw new NullPointerException("baseURI == null");
+        }
+        if (baseURI.isEmpty()) {
+            throw new IllegalArgumentException("baseURI is empty");
+        }
+        try {
+            this.baseURI = new URI(baseURI);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("invalid URI", e);
+        }
+    }
+
+
+    /**
+     * Get the baseURI of the SRU server.
+     *
+     * @return the baseURI of the SRU server
+     */
+    public URI getBaseURI() {
+        return baseURI;
     }
 
 
@@ -277,15 +301,15 @@ abstract class SRUAbstractRequest {
 
         try {
             final URIHelper uriBuilder =
-                    new URIHelper(new URIBuilder(endpointURI));
+                    new URIHelper(new URIBuilder(baseURI));
 
             /*
              * append operation parameter
              *
              * NB: Setting "x-malformed-operation" as an extra request parameter
              * makes the client to send invalid requests. This is intended to
-             * use for testing endpoints for protocol conformance (i.e. provoke
-             * an error) and SHOULD NEVER be used in production!
+             * use for testing SRU servers for protocol conformance (i.e.
+             * provoke an error) and SHOULD NEVER be used in production!
              */
             final String malformedOperation =
                     getExtraRequestData(X_MALFORMED_OPERATION);
@@ -315,8 +339,8 @@ abstract class SRUAbstractRequest {
              *
              * NB: Setting "x-malformed-version" as an extra request parameter
              * makes the client to send invalid requests. This is intended to
-             * use for testing endpoints for protocol conformance (i.e. provoke
-             * an error) and SHOULD NEVER be used in production!
+             * use for testing SRU servers for protocol conformance (i.e.
+             * provoke an error) and SHOULD NEVER be used in production!
              */
             final String malformedVersion =
                     getExtraRequestData(X_MALFORMED_VERSION);
