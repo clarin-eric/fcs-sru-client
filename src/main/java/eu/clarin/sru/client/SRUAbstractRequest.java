@@ -71,7 +71,7 @@ abstract class SRUAbstractRequest {
     } // enum SRUOperation
 
 
-    class URIHelper {
+    static class URIHelper {
         private final URIBuilder uriBuilder;
 
 
@@ -110,8 +110,11 @@ abstract class SRUAbstractRequest {
     } // class URIHelper
     /** The URL of the endpoint. */
     protected final String endpointURI;
-    /** The request should be performed in strict SRU protocol conformance mode */
-    private boolean strictMode;
+    /**
+     * The request should be processed in strict or non-strict SRU protocol
+     * conformance mode. Default value is <code>true</code>.
+     */
+    private boolean strictMode = true;
     /** The version to be used for this request. */
     protected SRUVersion version;
     /** A map of extra request data parameters. */
