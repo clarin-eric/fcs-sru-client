@@ -57,7 +57,7 @@ class SRUExplainRecordDataParser {
                     "' not supported in explain response record data");
         }
 
-        logger.debug("parsing explain record data (version={} schema={})",
+        logger.debug("parsing explain record data (version={}, schema={})",
                 version, recordSchema);
 
         // explain
@@ -81,46 +81,151 @@ class SRUExplainRecordDataParser {
             final String namespace, final SRUVersion version)
             throws XMLStreamException, SRUClientException {
 
+        /*
+         * explain (serverInfo, databaseInfo?, metaInfo?, indexInfo?,
+         *     (recordInfo|schemaInfo)?, configInfo?)
+         */
+
         // explain/serverInfo
         ServerInfo serverInfo = parseServerInfo(reader, namespace);
 
         // explain/databaseInfo
         if (XmlStreamReaderUtils.readStart(reader, namespace, "databaseInfo", false)) {
+            /*
+             * databaseInfo (title*, description*, (author | contact | extent |
+             *     history | langUsage | restrictions | subjects | links |
+             *     implementation)*)
+             */
             logger.debug("databaseInfo");
+
+            while (XmlStreamReaderUtils.readStart(reader,
+                    namespace, "title", false, true)) {
+                final String lang = XmlStreamReaderUtils.readAttributeValue(reader, null, "lang", false);
+                final String primary = XmlStreamReaderUtils.readAttributeValue(reader, null, "primary", false);
+                XmlStreamReaderUtils.consumeStart(reader);
+                String value = XmlStreamReaderUtils.readString(reader, false);
+                XmlStreamReaderUtils.readEnd(reader, namespace, "title");
+                logger.debug("-> title = {} (primary={}, lang={})", value, primary, lang);
+            } // while
+
+            while (XmlStreamReaderUtils.readStart(reader,
+                    namespace, "description", false, true)) {
+                XmlStreamReaderUtils.consumeStart(reader);
+                String value = XmlStreamReaderUtils.readString(reader, false);
+                XmlStreamReaderUtils.readEnd(reader, namespace, "description");
+                logger.debug("-> description = {}", value);
+            }
+
             XmlStreamReaderUtils.readEnd(reader, namespace, "databaseInfo", true);
         }
 
         // explain/metaInfo
         if (XmlStreamReaderUtils.readStart(reader, namespace, "metaInfo", false)) {
+            /*
+             * metaInfo (dateModified, (aggregatedFrom, dateAggregated)?)
+             */
             logger.debug("metaInfo");
             XmlStreamReaderUtils.readEnd(reader, namespace, "metaInfo", true);
         }
 
         // explain/indexInfo
         while (XmlStreamReaderUtils.readStart(reader, namespace, "indexInfo", false)) {
+            /*
+             * indexInfo ((set | index | sortKeywords)+)
+             */
             logger.debug("indexInfo");
+            boolean found = false;
             for (;;) {
-                /*
-                 * FIXME: SRU 2.0 has *either* <set> or <index>
-                 * check with SRU 1.2 ...
-                 */
                 if (XmlStreamReaderUtils.readStart(reader, namespace, "set", false, true)) {
-                    logger.debug("set");
+                    logger.debug("-> set");
                     // FIXME: read attributes
                     XmlStreamReaderUtils.consumeStart(reader);
 
                     XmlStreamReaderUtils.readEnd(reader, namespace, "set", true);
+                    found = true;
                 } else if (XmlStreamReaderUtils.readStart(reader, namespace, "index", false, true)) {
-                    logger.debug("index");
+                    logger.debug("-> index");
                     // FIXME: read attributes
                     XmlStreamReaderUtils.consumeStart(reader);
                     XmlStreamReaderUtils.readEnd(reader, namespace, "index", true);
+                    found = true;
+                } else if (XmlStreamReaderUtils.readStart(reader, namespace, "sortKeyword", false)) {
+                    logger.debug("-> sortKeywords");
+                    XmlStreamReaderUtils.readEnd(reader, namespace, "sortKeyword", true);
+                    found = true;
+                } else {
+                    break;
+                }
+            } // for
+            if (!found) {
+                // FIXME: error message
+                throw new XMLStreamException("expected at least one of <set>. <index> or <sortKeyword> element", reader.getLocation());
+            }
+            XmlStreamReaderUtils.readEnd(reader, namespace, "indexInfo", true);
+        } // while
+
+        // explain/recordInfo or explain/schemaInfo
+        if (XmlStreamReaderUtils.peekStart(reader, namespace, "recordInfo") ||
+            XmlStreamReaderUtils.peekStart(reader, namespace, "schemaInfo")) {
+            if (XmlStreamReaderUtils.readStart(reader,
+                    namespace, "recordInfo", false)) {
+                logger.debug("recordInfo");
+                XmlStreamReaderUtils.readEnd(reader, namespace, "recordInfo", true);
+            } else if (XmlStreamReaderUtils.readStart(reader,
+                    namespace, "schemaInfo", false)) {
+                logger.debug("schemaInfo");
+                XmlStreamReaderUtils.readEnd(reader, namespace, "schemaInfo", true);
+            } else {
+                throw new XMLStreamException("unexpected start element '" +
+                        reader.getName() + "'", reader.getLocation());
+            }
+        }
+
+        // explain/configInfo
+        if (XmlStreamReaderUtils.readStart(reader, namespace,
+                "configInfo", false)) {
+            /*
+             * configInfo ((default|setting|supports)*)
+             */
+            logger.debug("configInfo");
+            for (;;) {
+                if (XmlStreamReaderUtils.readStart(reader,
+                        namespace, "default", false, true)) {
+                    final String type =
+                            XmlStreamReaderUtils.readAttributeValue(reader,
+                                    null, "type", true);
+                    XmlStreamReaderUtils.consumeStart(reader);
+                    final String value =
+                            XmlStreamReaderUtils.readString(reader, true);
+                    XmlStreamReaderUtils.readEnd(reader, namespace, "default");
+                    logger.debug("-> default: type={}, value={}", type, value);
+                } else if (XmlStreamReaderUtils.readStart(reader,
+                        namespace, "setting", false, true)) {
+                    final String type =
+                            XmlStreamReaderUtils.readAttributeValue(reader,
+                                    null, "type", true);
+                    XmlStreamReaderUtils.consumeStart(reader);
+                    final String value =
+                            XmlStreamReaderUtils.readString(reader, true);
+                    XmlStreamReaderUtils.readEnd(reader, namespace, "setting");
+                    logger.debug("-> setting: type={}, value={}", type, value);
+                } else if (XmlStreamReaderUtils.readStart(reader,
+                        namespace, "supports", false, true)) {
+                    final String type =
+                            XmlStreamReaderUtils.readAttributeValue(reader,
+                                    null, "type", true);
+                    XmlStreamReaderUtils.consumeStart(reader);
+                    final String value =
+                            XmlStreamReaderUtils.readString(reader, true);
+                    XmlStreamReaderUtils.readEnd(reader, namespace, "supports");
+
+                    logger.debug("-> supports: type={}, value={}", type, value);
                 } else {
                     break;
                 }
             }
-            XmlStreamReaderUtils.readEnd(reader, namespace, "indexInfo", true);
-        } // while
+            XmlStreamReaderUtils.readEnd(reader, namespace, "configInfo", true);
+        }
 
         XmlStreamReaderUtils.readEnd(reader, namespace, "explain", true);
         return new SRUExplainRecordData(serverInfo);
@@ -151,10 +256,8 @@ class SRUExplainRecordDataParser {
         }
 
         Set<String> transports = new HashSet<String>();
-        s = XmlStreamReaderUtils.readAttributeValue(reader,
-                null, "transport");
+        s = XmlStreamReaderUtils.readAttributeValue(reader, null, "transport");
         if (s != null) {
-            s = s + " http";
             for (String i : s.split("\\s+")) {
                 String t = null;
                 if (TRANSPORT_HTTP.equalsIgnoreCase(i)) {
@@ -200,8 +303,9 @@ class SRUExplainRecordDataParser {
                     "authentication", true);
         }
         XmlStreamReaderUtils.readEnd(reader, namespace, "serverInfo", true);
-        logger.debug("serverInfo: host={}, port={}, database={}, version={}, protocol={}, transport={}",
-                host, port, database, version, protocol, transports);
+        logger.debug("serverInfo: host={}, port={}, database={}, version={}, " +
+                "protocol={}, transport={}", host, port, database, version,
+                protocol, transports);
         return new ServerInfo(host, port, database, protocol, version,
                 transports);
     }

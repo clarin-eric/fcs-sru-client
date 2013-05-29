@@ -106,8 +106,8 @@ public final class XmlStreamReaderUtils {
                     continue;
                 }
                 if (reader.isStartElement()) {
-                    if (!(namespaceURI.equals(reader.getNamespaceURI()) && localName
-                            .equals(reader.getLocalName()))) {
+                    if (!(namespaceURI.equals(reader.getNamespaceURI()) &&
+                            localName.equals(reader.getLocalName()))) {
                         level++;
                     }
                     reader.next();
@@ -227,6 +227,7 @@ public final class XmlStreamReaderUtils {
 
     public static String peekElementLocalName(XMLStreamReader reader)
             throws XMLStreamException {
+        consumeWhitespace(reader);
         if (!reader.isStartElement()) {
             throw new XMLStreamException("not at a start elment event",
                     reader.getLocation());
@@ -235,6 +236,18 @@ public final class XmlStreamReaderUtils {
     }
 
 
+    public static boolean peekStart(XMLStreamReader reader,
+            String namespaceURI, String localName) throws XMLStreamException {
+        consumeWhitespace(reader);
+        if (!reader.isStartElement()) {
+            throw new XMLStreamException("not at a start elment event",
+                    reader.getLocation());
+        }
+        return namespaceURI.equals(reader.getNamespaceURI()) &&
+                localName.equals(reader.getLocalName());
+    }
+    
+    
     public static void consumeStart(XMLStreamReader reader)
             throws XMLStreamException {
         if (!reader.isStartElement()) {
