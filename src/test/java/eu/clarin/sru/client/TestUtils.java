@@ -35,7 +35,9 @@ class TestUtils {
             LoggerFactory.getLogger(TestUtils.class);
 
     public static SRUExplainRequest makeExplainRequest(String baseURI) {
-        return new SRUExplainRequest(baseURI);
+        SRUExplainRequest request = new SRUExplainRequest(baseURI);
+        request.setExtraRequestData("x-indent-response", "4");
+        return request;
     }
 
 
