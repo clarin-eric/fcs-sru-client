@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.client.SRUExplainRecordData.DatabaseInfo;
+import eu.clarin.sru.client.SRUExplainRecordData.IndexInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.LocalizedString;
 import eu.clarin.sru.client.SRUExplainRecordData.ServerInfo;
 
@@ -48,7 +49,7 @@ class SRUExplainRecordDataParser {
     private static final String VERSION_1_2     = "1.2";
     private static final String TRANSPORT_HTTP  = "http";
     private static final String TRANSPORT_HTTPS = "https";
-    private static final String PRIMARY_TRUE    = "true";
+    private static final String STRING_TRUE     = "true";
     private static final String PRIMARY_FALSE   = "false";
     private static final Logger logger =
             LoggerFactory.getLogger(SRUExplainRecordDataParser.class);
@@ -69,15 +70,6 @@ class SRUExplainRecordDataParser {
 
         // explain
         if (XmlStreamReaderUtils.peekStart(reader, ZEEREX_NS, "explain")) {
-            if (strict) {
-                logger.warn("namespace '{}' is not defined by ZeeRex, " +
-                        "enabling quirks mode (consider using namespace '{}'" +
-                        " which is defined)", ZEEREX_NS_QUIRK, ZEEREX_NS);
-            } else {
-                logger.info("namespace '{}' is not defined by ZeeRex, " +
-                        "enabling quirks mode (consider using namespace '{}'" +
-                        " which is defined)", ZEEREX_NS_QUIRK, ZEEREX_NS);
-            }
             return parseExplain(reader, version, strict, ZEEREX_NS);
         } else if (XmlStreamReaderUtils.peekStart(reader,
                 ZEEREX_NS_QUIRK, "explain")) {
@@ -131,10 +123,11 @@ class SRUExplainRecordDataParser {
         }
 
         // explain/indexInfo (optional)
-        while (XmlStreamReaderUtils.readStart(reader, ns, "indexInfo", false)) {
-            parseIndexInfo(reader, strict, ns);
+        IndexInfo indexInfo = null;
+        if (XmlStreamReaderUtils.readStart(reader, ns, "indexInfo", false)) {
+            indexInfo = parseIndexInfo(reader, strict, ns);
             XmlStreamReaderUtils.readEnd(reader, ns, "indexInfo");
-        } // while
+        } // if
 
         // explain/recordInfo or explain/schemaInfo
         if (XmlStreamReaderUtils.peekStart(reader, ns, "recordInfo") ||
@@ -160,7 +153,7 @@ class SRUExplainRecordDataParser {
         }
 
         XmlStreamReaderUtils.readEnd(reader, ns, "explain", true);
-        return new SRUExplainRecordData(serverInfo, databaseInfo);
+        return new SRUExplainRecordData(serverInfo, databaseInfo, indexInfo);
     }
 
 
@@ -251,9 +244,6 @@ class SRUExplainRecordDataParser {
          *     implementation)*)
          */
 
-        // make sure to remove any whitespace
-        XmlStreamReaderUtils.consumeWhitespace(reader);
-
         List<LocalizedString> title = null;
         List<LocalizedString> description = null;
         List<LocalizedString> author = null;
@@ -267,7 +257,16 @@ class SRUExplainRecordDataParser {
         List<LocalizedString> implementation = null;
 
         byte mode = 0; /* 1 = title, 2 = description, 3 = others */
-        while (reader.isStartElement()) {
+        for (;;) {
+            /*
+             * make sure to remove any whitespace and break, if we do not point
+             * to a start tag
+             */
+            XmlStreamReaderUtils.consumeWhitespace(reader);
+            if (!reader.isStartElement()) {
+                break;
+            }
+
             if (XmlStreamReaderUtils.peekStart(reader, ns, "title")) {
                 if ((mode != 0) && (mode != 1)) {
                     if (strict) {
@@ -291,7 +290,8 @@ class SRUExplainRecordDataParser {
                                 reader.getLocation().getColumnNumber());
                     }
                 }
-                LocalizedString s = parseStringI18N(reader, strict, ns, "title");
+                LocalizedString s =
+                        parseStringI18N(reader, strict, ns, "title", true);
                 if (title == null) {
                     title = new ArrayList<LocalizedString>();
                 }
@@ -321,7 +321,7 @@ class SRUExplainRecordDataParser {
                     }
                 }
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "description");
+                        parseStringI18N(reader, strict, ns, "description", true);
                 if (description == null) {
                     description = new ArrayList<LocalizedString>();
                 }
@@ -329,7 +329,7 @@ class SRUExplainRecordDataParser {
                 mode = 2;
             } else if (XmlStreamReaderUtils.peekStart(reader, ns, "author")) {
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "author");
+                        parseStringI18N(reader, strict, ns, "author", true);
                 if (author == null) {
                     author = new ArrayList<LocalizedString>();
                 }
@@ -337,7 +337,7 @@ class SRUExplainRecordDataParser {
                 mode = 3;
             } else if (XmlStreamReaderUtils.peekStart(reader, ns, "contact")) {
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "contact");
+                        parseStringI18N(reader, strict, ns, "contact", true);
                 if (contact == null) {
                     contact = new ArrayList<LocalizedString>();
                 }
@@ -345,7 +345,7 @@ class SRUExplainRecordDataParser {
                 mode = 3;
             } else if (XmlStreamReaderUtils.peekStart(reader, ns, "extent")) {
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "extent");
+                        parseStringI18N(reader, strict, ns, "extent", true);
                 if (extent == null) {
                     extent = new ArrayList<LocalizedString>();
                 }
@@ -353,7 +353,7 @@ class SRUExplainRecordDataParser {
                 mode = 3;
             } else if (XmlStreamReaderUtils.peekStart(reader, ns, "history")) {
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "history");
+                        parseStringI18N(reader, strict, ns, "history", true);
                 if (history == null) {
                     history = new ArrayList<LocalizedString>();
                 }
@@ -362,7 +362,7 @@ class SRUExplainRecordDataParser {
             } else if (XmlStreamReaderUtils.peekStart(reader,
                     ns, "restrictions")) {
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "restrictions");
+                        parseStringI18N(reader, strict, ns, "restrictions", true);
                 if (restrictions == null) {
                     restrictions = new ArrayList<LocalizedString>();
                 }
@@ -370,7 +370,7 @@ class SRUExplainRecordDataParser {
                 mode = 3;
             } else if (XmlStreamReaderUtils.peekStart(reader, ns, "subjects")) {
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "subjects");
+                        parseStringI18N(reader, strict, ns, "subjects", true);
                 if (subjects == null) {
                     subjects = new ArrayList<LocalizedString>();
                 }
@@ -378,7 +378,7 @@ class SRUExplainRecordDataParser {
                 mode = 3;
             } else if (XmlStreamReaderUtils.peekStart(reader, ns, "links")) {
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "links");
+                        parseStringI18N(reader, strict, ns, "links", true);
                 if (links == null) {
                     links = new ArrayList<LocalizedString>();
                 }
@@ -387,7 +387,7 @@ class SRUExplainRecordDataParser {
             } else if (XmlStreamReaderUtils.peekStart(reader,
                     ns, "implementation")) {
                 LocalizedString s =
-                        parseStringI18N(reader, strict, ns, "implementation");
+                        parseStringI18N(reader, strict, ns, "implementation", true);
                 if (implementation == null) {
                     implementation = new ArrayList<LocalizedString>();
                 }
@@ -400,10 +400,7 @@ class SRUExplainRecordDataParser {
             } else {
                 break;
             }
-
-            // make sure to remove any whitespace
-            XmlStreamReaderUtils.consumeWhitespace(reader);
-        } // while
+        } // for
 
         return new DatabaseInfo(title, description, author, contact,
                 extent, history, langUsage, restrictions, subjects,
@@ -411,30 +408,133 @@ class SRUExplainRecordDataParser {
     }
 
 
-    private static Object parseIndexInfo(XMLStreamReader reader,
+    private static IndexInfo parseIndexInfo(XMLStreamReader reader,
             boolean strict, String ns) throws XMLStreamException,
             SRUClientException {
         /*
          * indexInfo ((set | index | sortKeywords)+)
          */
-        logger.debug("indexInfo");
         boolean found = false;
+        List<IndexInfo.Set> sets = null;
+        List<IndexInfo.Index> indexes = null;
         for (;;) {
             if (XmlStreamReaderUtils.readStart(reader, ns, "set", false, true)) {
-                logger.debug("-> set");
-                // FIXME: read attributes
+                final String identifier =
+                        XmlStreamReaderUtils.readAttributeValue(reader,
+                                null, "identifier");
+                final String name =
+                        XmlStreamReaderUtils.readAttributeValue(reader,
+                                null, "name");
                 XmlStreamReaderUtils.consumeStart(reader);
 
-                XmlStreamReaderUtils.readEnd(reader, ns, "set", true);
+                // indexInfo/set/title
+                List<LocalizedString> titles = null;
+                for (;;) {
+                    LocalizedString title =
+                            parseStringI18N(reader, strict, ns, "title", false);
+                    if (title == null) {
+                        break;
+                    }
+                    if (titles == null) {
+                        titles = new ArrayList<LocalizedString>();
+                    }
+                    titles.add(title);
+                } // for
+                XmlStreamReaderUtils.readEnd(reader, ns, "set");
+
+                if (sets == null) {
+                    sets = new ArrayList<IndexInfo.Set>();
+                }
+                sets.add(new IndexInfo.Set(identifier, name, titles));
                 found = true;
-            } else if (XmlStreamReaderUtils.readStart(reader, ns, "index", false, true)) {
-                logger.debug("-> index");
-                // FIXME: read attributes
+            } else if (XmlStreamReaderUtils.readStart(reader, ns,
+                    "index", false, true)) {
+                final String id =
+                        XmlStreamReaderUtils.readAttributeValue(reader, null, "id");
+                final boolean can_search =
+                        parseBooleanAttribute(reader, strict,null, "search");
+                final boolean can_scan =
+                        parseBooleanAttribute(reader, strict,null, "search");
+                final boolean can_sort =
+                        parseBooleanAttribute(reader, strict,null, "search");
                 XmlStreamReaderUtils.consumeStart(reader);
-                XmlStreamReaderUtils.readEnd(reader, ns, "index", true);
+
+                // indexInfo/index/title
+                List<LocalizedString> titles = null;
+                for (;;) {
+                    LocalizedString title =
+                            parseStringI18N(reader, strict, ns, "title", false);
+                    if (title == null) {
+                        break;
+                    }
+                    if (titles == null) {
+                        titles = new ArrayList<LocalizedString>();
+                    }
+                    titles.add(title);
+                } // for
+
+                // indexInfo/index/map ((attr+)|name)
+                List<IndexInfo.Index.Map> maps = null;
+                boolean first_map = true;
+                while (XmlStreamReaderUtils.readStart(reader, ns, "map",
+                        first_map, true)) {
+                    final boolean primary = parseBooleanAttribute(reader,
+                            strict, null, "primary");
+                    XmlStreamReaderUtils.consumeStart(reader);
+
+                    if (XmlStreamReaderUtils.peekStart(reader, ns, "attr")) {
+                        /*
+                         * skip "attr" elements, because they are not supported
+                         */
+                        while (XmlStreamReaderUtils.readStart(reader,
+                                ns, "attr", false)) {
+                            logger.debug("skipping 'attr'");
+                            XmlStreamReaderUtils.readEnd(reader, ns, "attr");
+                        } // while (attr)
+                    } else if (XmlStreamReaderUtils.peekStart(reader,
+                            ns, "name")) {
+                        XmlStreamReaderUtils.readStart(reader, ns, "name", true, true);
+                        final String set =
+                                XmlStreamReaderUtils.readAttributeValue(reader,
+                                        null, "set");
+                        // FIXME: check 'set'
+                        XmlStreamReaderUtils.consumeStart(reader);
+                        final String name =
+                                XmlStreamReaderUtils.readString(reader, false);
+                        // FIXME: check 'name'
+                        XmlStreamReaderUtils.readEnd(reader, ns, "name");
+                        if ((set != null) && (name != null)) {
+                            if (maps == null) {
+                                maps = new ArrayList<IndexInfo.Index.Map>();
+                            }
+                            maps.add(new IndexInfo.Index.Map(primary, set, name));
+                        }
+                    } else {
+                        // FIXME: error message
+                        throw new XMLStreamException(
+                                "expected 'attr' or 'name'",
+                                reader.getLocation());
+                    }
+
+                    XmlStreamReaderUtils.readEnd(reader, ns, "map");
+                    first_map = false;
+                } // while (map)
+
+                // indexInfo/index/configInfo (optional)
+                if (XmlStreamReaderUtils.readStart(reader, ns, "configInfo", false)) {
+                    logger.debug("skipping 'configInfo' within 'indexInfo/index'");
+                    XmlStreamReaderUtils.readEnd(reader, ns, "configInfo", true);
+                }
+
+                XmlStreamReaderUtils.readEnd(reader, ns, "index");
+                if (indexes == null) {
+                    indexes = new ArrayList<IndexInfo.Index>();
+                }
+                indexes.add(new IndexInfo.Index(id, titles, can_search,
+                        can_scan, can_sort, maps));
                 found = true;
             } else if (XmlStreamReaderUtils.readStart(reader, ns, "sortKeyword", false)) {
-                logger.debug("-> sortKeywords");
+                logger.debug("skipping 'sortKeywords'");
                 XmlStreamReaderUtils.readEnd(reader, ns, "sortKeyword", true);
                 found = true;
             } else {
@@ -450,7 +550,9 @@ class SRUExplainRecordDataParser {
                     new QName(ns, "indexInfo") + "'",
                     reader.getLocation());
         }
-        return null;
+        return ((sets != null) || (indexes != null))
+                ? new IndexInfo(sets, indexes)
+                : null;
     }
 
 
@@ -503,9 +605,12 @@ class SRUExplainRecordDataParser {
 
 
     private static LocalizedString parseStringI18N(XMLStreamReader reader,
-            boolean strict, String ns, String localName)
+            boolean strict, String ns, String localName, boolean required)
             throws XMLStreamException {
-        XmlStreamReaderUtils.readStart(reader, ns, localName, true, true);
+        if (!XmlStreamReaderUtils.readStart(reader, ns, localName, required,
+                true)) {
+            return null;
+        }
         final String lang = XmlStreamReaderUtils.readAttributeValue(reader,
                 null, "lang", false);
         if (lang != null) {
@@ -514,12 +619,24 @@ class SRUExplainRecordDataParser {
                 logger.warn("ZeeRex sugguests to use 2-letter codes");
             }
         }
+        final boolean primary =
+                parseBooleanAttribute(reader, strict, null, "primary");
+        XmlStreamReaderUtils.consumeStart(reader);
+        String value = XmlStreamReaderUtils.readString(reader, false);
+        XmlStreamReaderUtils.readEnd(reader, ns, localName);
+        return new LocalizedString(value, lang, primary);
+    }
+
+
+    private static boolean parseBooleanAttribute(XMLStreamReader reader,
+            boolean strict, String ns, String localName)
+            throws XMLStreamException {
+        boolean result = false;
         final String s = XmlStreamReaderUtils.readAttributeValue(reader,
-                null, "primary", false);
-        boolean primary = false;
+                ns, localName, false);
         if (s != null) {
-            if (PRIMARY_TRUE.equalsIgnoreCase(s)) {
-                if (!PRIMARY_TRUE.equals(s)) {
+            if (STRING_TRUE.equalsIgnoreCase(s)) {
+                if (!STRING_TRUE.equals(s)) {
                     if (strict) {
                         throw new XMLStreamException("capitalization");
                     } else {
@@ -527,7 +644,7 @@ class SRUExplainRecordDataParser {
                         logger.warn("capitalizaton");
                     }
                 }
-                primary = true;
+                result = true;
             } else if (PRIMARY_FALSE.equalsIgnoreCase(s)) {
                 if (!PRIMARY_FALSE.equals(s)) {
                     if (strict) {
@@ -537,18 +654,13 @@ class SRUExplainRecordDataParser {
                         logger.warn("capitalizaton");
                     }
                 }
-                primary = false;
+                result = false;
             } else {
                 // FIXME: message
-                throw new XMLStreamException("value of @primary invalid");
+                throw new XMLStreamException("value of @" + localName + " invalid");
             }
         }
-        XmlStreamReaderUtils.consumeStart(reader);
-        String value = XmlStreamReaderUtils.readString(reader, false);
-        XmlStreamReaderUtils.readEnd(reader, ns, localName);
-        logger.debug("databaseInfo/{}='{}' (primary={}, lang={})", localName,
-                value, primary, lang);
-        return new LocalizedString(value, lang, primary);
+        return result;
     }
 
 } // class SRUExplainRecordDataParser

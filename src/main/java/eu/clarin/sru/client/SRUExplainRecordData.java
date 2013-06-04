@@ -257,13 +257,160 @@ public class SRUExplainRecordData implements SRURecordData {
         }
     } // class DatabaseInfo
 
+    public static final class IndexInfo {
+        public static class Set {
+            private final String identifier;
+            private final String name;
+            private final List<LocalizedString> title;
+
+
+            Set(String identifier, String name, List<LocalizedString> title) {
+                this.identifier = identifier;
+                this.name = name;
+                if ((title != null) && !title.isEmpty()) {
+                    this.title = Collections.unmodifiableList(title);
+                } else {
+                    this.title = null;
+                }
+            }
+
+
+            public String getIdentifier() {
+                return identifier;
+            }
+
+
+            public String getName() {
+                return name;
+            }
+
+
+            public List<LocalizedString> getTitle() {
+                return title;
+            }
+        } // class IndexInfo.Set
+
+        public static class Index {
+            public static class Map {
+                private final boolean primary;
+                private final String set;
+                private final String name;
+
+
+                Map(boolean primary, String set, String name) {
+                    this.primary = primary;
+                    this.set     = set;
+                    this.name    = name;
+                }
+
+
+                public boolean isPrimary() {
+                    return primary;
+                }
+
+
+                public String getSet() {
+                    return set;
+                }
+
+
+                public String getName() {
+                    return name;
+                }
+            } // class IndexInfo.Index.Map
+
+            private final String id;
+            private final List<LocalizedString> title;
+            private final boolean can_search;
+            private final boolean can_scan;
+            private final boolean can_sort;
+            private final List<Index.Map> maps;
+
+
+            Index(String id, List<LocalizedString> title, boolean can_search,
+                    boolean can_scan, boolean can_sort, List<Map> maps) {
+                this.id = id;
+                if ((title != null) && !title.isEmpty()) {
+                    this.title = Collections.unmodifiableList(title);
+                } else {
+                    this.title = null;
+                }
+                this.can_search = can_search;
+                this.can_scan = can_scan;
+                this.can_sort = can_sort;
+                this.maps = maps;
+            }
+
+
+            public String getId() {
+                return id;
+            }
+
+
+            public List<LocalizedString> getTitle() {
+                return title;
+            }
+
+
+            public boolean canSearch() {
+                return can_search;
+            }
+
+
+            public boolean canScan() {
+                return can_scan;
+            }
+
+
+            public boolean canSort() {
+                return can_sort;
+            }
+
+
+            public List<Index.Map> getMaps() {
+                return maps;
+            }
+
+        } // class Index
+
+        private final List<IndexInfo.Set> sets;
+        private final List<IndexInfo.Index> indexes;
+
+
+        IndexInfo(List<IndexInfo.Set> sets, List<IndexInfo.Index> indexes) {
+            if ((sets != null) && !sets.isEmpty()) {
+                this.sets = Collections.unmodifiableList(sets);
+            } else {
+                this.sets = null;
+            }
+            if ((indexes != null) && !indexes.isEmpty()) {
+                this.indexes = Collections.unmodifiableList(indexes);
+            } else {
+                this.indexes = null;
+            }
+        }
+
+
+        public List<IndexInfo.Set> getSets() {
+            return sets;
+        }
+
+
+        public List<IndexInfo.Index> getIndexes() {
+            return indexes;
+        }
+    } // class IndexInfo
+
     private final ServerInfo serverInfo;
     private final DatabaseInfo databaseInfo;
+    private final IndexInfo indexInfo;
 
 
-    SRUExplainRecordData(ServerInfo serverInfo, DatabaseInfo databaseInfo) {
+    SRUExplainRecordData(ServerInfo serverInfo, DatabaseInfo databaseInfo,
+            IndexInfo indexInfo) {
         this.serverInfo   = serverInfo;
         this.databaseInfo = databaseInfo;
+        this.indexInfo    = indexInfo;
     }
 
 
@@ -286,6 +433,11 @@ public class SRUExplainRecordData implements SRURecordData {
 
     public DatabaseInfo getDatabaseInfo() {
         return databaseInfo;
+    }
+
+
+    public IndexInfo getIndexInfo() {
+        return indexInfo;
     }
 
 } // class SRUExplainRecordData
