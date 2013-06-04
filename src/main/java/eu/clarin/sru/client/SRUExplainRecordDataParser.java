@@ -158,8 +158,8 @@ class SRUExplainRecordDataParser {
 
 
     private static ServerInfo parseServerInfo(XMLStreamReader reader,
-            String namespace) throws XMLStreamException, SRUClientException {
-        XmlStreamReaderUtils.readStart(reader, namespace,
+            String ns) throws XMLStreamException, SRUClientException {
+        XmlStreamReaderUtils.readStart(reader, ns,
                 "serverInfo", true, true);
         String protocol = XmlStreamReaderUtils.readAttributeValue(reader,
                 null, "protocol");
@@ -211,22 +211,22 @@ class SRUExplainRecordDataParser {
         }
         XmlStreamReaderUtils.consumeStart(reader);
 
-        String host = XmlStreamReaderUtils.readContent(reader, namespace,
-                "host", true);
-        int port = XmlStreamReaderUtils.readContent(reader, namespace,
-                "port", true, -1);
+        final String host = XmlStreamReaderUtils.readContent(reader,
+                ns, "host", true);
+        final int port = XmlStreamReaderUtils.readContent(reader,
+                ns, "port", true, -1);
         if ((port < 0) || (port > 65535)) {
             // FIXME: error message
             throw new SRUClientException("invalid port number (" + port + ")");
         }
-        String database = XmlStreamReaderUtils.readContent(reader, namespace,
+        String database = XmlStreamReaderUtils.readContent(reader, ns,
                 "database", true);
-        if (XmlStreamReaderUtils.readStart(reader, namespace,
+        if (XmlStreamReaderUtils.readStart(reader, ns,
                 "authentication", false)) {
-            XmlStreamReaderUtils.readEnd(reader, namespace,
+            XmlStreamReaderUtils.readEnd(reader, ns,
                     "authentication", true);
         }
-        XmlStreamReaderUtils.readEnd(reader, namespace, "serverInfo", true);
+        XmlStreamReaderUtils.readEnd(reader, ns, "serverInfo", true);
         logger.debug("serverInfo: host={}, port={}, database={}, version={}, " +
                 "protocol={}, transport={}", host, port, database, version,
                 protocol, transports);
