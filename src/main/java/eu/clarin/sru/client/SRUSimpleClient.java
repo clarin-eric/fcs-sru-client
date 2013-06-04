@@ -84,6 +84,9 @@ public class SRUSimpleClient {
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
     private final SRUExplainRecordDataParser explainRecordParser =
             new SRUExplainRecordDataParser();
+    // FIXME: temporary hack
+    public static final String X_PARSE_ZEEREX_RECORD_DATA =
+            "x-parse-zeerex-record-data";
 
     /**
      * Constructor. This constructor will create a <em>strict</em> client and
@@ -494,9 +497,10 @@ public class SRUSimpleClient {
         logger.debug("parsing 'explain' response (mode = {})",
                 (request.isStrictMode() ? "strict" : "non-strict"));
 
-        // FIXME: ship explain record data for now
-//        doParseExplainResponse(reader, request, handler, true);
-        doParseExplainResponse(reader, request, handler, false);
+        // FIXME: temporary hack
+        boolean parseRecordData =
+                (request.getExtraRequestData(X_PARSE_ZEEREX_RECORD_DATA) != null);
+        doParseExplainResponse(reader, request, handler, parseRecordData);
     }
 
 

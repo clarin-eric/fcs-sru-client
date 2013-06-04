@@ -37,6 +37,7 @@ class TestUtils {
     public static SRUExplainRequest makeExplainRequest(String baseURI) {
         SRUExplainRequest request = new SRUExplainRequest(baseURI);
         request.setExtraRequestData("x-indent-response", "4");
+        request.setExtraRequestData(SRUSimpleClient.X_PARSE_ZEEREX_RECORD_DATA, "true");
         return request;
     }
 
