@@ -26,7 +26,7 @@ import java.net.URI;
  */
 public class SRUExplainRequest extends SRUAbstractRequest {
     private SRURecordPacking recordPacking;
-
+    private boolean parseRecordDataEnabled = false;
 
     /**
      * Constructor.
@@ -73,6 +73,31 @@ public class SRUExplainRequest extends SRUAbstractRequest {
      */
     public SRURecordPacking getRecordPacking() {
         return recordPacking;
+    }
+
+
+    /**
+     * Enable or disable parsing of explain record data (ZeeRex record) of the
+     * explain response.
+     * 
+     * @param enabled
+     *            <code>true</code> enabled parsing, <code>false</code> disables
+     *            parsing
+     */
+    public void setParseRecordDataEnabled(boolean enabled) {
+        this.parseRecordDataEnabled = enabled;
+    }
+    
+
+    /**
+     * Check, whether the record data of a explain response (ZeeRex record)
+     * shall be parsed or not.
+     * 
+     * @return <code>true</code> if parsing is enabled, <code>false</code>
+     *         otherwise
+     */
+    public boolean isParseRecordDataEnabled() {
+        return parseRecordDataEnabled;
     }
 
 

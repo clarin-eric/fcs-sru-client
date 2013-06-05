@@ -39,7 +39,7 @@ class TestUtils {
     public static SRUExplainRequest makeExplainRequest(String baseURI) {
         SRUExplainRequest request = new SRUExplainRequest(baseURI);
         request.setExtraRequestData("x-indent-response", "4");
-        request.setExtraRequestData(SRUSimpleClient.X_PARSE_ZEEREX_RECORD_DATA, "true");
+        request.setParseRecordDataEnabled(true);
         return request;
     }
 
@@ -48,6 +48,7 @@ class TestUtils {
         SRUScanRequest request = new SRUScanRequest(baseURI);
         request.setScanClause("fcs.resource = root");
         request.setExtraRequestData("x-clarin-resource-info", "true");
+        request.setExtraRequestData("x-indent-response", "4");
         return request;
     }
 
@@ -61,7 +62,7 @@ class TestUtils {
         request.setRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA);
         request.setMaximumRecords(5);
         request.setRecordPacking(SRURecordPacking.XML);
-//        request.setExtraRequestData("x-indent-response", "4");
+        request.setExtraRequestData("x-indent-response", "4");
         return request;
     }
 
