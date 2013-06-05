@@ -402,6 +402,60 @@ public class SRUExplainRecordData implements SRURecordData {
         }
     } // class IndexInfo
 
+    public static class Schema {
+        private final String identifier;
+        private final String name;
+        private final String location;
+        private final boolean sort;
+        private final boolean retrieve;
+        private final List<LocalizedString> title;
+
+
+        Schema(String identifier, String name, String location, boolean sort,
+                boolean retrieve, List<LocalizedString> title) {
+            this.identifier = identifier;
+            this.name       = name;
+            this.location   = location;
+            this.sort       = sort;
+            this.retrieve   = retrieve;
+            if ((title != null) && !title.isEmpty()) {
+                this.title = Collections.unmodifiableList(title);
+            } else {
+                this.title = null;
+            }
+        }
+
+
+        public String getIdentifier() {
+            return identifier;
+        }
+
+
+        public String getName() {
+            return name;
+        }
+
+
+        public String getLocation() {
+            return location;
+        }
+
+
+        public boolean getSort() {
+            return sort;
+        }
+
+
+        public boolean getRetrieve() {
+            return retrieve;
+        }
+
+
+        public List<LocalizedString> getTitle() {
+            return title;
+        }
+    } // class SchemaInfo
+
     public static class ConfigInfo {
         private final Map<String, String> defaults;
         private final Map<String, String> settings;
@@ -446,14 +500,21 @@ public class SRUExplainRecordData implements SRURecordData {
     private final ServerInfo serverInfo;
     private final DatabaseInfo databaseInfo;
     private final IndexInfo indexInfo;
+    private final List<Schema> schemaInfo;
     private final ConfigInfo configInfo;
 
 
     SRUExplainRecordData(ServerInfo serverInfo, DatabaseInfo databaseInfo,
-            IndexInfo indexInfo, ConfigInfo configInfo) {
+            IndexInfo indexInfo, List<Schema> schemaInfo,
+            ConfigInfo configInfo) {
         this.serverInfo   = serverInfo;
         this.databaseInfo = databaseInfo;
         this.indexInfo    = indexInfo;
+        if ((schemaInfo != null) && !schemaInfo.isEmpty()) {
+            this.schemaInfo = Collections.unmodifiableList(schemaInfo);
+        } else {
+            this.schemaInfo = null;
+        }
         this.configInfo   = configInfo;
     }
 
@@ -477,6 +538,11 @@ public class SRUExplainRecordData implements SRURecordData {
 
     public DatabaseInfo getDatabaseInfo() {
         return databaseInfo;
+    }
+
+
+    public List<Schema> getSchemaInfo() {
+        return schemaInfo;
     }
 
 

@@ -34,6 +34,7 @@ import eu.clarin.sru.client.SRUExplainRecordData.ConfigInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.DatabaseInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.IndexInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.LocalizedString;
+import eu.clarin.sru.client.SRUExplainRecordData.Schema;
 import eu.clarin.sru.client.SRUExplainRecordData.ServerInfo;
 
 
@@ -133,16 +134,17 @@ class SRUExplainRecordDataParser {
         } // if
 
         // explain/recordInfo or explain/schemaInfo
+        List<Schema> schemaInfo = null;
         if (XmlStreamReaderUtils.peekStart(reader, ns, "recordInfo") ||
             XmlStreamReaderUtils.peekStart(reader, ns, "schemaInfo")) {
             if (XmlStreamReaderUtils.readStart(reader,
                     ns, "recordInfo", false)) {
-                logger.debug("recordInfo");
+                logger.debug("skipping 'recordInfo'");
                 XmlStreamReaderUtils.readEnd(reader, ns, "recordInfo", true);
             } else if (XmlStreamReaderUtils.readStart(reader,
                     ns, "schemaInfo", false)) {
-                logger.debug("schemaInfo");
-                XmlStreamReaderUtils.readEnd(reader, ns, "schemaInfo", true);
+                schemaInfo = parseSchemaInfo(reader, strict, ns);
+                XmlStreamReaderUtils.readEnd(reader, ns, "schemaInfo");
             } else {
                 throw new XMLStreamException("unexpected start element '" +
                         reader.getName() + "'", reader.getLocation());
@@ -158,7 +160,7 @@ class SRUExplainRecordDataParser {
 
         XmlStreamReaderUtils.readEnd(reader, ns, "explain", true);
         return new SRUExplainRecordData(serverInfo, databaseInfo, indexInfo,
-                configInfo);
+                schemaInfo, configInfo);
     }
 
 
@@ -447,12 +449,12 @@ class SRUExplainRecordDataParser {
                     "index", false, true)) {
                 final String id =
                         XmlStreamReaderUtils.readAttributeValue(reader, null, "id");
-                final boolean can_search =
-                        parseBooleanAttribute(reader, strict,null, "search");
-                final boolean can_scan =
-                        parseBooleanAttribute(reader, strict,null, "search");
-                final boolean can_sort =
-                        parseBooleanAttribute(reader, strict,null, "search");
+                final boolean can_search = parseBooleanAttribute(reader,
+                        strict, null, "search", false);
+                final boolean can_scan = parseBooleanAttribute(reader,
+                        strict, null, "scan", false);
+                final boolean can_sort = parseBooleanAttribute(reader,
+                        strict, null, "sort", false);
                 XmlStreamReaderUtils.consumeStart(reader);
 
                 // indexInfo/index/title
@@ -475,7 +477,7 @@ class SRUExplainRecordDataParser {
                 while (XmlStreamReaderUtils.readStart(reader, ns, "map",
                         first_map, true)) {
                     final boolean primary = parseBooleanAttribute(reader,
-                            strict, null, "primary");
+                            strict, null, "primary", false);
                     XmlStreamReaderUtils.consumeStart(reader);
 
                     if (XmlStreamReaderUtils.peekStart(reader, ns, "attr")) {
@@ -598,7 +600,7 @@ class SRUExplainRecordDataParser {
             }
         }
         final boolean primary =
-                parseBooleanAttribute(reader, strict, null, "primary");
+                parseBooleanAttribute(reader, strict, null, "primary", false);
         XmlStreamReaderUtils.consumeStart(reader);
         String value = XmlStreamReaderUtils.readString(reader, false);
         XmlStreamReaderUtils.readEnd(reader, ns, localName);
@@ -607,9 +609,9 @@ class SRUExplainRecordDataParser {
 
 
     private static boolean parseBooleanAttribute(XMLStreamReader reader,
-            boolean strict, String ns, String localName)
+            boolean strict, String ns, String localName, boolean defaultValue)
             throws XMLStreamException {
-        boolean result = false;
+        boolean result = defaultValue;
         final String s = XmlStreamReaderUtils.readAttributeValue(reader,
                 ns, localName, false);
         if (s != null) {
@@ -639,6 +641,55 @@ class SRUExplainRecordDataParser {
             }
         }
         return result;
+    }
+
+
+    private static List<Schema> parseSchemaInfo(XMLStreamReader reader,
+            boolean strict, String ns) throws XMLStreamException {
+        /*
+         * schemaInfo (schema+)
+         * schema (title*)
+         */
+        List<Schema> schemaInfo = null;
+        boolean first_schema = true;
+        while (XmlStreamReaderUtils.readStart(reader, ns, "schema",
+                first_schema, true)) {
+            final String identifier =
+                    XmlStreamReaderUtils.readAttributeValue(reader,
+                            null, "identifier", true);
+            final String name = XmlStreamReaderUtils.readAttributeValue(reader,
+                    null, "name", true);
+            final String location =
+                    XmlStreamReaderUtils.readAttributeValue(reader,
+                            null, "location");
+            final boolean sort = parseBooleanAttribute(reader, strict,
+                    null, "sort", false);
+            final boolean retrieve = parseBooleanAttribute(reader, strict,
+                    null, "retrieve", true);
+            XmlStreamReaderUtils.consumeStart(reader);
+
+            List<LocalizedString> titles = null;
+            for (;;) {
+                LocalizedString title =
+                        parseStringI18N(reader, strict, ns, "title", false);
+                if (title == null) {
+                    break;
+                }
+                if (titles == null) {
+                    titles = new ArrayList<LocalizedString>();
+                }
+                titles.add(title);
+            } // for
+            XmlStreamReaderUtils.readEnd(reader, ns, "schema");
+
+            if (schemaInfo == null) {
+                schemaInfo = new ArrayList<Schema>();
+            }
+            schemaInfo.add(new Schema(identifier, name, location, sort,
+                    retrieve, titles));
+            first_schema = false;
+        }
+        return schemaInfo;
     }
 
 

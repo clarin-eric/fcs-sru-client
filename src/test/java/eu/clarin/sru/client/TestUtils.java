@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import eu.clarin.sru.client.SRUExplainRecordData.ConfigInfo;
+import eu.clarin.sru.client.SRUExplainRecordData.Schema;
 import eu.clarin.sru.client.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.client.fcs.DataView;
 import eu.clarin.sru.client.fcs.DataViewGenericDOM;
@@ -154,6 +155,18 @@ class TestUtils {
                     data.getServerInfo().getHost(),
                     data.getServerInfo().getPort(),
                     data.getServerInfo().getDatabase());
+            List<Schema> schemaInfo = data.getSchemaInfo();
+            if (schemaInfo != null) {
+                for (Schema schema : schemaInfo) {
+                    logger.debug("schema: identifier={}, name={}, " +
+                            "location={}, sort={}, retrieve={}",
+                            schema.getIdentifier(),
+                            schema.getName(),
+                            schema.getLocation(),
+                            schema.getSort(),
+                            schema.getRetrieve());
+                }
+            }
             ConfigInfo configInfo = data.getConfigInfo();
             if (configInfo != null) {
                 if (configInfo.getDefaults() != null) {
