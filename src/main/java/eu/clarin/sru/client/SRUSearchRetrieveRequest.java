@@ -16,6 +16,8 @@
  */
 package eu.clarin.sru.client;
 
+import java.net.URI;
+
 /**
  * An object for performing a <em>explain</em> operation.
  * <p>
@@ -29,7 +31,7 @@ package eu.clarin.sru.client;
  * @see <a href="http://www.loc.gov/standards/sru/specs/search-retrieve.html">
  *      SRU SearchRetrieve Operation</a>
  */
-public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
+public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
     /** for end-point conformance testing only. never use in production. */
     public static final String X_MALFORMED_QUERY =
             "x-malformed-query";
@@ -48,6 +50,17 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
     private SRURecordPacking recordPacking;
     private String recordSchema;
     private int resultSetTTL = -1;
+
+
+    /**
+     * Constructor.
+     *
+     * @param baseURI
+     *            the baseURI of the endpoint
+     */
+    public SRUSearchRetrieveRequest(URI baseURI) {
+        super(baseURI);
+    }
 
 
     /**
@@ -231,7 +244,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
 
     @Override
-    void addParametersToURI(URIBuilder uriBuilder) throws SRUClientException {
+    void addParametersToURI(URIHelper uriHelper) throws SRUClientException {
         /*
          * append query argument (mandatory)
          *
@@ -246,10 +259,10 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
                 throw new SRUClientException(
                         "mandatory argument 'query' not set or empty");
             }
-            uriBuilder.append(PARAM_QUERY, query);
+            uriHelper.append(PARAM_QUERY, query);
         } else {
             if (!malformedQuery.equalsIgnoreCase(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_QUERY, malformedQuery);
+                uriHelper.append(PARAM_QUERY, malformedQuery);
             }
         }
 
@@ -265,11 +278,11 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
                 getExtraRequestData(X_MALFORMED_START_RECORD);
         if (malformedStartRecord == null) {
             if (startRecord > 0) {
-                uriBuilder.append(PARAM_START_RECORD, startRecord);
+                uriHelper.append(PARAM_START_RECORD, startRecord);
             }
         } else {
             if (!malformedStartRecord.equalsIgnoreCase(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_START_RECORD, malformedStartRecord);
+                uriHelper.append(PARAM_START_RECORD, malformedStartRecord);
             }
         }
 
@@ -285,11 +298,11 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
                 getExtraRequestData(X_MALFORMED_MAXIMUM_RECORDS);
         if (malformedMaxiumRecords == null) {
             if (maximumRecords > -1) {
-                uriBuilder.append(PARAM_MAXIMUM_RECORDS, maximumRecords);
+                uriHelper.append(PARAM_MAXIMUM_RECORDS, maximumRecords);
             }
         } else {
             if (!malformedMaxiumRecords.equalsIgnoreCase(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_MAXIMUM_RECORDS,
+                uriHelper.append(PARAM_MAXIMUM_RECORDS,
                         malformedMaxiumRecords);
             }
         }
@@ -308,10 +321,10 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
             if (recordPacking != null) {
                 switch (recordPacking) {
                 case XML:
-                    uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
+                    uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
                     break;
                 case STRING:
-                    uriBuilder.append(PARAM_RECORD_PACKING,
+                    uriHelper.append(PARAM_RECORD_PACKING,
                             RECORD_PACKING_STRING);
                     break;
                 default:
@@ -321,7 +334,7 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
             }
         } else {
             if (!malformedRecordPacking.equalsIgnoreCase(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_RECORD_PACKING, malformedRecordPacking);
+                uriHelper.append(PARAM_RECORD_PACKING, malformedRecordPacking);
             }
         }
 
@@ -329,14 +342,14 @@ public final class SRUSearchRetrieveRequest extends SRUAbstractRequest {
          * append recordSchema argument (optional)
          */
         if (recordSchema != null) {
-            uriBuilder.append(PARAM_RECORD_SCHEMA, recordSchema);
+            uriHelper.append(PARAM_RECORD_SCHEMA, recordSchema);
         }
 
         /*
          * append resultSetTTL argument (optional)
          */
         if (resultSetTTL > -1) {
-            uriBuilder.append(PARAM_RESULT_SET_TTL, resultSetTTL);
+            uriHelper.append(PARAM_RESULT_SET_TTL, resultSetTTL);
         }
     }
 

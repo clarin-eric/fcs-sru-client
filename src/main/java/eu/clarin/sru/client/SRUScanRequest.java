@@ -16,18 +16,20 @@
  */
 package eu.clarin.sru.client;
 
+import java.net.URI;
+
 /**
  * An object for performing a <em>explain</em> operation.
  * <p>The following argument arguments are mandatory:</p>
  * <ul>
  *   <li><em>scanClause</em></li>
  * </ul>
- * 
+ *
  * @see SRUScanHandler
  * @see <a href="http://www.loc.gov/standards/sru/specs/scan.html">SRU Scan
  *      Operation</a>
  */
-public final class SRUScanRequest extends SRUAbstractRequest {
+public class SRUScanRequest extends SRUAbstractRequest {
     /** for end-point conformance testing only. never use in production. */
     public static final String X_MALFORMED_SCAN_CLAUSE =
             "x-malformed-scanClause";
@@ -44,7 +46,18 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
     /**
      * Constructor.
-     * 
+     *
+     * @param baseURI
+     *            the baseURI of the endpoint
+     */
+    public SRUScanRequest(URI baseURI) {
+        super(baseURI);
+    }
+
+    
+    /**
+     * Constructor.
+     *
      * @param baseURI
      *            the baseURI of the endpoint
      */
@@ -55,7 +68,7 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>scanClause</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>scanClause</em> argument or
      *         <code>null</code> of none was set
      */
@@ -66,7 +79,7 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>scanClause</em> argument for this request.
-     * 
+     *
      * @param scanClause
      *            the value for the <em>scanClause</em> argument
      * @throws NullPointerException
@@ -87,7 +100,7 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>responsePosition</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>responsePosition</em> argument
      */
     public int getResponsePosition() {
@@ -97,7 +110,7 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>responsePosition</em> argument for this request.
-     * 
+     *
      * @param responsePosition
      *            the value for the <em>responsePosition</em> argument
      * @throws IllegalArgumentException
@@ -113,7 +126,7 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
     /**
      * Get the value of the <em>maximumTerms</em> argument for this request.
-     * 
+     *
      * @return the value for the <em>maximumTerms</em> argument
      */
     public int getMaximumTerms() {
@@ -123,7 +136,7 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
     /**
      * Set the value of the <em>maximumTerms</em> argument for this request.
-     * 
+     *
      * @param maximumTerms
      *            the value for the <em>maximumTerms</em> argument
      * @throws IllegalArgumentException
@@ -144,7 +157,7 @@ public final class SRUScanRequest extends SRUAbstractRequest {
 
 
     @Override
-    void addParametersToURI(URIBuilder uriBuilder) throws SRUClientException {
+    void addParametersToURI(URIHelper uriHelper) throws SRUClientException {
         // scanClause
         final String malformedScan =
                 getExtraRequestData(X_MALFORMED_SCAN_CLAUSE);
@@ -153,10 +166,10 @@ public final class SRUScanRequest extends SRUAbstractRequest {
                 throw new SRUClientException(
                         "mandatory argument 'scanClause' not set or empty");
             }
-            uriBuilder.append(PARAM_SCAN_CLAUSE, scanClause);
+            uriHelper.append(PARAM_SCAN_CLAUSE, scanClause);
         } else {
             if (!malformedScan.equalsIgnoreCase(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_VERSION, malformedScan);
+                uriHelper.append(PARAM_VERSION, malformedScan);
             }
         }
 
@@ -165,11 +178,11 @@ public final class SRUScanRequest extends SRUAbstractRequest {
                 getExtraRequestData(X_MALFORMED_RESPONSE_POSITION);
         if (malformedResponsePosition == null) {
             if (responsePosition > -1) {
-                uriBuilder.append(PARAM_RESPONSE_POSITION, responsePosition);
+                uriHelper.append(PARAM_RESPONSE_POSITION, responsePosition);
             }
         } else {
             if (!malformedResponsePosition.equalsIgnoreCase(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_RESPONSE_POSITION,
+                uriHelper.append(PARAM_RESPONSE_POSITION,
                         malformedResponsePosition);
             }
         }
@@ -179,11 +192,11 @@ public final class SRUScanRequest extends SRUAbstractRequest {
                 getExtraRequestData(X_MALFORMED_MAXIMUM_TERMS);
         if (malformedMaximumTerms == null) {
             if (maximumTerms > -1) {
-                uriBuilder.append(PARAM_MAXIMUM_TERMS, maximumTerms);
+                uriHelper.append(PARAM_MAXIMUM_TERMS, maximumTerms);
             }
         } else {
             if (!malformedMaximumTerms.equalsIgnoreCase(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_MAXIMUM_TERMS, malformedMaximumTerms);
+                uriHelper.append(PARAM_MAXIMUM_TERMS, malformedMaximumTerms);
             }
         }
     }

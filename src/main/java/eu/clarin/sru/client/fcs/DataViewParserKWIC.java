@@ -64,9 +64,8 @@ public class DataViewParserKWIC implements DataViewParser {
         }
         XmlStreamReaderUtils.readEnd(reader, FCS_KWIC_NS, "kwic");
 
-        logger.debug("left='{}' keyword='{}', right='{}'", new Object[] {
-                left, keyword, right }
-        );
+        logger.debug("left='{}' keyword='{}', right='{}'",
+                left, keyword, right);
         return new DataViewKWIC(pid, ref, left, keyword, right);
     }
 

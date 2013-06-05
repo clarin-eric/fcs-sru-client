@@ -34,12 +34,8 @@ public class TestThreadedClient {
             logger.info("initializing client ...");
             SRUThreadedClient client = new SRUThreadedClient();
 
-            try {
-                client.registerRecordParser(new ClarinFCSRecordParser());
-            } catch (SRUClientException e) {
-                logger.error("error adding record parser", e);
-                System.exit(1);
-            }
+            // register record data parsers
+            client.registerRecordParser(new ClarinFCSRecordParser());
 
             try {
                 /*

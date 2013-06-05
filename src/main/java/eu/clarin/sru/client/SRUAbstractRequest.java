@@ -17,14 +17,17 @@
 package eu.clarin.sru.client;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.http.client.utils.URIBuilder;
 
 
 
 /**
  * Abstract base class for SRU requests.
- * 
+ *
  * @see SRUExplainResponse
  * @see SRUScanResponse
  * @see SRUSearchRetrieveResponse
@@ -68,16 +71,16 @@ abstract class SRUAbstractRequest {
     } // enum SRUOperation
 
 
-    class URIBuilder {
-        private final StringBuilder sb;
-        private boolean firstParam = true;
+    static class URIHelper {
+        private final URIBuilder uriBuilder;
 
-        private URIBuilder(String endpointURI) {
-            this.sb = new StringBuilder(endpointURI);
+
+        private URIHelper(URIBuilder builder) {
+            this.uriBuilder = builder;
         }
 
 
-        public URIBuilder append(String name, String value) {
+        public URIHelper append(String name, String value) {
             if (name == null) {
                 throw new NullPointerException("name == null");
             }
@@ -91,58 +94,106 @@ abstract class SRUAbstractRequest {
                 throw new IllegalArgumentException("value is empty");
             }
 
-            if (firstParam) {
-                sb.append('?');
-                firstParam = false;
-            } else {
-                sb.append('&');
-            }
-            sb.append(name).append('=').append(value);
+            uriBuilder.addParameter(name, value);
             return this;
         }
 
 
-        public URIBuilder append(String name, int value) {
+        public URIHelper append(String name, int value) {
             return append(name, Integer.toString(value));
         }
 
 
-        private URI makeURI() {
-            return URI.create(sb.toString());
+        private URI makeURI() throws URISyntaxException {
+            return uriBuilder.build();
         }
-    } // class
-    /** The URL of the endpoint. */
-    protected final String endpointURI;
-    /** The version to be sued  for this request. */
+    } // class URIHelper
+    /** The baseURI of the SRU server. */
+    protected final URI baseURI;
+    /**
+     * The request should be processed in strict or non-strict SRU protocol
+     * conformance mode. Default value is <code>true</code>.
+     */
+    private boolean strictMode = true;
+    /** The version to be used for this request. */
     protected SRUVersion version;
     /** A map of extra request data parameters. */
     protected Map<String, String> extraRequestData;
-    private SRUVersion versionPreformed;
+    private SRUVersion versionPerformed;
 
 
     /**
      * Constructor.
      *
-     * @param endpointURI
-     *            the URI of the endpoint
+     * @param baseURI
+     *            the baseURI of the SRU server
      * @throws NullPointerException
      *             if any required argument is null
      */
-    protected SRUAbstractRequest(String endpointURI) {
-        if (endpointURI == null) {
-            throw new NullPointerException("endpointURI == null");
+    protected SRUAbstractRequest(URI baseURI) {
+        if (baseURI == null) {
+            throw new NullPointerException("baseURI == null");
         }
-        this.endpointURI = endpointURI;
+        this.baseURI = baseURI;
     }
 
 
     /**
-     * Get the endpoint URI.
+     * Constructor.
      *
-     * @return the endpoint URI
+     * @param baseURI
+     *            the baseURI of the SRU server
+     * @throws NullPointerException
+     *             if any required argument is null
+     * @throw IllegalArgumentException if the URI is invalid
      */
-    public String getEndpointURI() {
-        return endpointURI;
+    protected SRUAbstractRequest(String baseURI) {
+        if (baseURI == null) {
+            throw new NullPointerException("baseURI == null");
+        }
+        if (baseURI.isEmpty()) {
+            throw new IllegalArgumentException("baseURI is empty");
+        }
+        try {
+            this.baseURI = new URI(baseURI);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("invalid URI", e);
+        }
+    }
+
+
+    /**
+     * Get the baseURI of the SRU server.
+     *
+     * @return the baseURI of the SRU server
+     */
+    public URI getBaseURI() {
+        return baseURI;
+    }
+
+
+    /**
+     * Get the SRU protocol conformance mode for this request
+     *
+     * @return <code>true</code> if the request will be performed in strict
+     *         mode, <code>false</code> if the request will be performed in a
+     *         more tolerant mode
+     */
+    public boolean isStrictMode() {
+        return strictMode;
+    }
+
+
+    /**
+     * Set the SRU protocol conformance mode for this request
+     *
+     * @param strictMode
+     *            <code>true</code> if the request should be performed in strict
+     *            mode, <code>false</code> if the request should be performed
+     *            client should in a more tolerant mode
+     */
+    public void setStrictMode(boolean strictMode) {
+        this.strictMode = strictMode;
     }
 
 
@@ -238,7 +289,7 @@ abstract class SRUAbstractRequest {
 
 
     final SRUVersion getVersionPerformed() {
-        return versionPreformed;
+        return versionPerformed;
     }
 
 
@@ -247,83 +298,94 @@ abstract class SRUAbstractRequest {
         if (defaultVersion == null) {
             throw new NullPointerException("defaultVersion == null");
         }
-        URIBuilder uriBuilder = new URIBuilder(endpointURI);
 
-        /*
-         * append operation parameter
-         *
-         * NB: Setting "x-malformed-operation" as an extra request parameter
-         * makes the client to send invalid requests. This is intended to use
-         * for testing endpoints for protocol conformance (i.e. provoke an
-         * error) and SHOULD NEVER be used in production!
-         */
-        final String malformedOperation =
-                getExtraRequestData(X_MALFORMED_OPERATION);
-        if (malformedOperation == null) {
-            switch (getOperation()) {
-            case EXPLAIN:
-                uriBuilder.append(PARAM_OPERATION, OP_EXPLAIN);
-                break;
-            case SCAN:
-                uriBuilder.append(PARAM_OPERATION, OP_SCAN);
-                break;
-            case SEARCH_RETRIEVE:
-                uriBuilder.append(PARAM_OPERATION, OP_SEARCH_RETRIEVE);
-                break;
-            default:
-                throw new SRUClientException(
-                        "unsupported operation: " + getOperation());
-            } // switch
-        } else {
-            if (!malformedOperation.equals(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_OPERATION, malformedOperation);
-            }
-        }
+        try {
+            final URIHelper uriBuilder =
+                    new URIHelper(new URIBuilder(baseURI));
 
-        /*
-         * append version parameter
-         *
-         * NB: Setting "x-malformed-version" as an extra request parameter makes
-         * the client to send invalid requests. This is intended to use for
-         * testing endpoints for protocol conformance (i.e. provoke an error)
-         * and SHOULD NEVER be used in production!
-         */
-        final String malformedVersion =
-                getExtraRequestData(X_MALFORMED_VERSION);
-        if (malformedVersion == null) {
-            versionPreformed = (version != null) ? version : defaultVersion;
-            switch (versionPreformed) {
-            case VERSION_1_1:
-                uriBuilder.append(PARAM_VERSION, VERSION_1_1);
-                break;
-            case VERSION_1_2:
-                uriBuilder.append(PARAM_VERSION, VERSION_1_2);
-                break;
-            default:
-                throw new SRUClientException("unsupported version: " +
-                        versionPreformed);
-            } // switch
-        } else {
-            if (!malformedVersion.equalsIgnoreCase(MALFORMED_OMIT)) {
-                uriBuilder.append(PARAM_VERSION, malformedVersion);
-            }
-        }
-
-        // request specific parameters
-        addParametersToURI(uriBuilder);
-
-        // extraRequestData
-        if ((extraRequestData != null) && !extraRequestData.isEmpty()) {
-            for (Map.Entry<String, String> entry :
-                extraRequestData.entrySet()) {
-                String key = entry.getKey();
-                if (key.startsWith(MALFORMED_KEY_PREFIX)) {
-                    continue;
+            /*
+             * append operation parameter
+             *
+             * NB: Setting "x-malformed-operation" as an extra request parameter
+             * makes the client to send invalid requests. This is intended to
+             * use for testing SRU servers for protocol conformance (i.e.
+             * provoke an error) and SHOULD NEVER be used in production!
+             */
+            final String malformedOperation =
+                    getExtraRequestData(X_MALFORMED_OPERATION);
+            if (malformedOperation == null) {
+                switch (getOperation()) {
+                case EXPLAIN:
+                    uriBuilder.append(PARAM_OPERATION, OP_EXPLAIN);
+                    break;
+                case SCAN:
+                    uriBuilder.append(PARAM_OPERATION, OP_SCAN);
+                    break;
+                case SEARCH_RETRIEVE:
+                    uriBuilder.append(PARAM_OPERATION, OP_SEARCH_RETRIEVE);
+                    break;
+                default:
+                    throw new SRUClientException("unsupported operation: " +
+                            getOperation());
+                } // switch
+            } else {
+                if (!malformedOperation.equals(MALFORMED_OMIT)) {
+                    uriBuilder.append(PARAM_OPERATION, malformedOperation);
                 }
-                uriBuilder.append(key, entry.getValue());
             }
+
+            /*
+             * append version parameter
+             *
+             * NB: Setting "x-malformed-version" as an extra request parameter
+             * makes the client to send invalid requests. This is intended to
+             * use for testing SRU servers for protocol conformance (i.e.
+             * provoke an error) and SHOULD NEVER be used in production!
+             */
+            final String malformedVersion =
+                    getExtraRequestData(X_MALFORMED_VERSION);
+            if (malformedVersion == null) {
+                versionPerformed = (version != null) ? version : defaultVersion;
+                switch (versionPerformed) {
+                case VERSION_1_1:
+                    uriBuilder.append(PARAM_VERSION, VERSION_1_1);
+                    break;
+                case VERSION_1_2:
+                    uriBuilder.append(PARAM_VERSION, VERSION_1_2);
+                    break;
+                default:
+                    throw new SRUClientException("unsupported version: " +
+                            versionPerformed);
+                } // switch
+            } else {
+                if (!malformedVersion.equalsIgnoreCase(MALFORMED_OMIT)) {
+                    uriBuilder.append(PARAM_VERSION, malformedVersion);
+                }
+            }
+
+            // request specific parameters
+            addParametersToURI(uriBuilder);
+
+            // extraRequestData
+            if ((extraRequestData != null) && !extraRequestData.isEmpty()) {
+                for (Map.Entry<String, String> entry :
+                    extraRequestData.entrySet()) {
+                    final String key = entry.getKey();
+
+                    /*
+                     * make sure, we skip the client-internal parameters
+                     * to generate invalid requests ...
+                     */
+                    if (!key.startsWith(MALFORMED_KEY_PREFIX)) {
+                        uriBuilder.append(key, entry.getValue());
+                    }
+                }
+            }
+
+            return uriBuilder.makeURI();
+        } catch (URISyntaxException e) {
+            throw new SRUClientException("error while building request URI", e);
         }
-        return uriBuilder.makeURI();
     }
 
 
@@ -334,6 +396,7 @@ abstract class SRUAbstractRequest {
     abstract SRUOperation getOperation();
 
 
-    abstract void addParametersToURI(URIBuilder uri) throws SRUClientException;
+    abstract void addParametersToURI(URIHelper uriBuilder)
+            throws SRUClientException;
 
 } // class AbstractSRURequest

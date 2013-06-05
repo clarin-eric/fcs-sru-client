@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
+import eu.clarin.sru.client.SRUExplainRecordData.ConfigInfo;
+import eu.clarin.sru.client.SRUExplainRecordData.Schema;
 import eu.clarin.sru.client.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.client.fcs.DataView;
 import eu.clarin.sru.client.fcs.DataViewGenericDOM;
@@ -35,14 +37,18 @@ class TestUtils {
             LoggerFactory.getLogger(TestUtils.class);
 
     public static SRUExplainRequest makeExplainRequest(String baseURI) {
-        return new SRUExplainRequest(baseURI);
+        SRUExplainRequest request = new SRUExplainRequest(baseURI);
+        request.setExtraRequestData("x-indent-response", "4");
+        request.setParseRecordDataEnabled(true);
+        return request;
     }
 
 
     public static SRUScanRequest makeScanRequest(String baseURI) {
         SRUScanRequest request = new SRUScanRequest(baseURI);
-        request.setScanClause("fcs.resource");
+        request.setScanClause("fcs.resource = root");
         request.setExtraRequestData("x-clarin-resource-info", "true");
+        request.setExtraRequestData("x-indent-response", "4");
         return request;
     }
 
@@ -56,7 +62,7 @@ class TestUtils {
         request.setRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA);
         request.setMaximumRecords(5);
         request.setRecordPacking(SRURecordPacking.XML);
-//        request.setExtraRequestData("x-indent-response", "4");
+        request.setExtraRequestData("x-indent-response", "4");
         return request;
     }
 
@@ -66,14 +72,17 @@ class TestUtils {
         if (response.hasDiagnostics()) {
             for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
                 logger.info("uri={}, message={}, detail={}",
-                        new Object[] { diagnostic.getURI(),
-                                diagnostic.getMessage(),
-                                diagnostic.getDetails() });
+                        diagnostic.getURI(),
+                        diagnostic.getMessage(),
+                        diagnostic.getDetails());
             }
         }
         if (response.hasRecord()) {
             SRURecord record = response.getRecord();
             logger.info("schema = {}", record.getRecordSchema());
+            if (record.isRecordSchema(SRUExplainRecordData.RECORD_SCHEMA)) {
+                dumpExplainRecordData(record.getRecordData());
+            }
         }
     }
 
@@ -83,20 +92,17 @@ class TestUtils {
         if (response.hasDiagnostics()) {
             for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
                 logger.info("uri={}, message={}, detail={}",
-                        new Object[] {
-                            diagnostic.getURI(),
-                            diagnostic.getMessage(),
-                            diagnostic.getDetails()
-                            });
+                        diagnostic.getURI(),
+                        diagnostic.getMessage(),
+                        diagnostic.getDetails());
             }
         }
         if (response.hasTerms()) {
             for (SRUTerm term : response.getTerms()) {
-                logger.info(
-                        "value={}, numberOfRecords={}, displayTerm={}",
-                        new Object[] { term.getValue(),
-                                term.getNumberOfRecords(),
-                                term.getDisplayTerm() });
+                logger.info("value={}, numberOfRecords={}, displayTerm={}",
+                            term.getValue(),
+                            term.getNumberOfRecords(),
+                            term.getDisplayTerm());
             }
         } else {
             logger.info("no terms");
@@ -107,22 +113,22 @@ class TestUtils {
     public static void printSearchResponse(SRUSearchRetrieveResponse response) {
         logger.info("displaying results of 'searchRetrieve' request ...");
         logger.info("numberOfRecords = {}, nextResultPosition = {}",
-                new Object[] { response.getNumberOfRecords(),
-                        response.getNextRecordPosition() });
+                response.getNumberOfRecords(),
+                response.getNextRecordPosition());
         if (response.hasDiagnostics()) {
             for (SRUDiagnostic diagnostic : response.getDiagnostics()) {
                 logger.info("uri={}, message={}, detail={}",
-                        new Object[] { diagnostic.getURI(),
-                                diagnostic.getMessage(),
-                                diagnostic.getDetails() });
+                        diagnostic.getURI(),
+                        diagnostic.getMessage(),
+                        diagnostic.getDetails());
             }
         }
         if (response.hasRecords()) {
             for (SRURecord record : response.getRecords()) {
                 logger.info("schema = {}, identifier = {}, position = {}",
-                        new Object[] { record.getRecordSchema(),
-                                record.getRecordIdentifier(),
-                                record.getRecordPosition() });
+                        record.getRecordSchema(),
+                        record.getRecordIdentifier(),
+                        record.getRecordPosition());
                 if (record.isRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA)) {
                     ClarinFCSRecordData rd =
                             (ClarinFCSRecordData) record.getRecordData();
@@ -131,8 +137,7 @@ class TestUtils {
                     SRUSurrogateRecordData r =
                             (SRUSurrogateRecordData) record.getRecordData();
                     logger.info("SURROGATE DIAGNOSTIC: uri={}, message={}, detail={}",
-                            new Object[] { r.getURI(), r.getMessage(),
-                                    r.getDetails() });
+                                r.getURI(), r.getMessage(), r.getDetails());
                 } else {
                     logger.info("UNSUPPORTED SCHEMA: {}",
                             record.getRecordSchema());
@@ -140,6 +145,44 @@ class TestUtils {
             }
         } else {
             logger.info("no results");
+        }
+    }
+
+
+    public static void dumpExplainRecordData(SRURecordData recordData) {
+        if (SRUExplainRecordData.RECORD_SCHEMA.equals(recordData.getRecordSchema())) {
+            SRUExplainRecordData data = (SRUExplainRecordData) recordData;
+            logger.info("host={}, port={}, database={}",
+                    data.getServerInfo().getHost(),
+                    data.getServerInfo().getPort(),
+                    data.getServerInfo().getDatabase());
+            List<Schema> schemaInfo = data.getSchemaInfo();
+            if (schemaInfo != null) {
+                for (Schema schema : schemaInfo) {
+                    logger.debug("schema: identifier={}, name={}, " +
+                            "location={}, sort={}, retrieve={}",
+                            schema.getIdentifier(),
+                            schema.getName(),
+                            schema.getLocation(),
+                            schema.getSort(),
+                            schema.getRetrieve());
+                }
+            }
+            ConfigInfo configInfo = data.getConfigInfo();
+            if (configInfo != null) {
+                if (configInfo.getDefaults() != null) {
+                    logger.debug("configInfo/default = {}",
+                            configInfo.getDefaults());
+                }
+                if (configInfo.getSettings() != null) {
+                    logger.debug("configInfo/setting = {}",
+                            configInfo.getSettings());
+                }
+                if (configInfo.getSupports() != null) {
+                    logger.debug("configInfo/supports = {}",
+                            configInfo.getSupports());
+                }
+            }
         }
     }
 
@@ -165,34 +208,21 @@ class TestUtils {
     private static void dumpDataView(String s, List<DataView> dataviews) {
         for (DataView dataview : dataviews) {
             logger.info("{}DataView: type={}, pid={}, ref={}",
-                    new Object[] {
-                        s,
-                        dataview.getMimeType(),
-                        dataview.getPid(),
-                        dataview.getRef()
-                    });
+                    s, dataview.getMimeType(), dataview.getPid(),
+                    dataview.getRef());
             if (dataview instanceof DataViewGenericDOM) {
                 final DataViewGenericDOM view = (DataViewGenericDOM) dataview;
                 final Node root = view.getDocument().getFirstChild();
                 logger.info("{}DataView: root element <{}> / {}",
-                        new Object[] {
-                            s,
-                            root.getNodeName(),
-                            root.getOwnerDocument().hashCode() });
+                        s, root.getNodeName(),
+                        root.getOwnerDocument().hashCode());
             } else if (dataview instanceof DataViewGenericString) {
                 final DataViewGenericString view = (DataViewGenericString) dataview;
-                logger.info("{}DataView: data = {}",
-                        new Object[] {
-                            s,
-                            view.getContent() });
+                logger.info("{}DataView: data = {}", s, view.getContent());
             } else if (dataview.isMimeType(DataViewKWIC.TYPE)) {
                 final DataViewKWIC kw = (DataViewKWIC) dataview;
                 logger.info("{}DataView: {} / {} / {}",
-                        new Object[] {
-                            s,
-                            kw.getLeft(),
-                            kw.getKeyword(),
-                            kw.getRight() });
+                        s, kw.getLeft(), kw.getKeyword(), kw.getRight());
             }
         }
     }

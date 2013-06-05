@@ -16,14 +16,27 @@
  */
 package eu.clarin.sru.client;
 
+import java.net.URI;
+
 /**
  * An object for performing a <em>explain</em> operation.
- * 
+ *
  * @see SRUExplainHandler
  * @see <a href="http://www.loc.gov/standards/sru/specs/explain.html">SRU Explain Operation</a>
  */
-public final class SRUExplainRequest extends SRUAbstractRequest {
+public class SRUExplainRequest extends SRUAbstractRequest {
     private SRURecordPacking recordPacking;
+    private boolean parseRecordDataEnabled = false;
+
+    /**
+     * Constructor.
+     *
+     * @param baseURI
+     *            the baseURI of the endpoint
+     */
+    public SRUExplainRequest(URI baseURI) {
+        super(baseURI);
+    }
 
 
     /**
@@ -54,12 +67,37 @@ public final class SRUExplainRequest extends SRUAbstractRequest {
 
     /**
      * Get the requested record packing.
-     * 
+     *
      * @return the requested record packing
      * @see SRURecordPacking
      */
     public SRURecordPacking getRecordPacking() {
         return recordPacking;
+    }
+
+
+    /**
+     * Enable or disable parsing of explain record data (ZeeRex record) of the
+     * explain response.
+     * 
+     * @param enabled
+     *            <code>true</code> enabled parsing, <code>false</code> disables
+     *            parsing
+     */
+    public void setParseRecordDataEnabled(boolean enabled) {
+        this.parseRecordDataEnabled = enabled;
+    }
+    
+
+    /**
+     * Check, whether the record data of a explain response (ZeeRex record)
+     * shall be parsed or not.
+     * 
+     * @return <code>true</code> if parsing is enabled, <code>false</code>
+     *         otherwise
+     */
+    public boolean isParseRecordDataEnabled() {
+        return parseRecordDataEnabled;
     }
 
 
@@ -70,15 +108,15 @@ public final class SRUExplainRequest extends SRUAbstractRequest {
 
 
     @Override
-    void addParametersToURI(URIBuilder uriBuilder) throws SRUClientException {
+    void addParametersToURI(URIHelper uriHelper) throws SRUClientException {
         // recordPacking
         if (recordPacking != null) {
             switch (recordPacking) {
             case XML:
-                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
+                uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
                 break;
             case STRING:
-                uriBuilder.append(PARAM_RECORD_PACKING, RECORD_PACKING_STRING);
+                uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_STRING);
                 break;
             default:
                 throw new SRUClientException("unsupported record packing: " +

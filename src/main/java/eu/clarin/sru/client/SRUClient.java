@@ -55,16 +55,15 @@ public class SRUClient {
     /* common */
     private List<SRUDiagnostic> diagnostics;
     private DocumentFragment extraResponseData;
-    /* explain */
-    private SRURecord record;
     /* scan */
     private List<SRUTerm> terms;
     /* searchRetrieve */
     private int numberOfRecords;
     private String resultSetId;
     private int resultSetIdleTime;
-    private List<SRURecord> records;
     private int nextRecordPosition;
+    /* explain/searchRetrieve */
+    private List<SRURecord> records;
     /* statistics */
     private int totalBytesTransferred;
     private long timeTotal;
@@ -80,11 +79,12 @@ public class SRUClient {
      * Constructor. This constructor will create a <em>strict</em> client and
      * use the default SRU version.
      *
-     * @see #SRUClient(SRUVersion, boolean)
      * @see SRUSimpleClient#DEFAULT_SRU_VERSION
      */
     public SRUClient() {
-        this(SRUSimpleClient.DEFAULT_SRU_VERSION, true);
+        this(SRUSimpleClient.DEFAULT_SRU_VERSION,
+                new HashMap<String, SRURecordDataParser>(),
+                DocumentBuilderFactory.newInstance());
     }
 
 
@@ -94,27 +94,9 @@ public class SRUClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
-     * @see #SRUClient(SRUVersion, boolean)
      */
     public SRUClient(SRUVersion defaultVersion) {
-        this(defaultVersion, true);
-    }
-
-
-    /**
-     * Constructor.
-     *
-     * @param defaultVersion
-     *            the default version to use for SRU requests; may be overridden
-     *            by individual requests
-     * @param strictMode
-     *            if <code>true</code> the client will strictly adhere to the
-     *            SRU standard and raise fatal errors on violations, if
-     *            <code>false</code> it will act more forgiving and ignore
-     *            certain violations
-     */
-    public SRUClient(SRUVersion defaultVersion, boolean strictMode) {
-        this(defaultVersion, strictMode,
+        this(defaultVersion,
                 new HashMap<String, SRURecordDataParser>(),
                 DocumentBuilderFactory.newInstance());
     }
@@ -130,16 +112,14 @@ public class SRUClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
-     * @param strictMode
-     *            if <code>true</code> the client will strictly adhere to the
-     *            SRU standard and raise fatal errors on violations, if
-     *            <code>false</code> it will act more forgiving and ignore
-     *            certain violations
      * @param parsers
      *            a <code>Map</code> to store record schema to record data
      *            parser mappings
+     * @param documentBuilderFactory
+     *            the Document Builder factory to be used to create Document
+     *            Builders
      */
-    SRUClient(SRUVersion defaultVersion, boolean strictMode,
+    SRUClient(SRUVersion defaultVersion,
             Map<String, SRURecordDataParser> parsers,
             DocumentBuilderFactory documentBuilderFactory) {
         if (defaultVersion == null) {
@@ -148,7 +128,10 @@ public class SRUClient {
         if (parsers == null) {
             throw new NullPointerException("parsers == null");
         }
-        this.client = new SRUSimpleClient(defaultVersion, strictMode, parsers);
+        if (documentBuilderFactory == null) {
+            throw new NullPointerException("documentBuilderFactory == null");
+        }
+        this.client = new SRUSimpleClient(defaultVersion, parsers);
         this.handler = new Handler();
         try {
             synchronized (documentBuilderFactory) {
@@ -169,16 +152,13 @@ public class SRUClient {
      *
      * @param parser
      *            a parser instance
-     * @throws SRUClientException
-     *             if a parser handing the same record schema is already
-     *             registered
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
      * @throws IllegalArgumentException
-     *             if the supplied parser is invalid
+     *             if the supplied parser is invalid or a parser handing the
+     *             same record schema is already registered
      */
-    public void registerRecordParser(SRURecordDataParser parser)
-            throws SRUClientException {
+    public void registerRecordParser(SRURecordDataParser parser) {
         client.registerRecordParser(parser);
     }
 
@@ -201,6 +181,10 @@ public class SRUClient {
         }
         try {
             client.explain(request, handler);
+            SRURecord record = null;
+            if ((records != null) && !records.isEmpty()) {
+                record = records.get(0);
+            }
             return new SRUExplainResponse(request,
                     diagnostics,
                     extraResponseData,
@@ -312,16 +296,15 @@ public class SRUClient {
         /* common */
         diagnostics           = null;
         extraResponseData     = null;
-        /* explain */
-        record                = null;
         /* scan */
         terms                 = null;
         /* searchRetrieve */
         numberOfRecords       = -1;
         resultSetId           = null;
         resultSetIdleTime     = -1;
-        records               = null;
         nextRecordPosition    = -1;
+        /* explain/searchRetrieve */
+        records               = null;
         /* statistics */
         totalBytesTransferred = -1;
         timeQueued            = -1;

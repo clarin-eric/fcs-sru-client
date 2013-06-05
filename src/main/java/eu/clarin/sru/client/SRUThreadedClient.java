@@ -54,24 +54,10 @@ public class SRUThreadedClient {
      * Constructor. This constructor will create a <em>strict</em> client and
      * use the default SRU version.
      *
-     * @see #SRUThreadedClient(SRUVersion, boolean)
      * @see SRUSimpleClient#DEFAULT_SRU_VERSION
      */
     public SRUThreadedClient() {
-        this(SRUSimpleClient.DEFAULT_SRU_VERSION, true);
-    }
-
-
-    /**
-     * Constructor. This constructor will create a <em>strict</em> client.
-     *
-     * @param defaultVersion
-     *            the default version to use for SRU requests; may be overridden
-     *            by individual requests
-     * @see #SRUThreadedClient(SRUVersion, boolean)
-     */
-    public SRUThreadedClient(SRUVersion defaultVersion) {
-        this(defaultVersion, true);
+        this(SRUSimpleClient.DEFAULT_SRU_VERSION);
     }
 
 
@@ -81,19 +67,13 @@ public class SRUThreadedClient {
      * @param defaultVersion
      *            the default version to use for SRU requests; may be overridden
      *            by individual requests
-     * @param strictMode
-     *            if <code>true</code> the client will strictly adhere to the
-     *            SRU standard and raise fatal errors on violations, if
-     *            <code>false</code> it will act more forgiving and ignore
-     *            certain violations
      */
-    public SRUThreadedClient(final SRUVersion defaultVersion,
-            final boolean strictMode) {
+    public SRUThreadedClient(final SRUVersion defaultVersion) {
         client = new ThreadLocal<SRUClient>() {
             @Override
             protected SRUClient initialValue() {
                 logger.debug("instantiated new sru client");
-                return new SRUClient(defaultVersion, strictMode, parsers,
+                return new SRUClient(defaultVersion, parsers,
                         documentBuilderFactory);
             }
         };
@@ -109,16 +89,13 @@ public class SRUThreadedClient {
      *
      * @param parser
      *            a parser instance
-     * @throws SRUClientException
-     *             if a parser handing the same record schema is already
-     *             registered
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
      * @throws IllegalArgumentException
-     *             if the supplied parser is invalid
+     *             if the supplied parser is invalid or a parser handing the
+     *             same record schema is already registered
      */
-    public void registerRecordParser(SRURecordDataParser parser)
-            throws SRUClientException {
+    public void registerRecordParser(SRURecordDataParser parser) {
         if (parser == null) {
             throw new NullPointerException("parser == null");
         }
@@ -132,7 +109,7 @@ public class SRUThreadedClient {
         }
 
         if (parsers.putIfAbsent(recordSchema, parser) != null) {
-            throw new SRUClientException(
+            throw new IllegalArgumentException(
                     "record data parser already registered: " + recordSchema);
 
         }
