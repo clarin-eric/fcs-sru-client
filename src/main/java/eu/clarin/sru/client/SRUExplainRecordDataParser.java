@@ -563,15 +563,18 @@ class SRUExplainRecordDataParser {
         Map<String, String> supports = null;
         for (;;) {
             if (XmlStreamReaderUtils.peekStart(reader, ns, "default")) {
-                defaults = parseConfigInfoItem(reader, strict, ns, "default", defaults);
+                defaults = parseConfigInfoItem(reader, strict, ns,
+                        "default", defaults);
             } else if (XmlStreamReaderUtils.peekStart(reader, ns, "setting")) {
-                settings = parseConfigInfoItem(reader, strict, ns, "setting", settings);
+                settings = parseConfigInfoItem(reader, strict, ns,
+                        "setting", settings);
             } else if (XmlStreamReaderUtils.peekStart(reader, ns, "supports")) {
-                supports = parseConfigInfoItem(reader, strict, ns, "supports", supports);
+                supports = parseConfigInfoItem(reader, strict, ns,
+                        "supports", supports);
             } else {
                 break;
             }
-        }
+        } // for
 
         return ((defaults != null) || (settings != null) || (supports != null))
                 ? new ConfigInfo(defaults, settings, supports)
