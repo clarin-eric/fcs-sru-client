@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
+import eu.clarin.sru.client.SRUExplainRecordData.ConfigInfo;
 import eu.clarin.sru.client.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.client.fcs.DataView;
 import eu.clarin.sru.client.fcs.DataViewGenericDOM;
@@ -153,6 +154,21 @@ class TestUtils {
                     data.getServerInfo().getHost(),
                     data.getServerInfo().getPort(),
                     data.getServerInfo().getDatabase());
+            ConfigInfo configInfo = data.getConfigInfo();
+            if (configInfo != null) {
+                if (configInfo.getDefaults() != null) {
+                    logger.debug("configInfo/default = {}",
+                            configInfo.getDefaults());
+                }
+                if (configInfo.getSettings() != null) {
+                    logger.debug("configInfo/setting = {}",
+                            configInfo.getSettings());
+                }
+                if (configInfo.getSupports() != null) {
+                    logger.debug("configInfo/supports = {}",
+                            configInfo.getSupports());
+                }
+            }
         }
     }
 

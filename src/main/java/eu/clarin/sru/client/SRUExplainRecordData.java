@@ -18,6 +18,7 @@ package eu.clarin.sru.client;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -401,16 +402,59 @@ public class SRUExplainRecordData implements SRURecordData {
         }
     } // class IndexInfo
 
+    public static class ConfigInfo {
+        private final Map<String, String> defaults;
+        private final Map<String, String> settings;
+        private final Map<String, String> supports;
+
+
+        ConfigInfo(Map<String, String> defaults, Map<String, String> settings,
+                Map<String, String> supports) {
+            if ((defaults != null) && !defaults.isEmpty()) {
+                this.defaults = Collections.unmodifiableMap(defaults);
+            } else {
+                this.defaults = Collections.emptyMap();
+            }
+            if ((settings != null) && !settings.isEmpty()) {
+                this.settings = Collections.unmodifiableMap(settings);
+            } else {
+                this.settings = Collections.emptyMap();
+            }
+            if ((supports != null) && !supports.isEmpty()) {
+                this.supports = Collections.unmodifiableMap(supports);
+            } else {
+                this.supports = Collections.emptyMap();
+            }
+        }
+
+
+        public Map<String, String> getDefaults() {
+            return defaults;
+        }
+
+
+        public Map<String, String> getSettings() {
+            return settings;
+        }
+
+
+        public Map<String, String> getSupports() {
+            return supports;
+        }
+    } // class ConfigInfo
+
     private final ServerInfo serverInfo;
     private final DatabaseInfo databaseInfo;
     private final IndexInfo indexInfo;
+    private final ConfigInfo configInfo;
 
 
     SRUExplainRecordData(ServerInfo serverInfo, DatabaseInfo databaseInfo,
-            IndexInfo indexInfo) {
+            IndexInfo indexInfo, ConfigInfo configInfo) {
         this.serverInfo   = serverInfo;
         this.databaseInfo = databaseInfo;
         this.indexInfo    = indexInfo;
+        this.configInfo   = configInfo;
     }
 
 
@@ -438,6 +482,11 @@ public class SRUExplainRecordData implements SRURecordData {
 
     public IndexInfo getIndexInfo() {
         return indexInfo;
+    }
+
+
+    public ConfigInfo getConfigInfo() {
+        return configInfo;
     }
 
 } // class SRUExplainRecordData

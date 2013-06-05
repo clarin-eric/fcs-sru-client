@@ -225,23 +225,14 @@ public final class XmlStreamReaderUtils {
     }
 
 
-    public static String peekElementLocalName(XMLStreamReader reader)
-            throws XMLStreamException {
-        consumeWhitespace(reader);
-        if (!reader.isStartElement()) {
-            throw new XMLStreamException("not at a start elment event",
-                    reader.getLocation());
-        }
-        return reader.getLocalName();
-    }
-
-
     public static boolean peekStart(XMLStreamReader reader,
-            String namespaceURI, String localName) throws XMLStreamException {
-        consumeWhitespace(reader);
+            String namespaceURI, String localName)
+            throws XMLStreamException {
+        if (reader.isWhiteSpace()) {
+            consumeWhitespace(reader);
+        }
         if (!reader.isStartElement()) {
-            throw new XMLStreamException("not at a start elment event",
-                    reader.getLocation());
+            return false;
         }
         return namespaceURI.equals(reader.getNamespaceURI()) &&
                 localName.equals(reader.getLocalName());
@@ -251,7 +242,7 @@ public final class XmlStreamReaderUtils {
     public static void consumeStart(XMLStreamReader reader)
             throws XMLStreamException {
         if (!reader.isStartElement()) {
-            throw new XMLStreamException("not at a start elment event",
+            throw new XMLStreamException("not at a start element event",
                     reader.getLocation());
         }
         reader.next();

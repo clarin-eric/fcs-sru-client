@@ -17,8 +17,10 @@
 package eu.clarin.sru.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -28,6 +30,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.clarin.sru.client.SRUExplainRecordData.ConfigInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.DatabaseInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.IndexInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.LocalizedString;
@@ -84,7 +87,7 @@ class SRUExplainRecordDataParser {
             }
             return parseExplain(reader, version, strict, ZEEREX_NS_QUIRK);
         } else {
-            throw new XMLStreamException("expected element '" +
+            throw new XMLStreamException("expected start tag for element '" +
                     new QName(ZEEREX_NS, "explain") + " at this position",
                     reader.getLocation());
         }
@@ -147,13 +150,15 @@ class SRUExplainRecordDataParser {
         }
 
         // explain/configInfo (optional)
+        ConfigInfo configInfo = null;
         if (XmlStreamReaderUtils.readStart(reader, ns, "configInfo", false)) {
-            parseConfigInfo(reader, strict, ns);
+            configInfo = parseConfigInfo(reader, strict, ns);
             XmlStreamReaderUtils.readEnd(reader, ns, "configInfo");
         }
 
         XmlStreamReaderUtils.readEnd(reader, ns, "explain", true);
-        return new SRUExplainRecordData(serverInfo, databaseInfo, indexInfo);
+        return new SRUExplainRecordData(serverInfo, databaseInfo, indexInfo,
+                configInfo);
     }
 
 
@@ -258,15 +263,6 @@ class SRUExplainRecordDataParser {
 
         byte mode = 0; /* 1 = title, 2 = description, 3 = others */
         for (;;) {
-            /*
-             * make sure to remove any whitespace and break, if we do not point
-             * to a start tag
-             */
-            XmlStreamReaderUtils.consumeWhitespace(reader);
-            if (!reader.isStartElement()) {
-                break;
-            }
-
             if (XmlStreamReaderUtils.peekStart(reader, ns, "title")) {
                 if ((mode != 0) && (mode != 1)) {
                     if (strict) {
@@ -556,51 +552,30 @@ class SRUExplainRecordDataParser {
     }
 
 
-    private static Object parseConfigInfo(XMLStreamReader reader,
+    private static ConfigInfo parseConfigInfo(XMLStreamReader reader,
             boolean strict, String ns) throws XMLStreamException,
             SRUClientException {
         /*
          * configInfo ((default|setting|supports)*)
          */
-        logger.debug("configInfo");
+        Map<String, String> defaults = null;
+        Map<String, String> settings = null;
+        Map<String, String> supports = null;
         for (;;) {
-            if (XmlStreamReaderUtils.readStart(reader,
-                    ns, "default", false, true)) {
-                final String type =
-                        XmlStreamReaderUtils.readAttributeValue(reader,
-                                null, "type", true);
-                XmlStreamReaderUtils.consumeStart(reader);
-                final String value =
-                        XmlStreamReaderUtils.readString(reader, true);
-                XmlStreamReaderUtils.readEnd(reader, ns, "default");
-                logger.debug("-> default: type={}, value={}", type, value);
-            } else if (XmlStreamReaderUtils.readStart(reader,
-                    ns, "setting", false, true)) {
-                final String type =
-                        XmlStreamReaderUtils.readAttributeValue(reader,
-                                null, "type", true);
-                XmlStreamReaderUtils.consumeStart(reader);
-                final String value =
-                        XmlStreamReaderUtils.readString(reader, true);
-                XmlStreamReaderUtils.readEnd(reader, ns, "setting");
-                logger.debug("-> setting: type={}, value={}", type, value);
-            } else if (XmlStreamReaderUtils.readStart(reader,
-                    ns, "supports", false, true)) {
-                final String type =
-                        XmlStreamReaderUtils.readAttributeValue(reader,
-                                null, "type", true);
-                XmlStreamReaderUtils.consumeStart(reader);
-                final String value =
-                        XmlStreamReaderUtils.readString(reader, true);
-                XmlStreamReaderUtils.readEnd(reader, ns, "supports");
-
-                logger.debug("-> supports: type={}, value={}", type, value);
+            if (XmlStreamReaderUtils.peekStart(reader, ns, "default")) {
+                defaults = parseConfigInfoItem(reader, strict, ns, "default", defaults);
+            } else if (XmlStreamReaderUtils.peekStart(reader, ns, "setting")) {
+                settings = parseConfigInfoItem(reader, strict, ns, "setting", settings);
+            } else if (XmlStreamReaderUtils.peekStart(reader, ns, "supports")) {
+                supports = parseConfigInfoItem(reader, strict, ns, "supports", supports);
             } else {
                 break;
             }
         }
 
-        return null;
+        return ((defaults != null) || (settings != null) || (supports != null))
+                ? new ConfigInfo(defaults, settings, supports)
+                : null;
     }
 
 
@@ -661,6 +636,33 @@ class SRUExplainRecordDataParser {
             }
         }
         return result;
+    }
+
+
+    private static Map<String, String> parseConfigInfoItem(
+            XMLStreamReader reader, boolean strict, String ns,
+            String localName, Map<String, String> map)
+            throws XMLStreamException {
+        XmlStreamReaderUtils.readStart(reader, ns, localName, true, true);
+        final String type = XmlStreamReaderUtils.readAttributeValue(reader,
+                null, "type", true);
+        XmlStreamReaderUtils.consumeStart(reader);
+        final String value = XmlStreamReaderUtils.readString(reader, true);
+        XmlStreamReaderUtils.readEnd(reader, ns, localName);
+
+        if ((type != null) && (value != null)) {
+            if (map == null) {
+                map = new HashMap<String, String>();
+            }
+            if (map.containsKey(type)) {
+                logger.warn(
+                        "{} with type '{}' is already present, skipping duplicate entry",
+                        localName, type);
+            } else {
+                map.put(type, value);
+            }
+        }
+        return map;
     }
 
 } // class SRUExplainRecordDataParser
