@@ -905,7 +905,7 @@ public class SRUSimpleClient {
             } else {
                 final boolean strictMode = request.isStrictMode();
 
-                logger.debug("parsing 'searchRetrieve' response (mode = {}",
+                logger.debug("parsing 'searchRetrieve' response (mode = {})",
                         (strictMode ? "strict" : "non-strict"));
 
                 // searchRetrieveResponse
