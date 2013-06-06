@@ -36,7 +36,7 @@ import com.ctc.wstx.api.WstxInputProperties;
 
 
 class SRUXMLStreamReader implements XMLStreamReader {
-    private final class CountingInputStream extends FilterInputStream {
+    private static final class CountingInputStream extends FilterInputStream {
         protected long count = 0;
 
         private CountingInputStream(InputStream stream) {

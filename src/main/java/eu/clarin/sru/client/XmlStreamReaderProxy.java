@@ -456,7 +456,7 @@ class XmlStreamReaderProxy implements XMLStreamReader {
                 depth--;
                 break;
             default:
-                ;
+                break;
             } // switch (t)
             if (depth < 0) {
                 state = State.END_DOCUMENT;
