@@ -170,12 +170,19 @@ public final class XmlStreamReaderUtils {
             throws XMLStreamException {
         // System.err.println("readString @ " + toReadable(reader));
         String s = null;
-        if (reader.isCharacters()) {
-            s = reader.getText();
-            if (s != null) {
-                s = s.trim();
+        StringBuilder sb = null;
+        while (reader.isCharacters()) {
+            if (sb == null) {
+                sb = new StringBuilder();
+            }
+            String tmp = reader.getText();
+            if (!tmp.isEmpty()) {
+                sb.append(tmp);
             }
             reader.next();
+        } // while
+        if ((sb != null) && (sb.length() > 0)) {
+            s = sb.toString().trim();
         }
         if (required && ((s == null) || s.isEmpty())) {
             throw new XMLStreamException("expected character content "
@@ -237,8 +244,8 @@ public final class XmlStreamReaderUtils {
         return namespaceURI.equals(reader.getNamespaceURI()) &&
                 localName.equals(reader.getLocalName());
     }
-    
-    
+
+
     public static void consumeStart(XMLStreamReader reader)
             throws XMLStreamException {
         if (!reader.isStartElement()) {
