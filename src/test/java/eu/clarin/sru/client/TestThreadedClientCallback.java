@@ -21,7 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.client.fcs.ClarinFCSRecordParser;
+import eu.clarin.sru.client.fcs.ClarinFCSClientBuilder;
 
 
 public class TestThreadedClientCallback {
@@ -31,10 +31,11 @@ public class TestThreadedClientCallback {
     public static void main(String[] args) {
         if (args.length > 0) {
             logger.info("initializing client ...");
-            SRUThreadedClient client = new SRUThreadedClient();
 
-            // register record data parsers
-            client.registerRecordParser(new ClarinFCSRecordParser());
+            SRUThreadedClient client = ClarinFCSClientBuilder
+                    .create()
+                    .defaults()
+                    .buildThreadedClient();
 
             try {
                 final CountDownLatch latch = new CountDownLatch(3);

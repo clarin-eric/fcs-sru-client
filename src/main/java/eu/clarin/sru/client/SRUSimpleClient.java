@@ -31,16 +31,18 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.impl.NoConnectionReuseStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +66,7 @@ import org.slf4j.LoggerFactory;
  * @see SRUDefaultHandlerAdapter
  */
 public class SRUSimpleClient {
+    private static final String USER_AGENT = "SRU-Client/1.0.0";
     /** default version the client will use, if not otherwise specified */
     public static final SRUVersion DEFAULT_SRU_VERSION = SRUVersion.VERSION_1_2;
     private static final String SRU_NS =
@@ -80,7 +83,7 @@ public class SRUSimpleClient {
             LoggerFactory.getLogger(SRUSimpleClient.class);
     private final SRUVersion defaultVersion;
     private final Map<String, SRURecordDataParser> parsers;
-    private final HttpClient httpClient;
+    private final CloseableHttpClient httpClient;
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
     private final SRUExplainRecordDataParser explainRecordParser =
             new SRUExplainRecordDataParser();
@@ -137,9 +140,12 @@ public class SRUSimpleClient {
         }
         this.defaultVersion = defaultVersion;
         this.parsers        = parsers;
-        this.httpClient     = new DefaultHttpClient();
-        this.httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT,
-                    "eu.clarin.sru.client/0.0.1");
+
+        // create HTTP client
+        // FIXME: get timeout values from somewhere?
+        final int connectTimeout = 30 * 1000;
+        final int socketTimeout = 180 * 1000;
+        httpClient = createHttpClient(connectTimeout, socketTimeout);
     }
 
 
@@ -205,15 +211,15 @@ public class SRUSimpleClient {
 
         // create URI and perform request
         final URI uri = request.makeURI(defaultVersion);
-        HttpResponse response = executeRequest(uri);
-        HttpEntity entity = response.getEntity();
-        if (entity == null) {
-            throw new SRUClientException("cannot get entity");
-        }
-
-        InputStream stream = null;
-        SRUXMLStreamReader reader = null;
+        CloseableHttpResponse response = executeRequest(uri);
+        InputStream stream             = null;
+        SRUXMLStreamReader reader      = null;
         try {
+            final HttpEntity entity = response.getEntity();
+            if (entity == null) {
+                throw new SRUClientException("cannot get entity");
+            }
+
             stream = entity.getContent();
 
             final long ts_parsing = System.nanoTime();
@@ -256,7 +262,11 @@ public class SRUSimpleClient {
             }
 
             /* make sure to release allocated resources */
-            HttpClientUtils.closeQuietly(response);
+            try {
+                response.close();
+            } catch (IOException e) {
+                /* IGNORE */
+            }
         }
     }
 
@@ -291,15 +301,14 @@ public class SRUSimpleClient {
 
         // create URI and perform request
         final URI uri = request.makeURI(defaultVersion);
-        HttpResponse response = executeRequest(uri);
-        HttpEntity entity = response.getEntity();
-        if (entity == null) {
-            throw new SRUClientException("cannot get entity");
-        }
-
-        InputStream stream = null;
-        SRUXMLStreamReader reader = null;
+        CloseableHttpResponse response = executeRequest(uri);
+        InputStream stream             = null;
+        SRUXMLStreamReader reader      = null;
         try {
+            final HttpEntity entity = response.getEntity();
+            if (entity == null) {
+                throw new SRUClientException("cannot get entity");
+            }
             stream = entity.getContent();
 
             final long ts_parsing = System.nanoTime();
@@ -342,7 +351,11 @@ public class SRUSimpleClient {
             }
 
             /* make sure to release allocated resources */
-            HttpClientUtils.closeQuietly(response);
+            try {
+                response.close();
+            } catch (IOException e) {
+                /* IGNORE */
+            }
         }
     }
 
@@ -377,15 +390,15 @@ public class SRUSimpleClient {
 
         // create URI and perform request
         final URI uri = request.makeURI(defaultVersion);
-        HttpResponse response = executeRequest(uri);
-        HttpEntity entity = response.getEntity();
-        if (entity == null) {
-            throw new SRUClientException("cannot get entity");
-        }
-
-        InputStream stream = null;
-        SRUXMLStreamReader reader = null;
+        CloseableHttpResponse response = executeRequest(uri);
+        InputStream stream             = null;
+        SRUXMLStreamReader reader      = null;
         try {
+            final HttpEntity entity = response.getEntity();
+            if (entity == null) {
+                throw new SRUClientException("cannot get entity");
+            }
+
             stream = entity.getContent();
 
             final long ts_parsing = System.nanoTime();
@@ -428,19 +441,24 @@ public class SRUSimpleClient {
             }
 
             /* make sure to release allocated resources */
-            HttpClientUtils.closeQuietly(response);
+            try {
+                response.close();
+            } catch (IOException e) {
+                /* IGNORE */
+            }
         }
     }
 
 
-    private HttpResponse executeRequest(URI uri) throws SRUClientException {
-        HttpGet request = null;
-        HttpResponse response = null;
+    private CloseableHttpResponse executeRequest(URI uri)
+            throws SRUClientException {
+        CloseableHttpResponse response = null;
+        boolean forceClose             = true;
         try {
             logger.debug("submitting HTTP request: {}", uri.toString());
             try {
-                request = new HttpGet(uri);
-                response = httpClient.execute(request);
+                HttpGet request = new HttpGet(uri);
+                response        = httpClient.execute(request);
                 StatusLine status = response.getStatusLine();
                 if (status.getStatusCode() != HttpStatus.SC_OK) {
                     if (status.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
@@ -450,6 +468,7 @@ public class SRUSimpleClient {
                                 status.getStatusCode());
                     }
                 }
+                forceClose = false;
                 return response;
             } catch (ClientProtocolException e) {
                 throw new SRUClientException("client protocol exception", e);
@@ -470,18 +489,12 @@ public class SRUSimpleClient {
              * if an error occurred, make sure we are freeing up the resources
              * we've used
              */
-            if (response != null) {
+            if (forceClose && (response != null)) {
                 try {
-                    EntityUtils.consume(response.getEntity());
+                    response.close();
                 } catch (IOException ex) {
                     /* IGNORE */
                 }
-
-                /* make sure to release allocated resources */
-                HttpClientUtils.closeQuietly(response);
-            }
-            if (request != null) {
-                request.abort();
             }
             throw e;
         }
@@ -1356,9 +1369,43 @@ public class SRUSimpleClient {
     }
 
 
-    private SRUXMLStreamReader createReader(InputStream in, boolean wrap)
+    private static SRUXMLStreamReader createReader(InputStream in, boolean wrap)
             throws XMLStreamException {
         return new SRUXMLStreamReader(in, wrap);
+    }
+
+
+    private static CloseableHttpClient createHttpClient(int connectTimeout,
+            int socketTimeout) {
+        final PoolingHttpClientConnectionManager manager =
+                new PoolingHttpClientConnectionManager();
+        manager.setDefaultMaxPerRoute(8);
+        manager.setMaxTotal(128);
+
+        final SocketConfig socketConfig = SocketConfig.custom()
+                .setSoReuseAddress(true)
+                .setSoLinger(0)
+                .build();
+
+        final RequestConfig requestConfig = RequestConfig.custom()
+                .setAuthenticationEnabled(false)
+                .setRedirectsEnabled(true)
+                .setMaxRedirects(4)
+                .setCircularRedirectsAllowed(false)
+                .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+                .setConnectTimeout(connectTimeout)
+                .setSocketTimeout(socketTimeout)
+                .setConnectionRequestTimeout(0) /* infinite */
+                .setStaleConnectionCheckEnabled(false)
+                .build();
+
+        return HttpClients.custom()
+                .setUserAgent(USER_AGENT)
+                .setConnectionManager(manager)
+                .setDefaultSocketConfig(socketConfig)
+                .setDefaultRequestConfig(requestConfig)
+                .setConnectionReuseStrategy(new NoConnectionReuseStrategy())
+                .build();
     }
 
 } // class SRUSimpleClient

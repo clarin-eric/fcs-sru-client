@@ -21,8 +21,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.clarin.sru.client.fcs.ClarinFCSClientBuilder;
 import eu.clarin.sru.client.fcs.ClarinFCSRecordData;
-import eu.clarin.sru.client.fcs.ClarinFCSRecordParser;
 
 
 public class TestSimpleClient {
@@ -32,10 +32,12 @@ public class TestSimpleClient {
     public static void main(String[] args) {
         if (args.length > 0) {
             logger.info("initializing client ...");
-            SRUSimpleClient client = new SRUSimpleClient();
 
-            // register record data parsers
-            client.registerRecordParser(new ClarinFCSRecordParser());
+            SRUSimpleClient client = ClarinFCSClientBuilder
+                        .create()
+                        .defaults()
+                        .unkownDataViewAsString()
+                        .buildSimpleClient();
 
             /*
              * just use one dump handler for each request.

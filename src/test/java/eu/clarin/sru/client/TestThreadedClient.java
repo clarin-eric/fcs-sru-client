@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.client.fcs.ClarinFCSRecordParser;
+import eu.clarin.sru.client.fcs.ClarinFCSClientBuilder;
 
 @Deprecated
 public class TestThreadedClient {
@@ -32,10 +32,11 @@ public class TestThreadedClient {
     public static void main(String[] args) {
         if (args.length > 0) {
             logger.info("initializing client ...");
-            SRUThreadedClient client = new SRUThreadedClient();
 
-            // register record data parsers
-            client.registerRecordParser(new ClarinFCSRecordParser());
+            SRUThreadedClient client = ClarinFCSClientBuilder
+                    .create()
+                    .defaults()
+                    .buildThreadedClient();
 
             try {
                 /*

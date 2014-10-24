@@ -246,6 +246,20 @@ public final class XmlStreamReaderUtils {
     }
 
 
+    public static boolean peekEnd(XMLStreamReader reader,
+            String namespaceURI, String localName)
+            throws XMLStreamException {
+        if (reader.isWhiteSpace()) {
+            consumeWhitespace(reader);
+        }
+        if (!reader.isEndElement()) {
+            return false;
+        }
+        return namespaceURI.equals(reader.getNamespaceURI()) &&
+                localName.equals(reader.getLocalName());
+    }
+
+
     public static void consumeStart(XMLStreamReader reader)
             throws XMLStreamException {
         if (!reader.isStartElement()) {

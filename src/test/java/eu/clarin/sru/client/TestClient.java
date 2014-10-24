@@ -19,7 +19,7 @@ package eu.clarin.sru.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.clarin.sru.client.fcs.ClarinFCSRecordParser;
+import eu.clarin.sru.client.fcs.ClarinFCSClientBuilder;
 
 
 public class TestClient {
@@ -30,10 +30,12 @@ public class TestClient {
     public static void main(String[] args) {
         if (args.length > 0) {
             logger.info("initializing client ...");
-            SRUClient client = new SRUClient();
 
-            // register record data parsers
-            client.registerRecordParser(new ClarinFCSRecordParser());
+            SRUClient client = ClarinFCSClientBuilder.create()
+                    .defaults()
+                    .unkownDataViewAsString()
+                    .enableLegacySupport()
+                    .buildClient();
 
             // explain
             try {

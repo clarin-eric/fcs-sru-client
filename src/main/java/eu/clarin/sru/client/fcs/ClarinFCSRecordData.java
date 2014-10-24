@@ -29,7 +29,16 @@ public final class ClarinFCSRecordData implements
     /**
      * The record schema for CLARIN-FCS records.
      */
-    public static final String RECORD_SCHEMA = "http://clarin.eu/fcs/1.0";
+    public static final String RECORD_SCHEMA =
+            "http://clarin.eu/fcs/resource";
+    /**
+     * The legacy record schema for CLARIN-FCS records.
+     * 
+     * @deprecated Only use to talk to legacy clients
+     */
+    @Deprecated
+    public static final String LEGACY_RECORD_SCHEMA =
+            "http://clarin.eu/fcs/1.0";
     private final Resource resource;
 
 
@@ -53,7 +62,7 @@ public final class ClarinFCSRecordData implements
 
     /**
      * Get the CLARIN-FCS record resource.
-     * 
+     *
      * @return a {@link Resource} object
      */
     public Resource getResource() {

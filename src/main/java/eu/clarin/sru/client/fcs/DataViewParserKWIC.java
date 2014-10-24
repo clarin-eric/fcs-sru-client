@@ -28,13 +28,14 @@ import eu.clarin.sru.client.XmlStreamReaderUtils;
 public class DataViewParserKWIC implements DataViewParser {
     private static final String FCS_KWIC_NS = "http://clarin.eu/fcs/1.0/kwic";
     private static final String KWIC_LEGACY_TYPE = "kwic";
+    private static final String KWIC_TYPE =
+            "application/x-clarin-fcs-kwic+xml";
     private static final Logger logger =
             LoggerFactory.getLogger(DataViewParserKWIC.class);
 
     @Override
     public boolean acceptType(String type) {
-        return DataViewKWIC.TYPE.equals(type) ||
-                KWIC_LEGACY_TYPE.equals(type);
+        return KWIC_TYPE.equals(type) || KWIC_LEGACY_TYPE.equals(type);
     }
 
     @Override
@@ -46,7 +47,9 @@ public class DataViewParserKWIC implements DataViewParser {
     public DataView parse(XMLStreamReader reader, String type, String pid,
             String ref) throws XMLStreamException, SRUClientException {
         if (KWIC_LEGACY_TYPE.equals(type)) {
-            logger.warn("type '" + KWIC_LEGACY_TYPE + "' is deprecteded for a KWIC <DataView>, please use '" + DataViewKWIC.TYPE + "' instead");
+            logger.warn("type '" + KWIC_LEGACY_TYPE + "' is deprecated " +
+                    "for a KWIC <DataView>, please use '" +
+                    KWIC_TYPE + "' instead");
         }
         String left = null;
         String keyword = null;
@@ -66,7 +69,28 @@ public class DataViewParserKWIC implements DataViewParser {
 
         logger.debug("left='{}' keyword='{}', right='{}'",
                 left, keyword, right);
-        return new DataViewKWIC(pid, ref, left, keyword, right);
+
+        logger.warn("Upgraded deprecated KWIC dataview to HITS dataview. " +
+                "Please upgrade to the new CLARIN-FCS specification " +
+                "as soon as possible.");
+        final int[] offsets    = new int[3];
+        final StringBuilder sb = new StringBuilder();
+        if (left != null) {
+            sb.append(left);
+            if (!Character.isWhitespace(sb.charAt(sb.length() - 1))) {
+                sb.append(" ");
+            }
+        }
+        offsets[0] = sb.length();
+        sb.append(keyword);
+        offsets[1] = sb.length();
+        if (right != null) {
+            if (!Character.isWhitespace(sb.charAt(sb.length() - 1))) {
+                sb.append(" ");
+            }
+            sb.append(right);
+        }
+        return new DataViewHits(pid, ref, sb.toString(), offsets, 3);
     }
 
 } // class DataViewParserKWIC
