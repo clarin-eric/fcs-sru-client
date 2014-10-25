@@ -68,7 +68,6 @@ import org.slf4j.LoggerFactory;
 public class SRUSimpleClient {
     private static final String USER_AGENT = "SRU-Client/1.0.0";
     /** default version the client will use, if not otherwise specified */
-    public static final SRUVersion DEFAULT_SRU_VERSION = SRUVersion.VERSION_1_2;
     private static final String SRU_NS =
             "http://www.loc.gov/zing/srw/";
     private static final String SRU_DIAGNOSIC_NS =
@@ -88,97 +87,45 @@ public class SRUSimpleClient {
     private final SRUExplainRecordDataParser explainRecordParser =
             new SRUExplainRecordDataParser();
 
-    /**
-     * Constructor. This constructor will create a <em>strict</em> client and
-     * use the default SRU version.
-     *
-     * @see #DEFAULT_SRU_VERSION
-     */
-    public SRUSimpleClient() {
-        this(DEFAULT_SRU_VERSION, new HashMap<String, SRURecordDataParser>());
-    }
-
-
-    /**
-     * Constructor. This constructor will create a <em>strict</em> client.
-     *
-     * @param defaultVersion
-     *            the default version to use for SRU requests; may be overridden
-     *            by individual requests
-     */
-    public SRUSimpleClient(SRUVersion defaultVersion) {
-        this(defaultVersion, new HashMap<String, SRURecordDataParser>());
-    }
-
 
     /**
      * Constructor.
      *
-     * <p>
-     * For internal use only.
-     * </p>
-     *
-     * @param defaultVersion
-     *            the default version to use for SRU requests; may be overridden
-     *            by individual requests
-     * @param strictMode
-     *            if <code>true</code> the client will strictly adhere to the
-     *            SRU standard and raise fatal errors on violations, if
-     *            <code>false</code> it will act more forgiving and ignore
-     *            certain violations
-     * @param parsers
-     *            a <code>Map</code> to store record schema to record data
-     *            parser mappings
+     * @param config
+     *            the configuration to be used for this client.
+     * @throws NullPointerException
+     *             if argument <code>config</code> is <node>null</code>
+     * @throws IllegalArgumentException
+     *             if an error occurred while registering record data parsers
+     * @see SRUClientConfig
      */
-    SRUSimpleClient(SRUVersion defaultVersion,
-            Map<String, SRURecordDataParser> parsers) {
-        if (defaultVersion == null) {
-            throw new NullPointerException("version == null");
+    public SRUSimpleClient(final SRUClientConfig config) {
+        if (config == null) {
+            throw new NullPointerException("config == null");
         }
-        if (parsers == null) {
-            throw new NullPointerException("parsers == null");
+        this.defaultVersion = config.getDefaultVersion();
+
+        // Initialize parsers lookup table ...
+        final List<SRURecordDataParser> list = config.getRecordDataParsers();
+        if ((list == null) || list.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "no record data parsers registered");
         }
-        this.defaultVersion = defaultVersion;
-        this.parsers        = parsers;
+        this.parsers = new HashMap<String, SRURecordDataParser>();
+        for (SRURecordDataParser parser : list) {
+            final String recordSchema = parser.getRecordSchema();
+            if (!parsers.containsKey(recordSchema)) {
+                parsers.put(recordSchema, parser);
+            } else {
+                throw new IllegalArgumentException(
+                        "record data parser already registered: " +
+                                recordSchema);
+            }
+        }
 
         // create HTTP client
-        // FIXME: get timeout values from somewhere?
-        final int connectTimeout = 30 * 1000;
-        final int socketTimeout = 180 * 1000;
-        httpClient = createHttpClient(connectTimeout, socketTimeout);
-    }
-
-
-    /**
-     * Register a record data parser.
-     *
-     * @param parser
-     *            a parser instance
-     * @throws NullPointerException
-     *             if any required argument is <code>null</code>
-     * @throws IllegalArgumentException
-     *             if the supplied parser is invalid or a parser handing the
-     *             same record schema is already registered
-     */
-    public void registerRecordParser(SRURecordDataParser parser) {
-        if (parser == null) {
-            throw new NullPointerException("parser == null");
-        }
-        final String recordSchema = parser.getRecordSchema();
-        if (recordSchema == null) {
-            throw new NullPointerException("parser.getRecordSchema() == null");
-        }
-        if (recordSchema.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "parser.getRecordSchema() returns empty string");
-        }
-
-        if (!parsers.containsKey(recordSchema)) {
-            parsers.put(recordSchema, parser);
-        } else {
-            throw new IllegalArgumentException(
-                    "record data parser already registered: " + recordSchema);
-        }
+        httpClient = createHttpClient(config.getConnectTimeout(),
+                                      config.getSocketTimeout());
     }
 
 

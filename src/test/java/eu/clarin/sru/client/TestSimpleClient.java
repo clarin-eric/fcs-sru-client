@@ -33,10 +33,9 @@ public class TestSimpleClient {
         if (args.length > 0) {
             logger.info("initializing client ...");
 
-            SRUSimpleClient client = ClarinFCSClientBuilder
-                        .create()
-                        .defaults()
-                        .unkownDataViewAsString()
+            SRUSimpleClient client = new ClarinFCSClientBuilder()
+                        .addDefaultDataViewParsers()
+                        .unknownDataViewAsString()
                         .buildSimpleClient();
 
             /*

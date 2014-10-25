@@ -33,9 +33,8 @@ public class TestThreadedClient {
         if (args.length > 0) {
             logger.info("initializing client ...");
 
-            SRUThreadedClient client = ClarinFCSClientBuilder
-                    .create()
-                    .defaults()
+            SRUThreadedClient client = new ClarinFCSClientBuilder()
+                    .addDefaultDataViewParsers()
                     .buildThreadedClient();
 
             try {

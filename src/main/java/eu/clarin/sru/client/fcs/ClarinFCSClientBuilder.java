@@ -4,20 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.clarin.sru.client.SRUClient;
+import eu.clarin.sru.client.SRUClientConfig;
 import eu.clarin.sru.client.SRUSimpleClient;
 import eu.clarin.sru.client.SRUThreadedClient;
 import eu.clarin.sru.client.SRUVersion;
 
 
+/**
+ * A class that implements the builder pattern for creating SRU client instances
+ * that are configured to be used for CLARIN-FCS.
+ *
+ */
 public class ClarinFCSClientBuilder {
     private static final boolean DEFAULT_UNKNOWN_AS_DOM =
             false;
     private static final SRUVersion DEFAULT_SRU_VERSION =
             SRUVersion.VERSION_1_2;
     private List<DataViewParser> parsers = new ArrayList<DataViewParser>();
-    private SRUVersion defaultSruVersion = DEFAULT_SRU_VERSION;
-    private boolean unknownAsDom;
-    private boolean legacySupport = false;
+    private SRUVersion defaultVersion = DEFAULT_SRU_VERSION;
+    private boolean unknownAsDom      = DEFAULT_UNKNOWN_AS_DOM;
+    private boolean legacySupport     = false;
+    private int connectTimeout        = SRUClientConfig.DEFAULT_CONNECT_TIMEOUT;
+    private int socketTimeout         = SRUClientConfig.DEFAULT_SOCKET_TIMEOUT;
 
 
     /**
@@ -36,24 +44,153 @@ public class ClarinFCSClientBuilder {
     }
 
 
-    public ClarinFCSClientBuilder defaults() {
+    /**
+     * Add the recommended default set of data record view parsers.
+     *
+     * @return this {@link ClarinFCSClientBuilder} instance
+     */
+    public ClarinFCSClientBuilder addDefaultDataViewParsers() {
         doRegisterDataViewParser(parsers, new DataViewParserHits());
         return this;
     }
 
 
-    public ClarinFCSClientBuilder unkownDataViewAsDOM() {
+    /**
+     * Parse unknown data views into a DOM.
+     *
+     * @return this {@link ClarinFCSClientBuilder} instance
+     * @see DataViewParserGenericDOM
+     */
+    public ClarinFCSClientBuilder unknownDataViewAsDOM() {
         unknownAsDom = true;
         return this;
     }
 
 
-    public ClarinFCSClientBuilder unkownDataViewAsString() {
+    /**
+     * Parse unknown data views into a String.
+     *
+     * @return this {@link ClarinFCSClientBuilder} instance
+     * @see DataViewParserGenericString
+     */
+    public ClarinFCSClientBuilder unknownDataViewAsString() {
         unknownAsDom = false;
         return this;
     }
 
 
+    /**
+     * Set default SRU version to be used.
+     *
+     * @param defaultVersion
+     *            the default SRU version to be used
+     *
+     * @return this {@link ClarinFCSClientBuilder} instance
+     */
+    public ClarinFCSClientBuilder setDefaultSRUVersion(
+            final SRUVersion defaultVersion) {
+        if (defaultVersion == null) {
+            throw new NullPointerException("defaultVersion == null");
+        }
+        this.defaultVersion = defaultVersion;
+        return this;
+    }
+
+
+    /**
+     * Enable support for legacy CLARIN-FCS endpoints.
+     *
+     * @return this {@link ClarinFCSClientBuilder} instance
+     */
+    public ClarinFCSClientBuilder enableLegacySupport() {
+        legacySupport = true;
+        return this;
+    }
+
+
+    /**
+     * Disable support for legacy CLARIN-FCS endpoints.
+     *
+     * @return this {@link ClarinFCSClientBuilder} instance
+     */
+    public ClarinFCSClientBuilder disableLegacySupport() {
+        legacySupport = false;
+        return this;
+    }
+
+
+    /**
+     * Get the timeout in milliseconds until a connection is established.
+     *
+     * @return this connect timeout in milliseconds
+     */
+    public int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+
+    /**
+     * Set the timeout in milliseconds until a connection is established.
+     * <p>
+     * A timeout value of <code>0</code> is interpreted as an infinite timeout;
+     * <code>-1</code> is interpreted as system default.
+     * </p>
+     *
+     * @param connectTimeout
+     *            the connect timeout in milliseconds
+     * @return this {@link ClarinFCSClientBuilder} instance
+     */
+    public ClarinFCSClientBuilder setConnectTimeout(int connectTimeout) {
+        if (connectTimeout < -1) {
+            throw new IllegalArgumentException("connectTimeout < -1");
+        }
+        this.connectTimeout = connectTimeout;
+        return this;
+    }
+
+
+    /**
+     * Get the socket timeout (<code>SO_TIMEOUT</code>) in milliseconds,
+     * which is the timeout for waiting for data.
+     *
+     * @return socketTimeout
+     *            the socket timeout in milliseconds
+     */
+    public int getSocketTimeout() {
+        return socketTimeout;
+    }
+
+
+    /**
+     * Set the socket timeout (<code>SO_TIMEOUT</code>) in milliseconds, which
+     * is the timeout for waiting for data.
+     * <p>
+     * A timeout value of <code>0</code> is interpreted as an infinite timeout;
+     * <code>-1</code> is interpreted as system default.
+     * </p>
+     *
+     * @param socketTimeout
+     *            the socket timeout in milliseconds
+     * @return this {@link ClarinFCSClientBuilder} instance
+     */
+    public ClarinFCSClientBuilder setSocketTimeout(int socketTimeout) {
+        if (socketTimeout < -1) {
+            throw new IllegalArgumentException("socketTimeout < -1");
+        }
+        this.socketTimeout = socketTimeout;
+        return this;
+    }
+
+
+    /**
+     * Register a data view parser.
+     *
+     * @param parser
+     *            the data view parser to be registered
+     * @return this {@link ClarinFCSClientBuilder} instance
+     * @throws IllegalArgumentException
+     *             if an error occurred while registering the data view parser
+     */
     public ClarinFCSClientBuilder registerDataViewParser(DataViewParser parser) {
         if (parser == null) {
             throw new NullPointerException("parser == null");
@@ -73,54 +210,49 @@ public class ClarinFCSClientBuilder {
     }
 
 
-    public ClarinFCSClientBuilder enableLegacySupport() {
-        legacySupport = true;
-        return this;
-    }
-
-
-    public ClarinFCSClientBuilder disableLegacySupport() {
-        legacySupport = false;
-        return this;
-    }
-
-
-    @SuppressWarnings("deprecation")
+    /**
+     * Create a {@link SRUSimpleClient} instance.
+     *
+     * @return a configured {@link SRUSimpleClient} instance
+     */
     public SRUSimpleClient buildSimpleClient() {
-        final List<DataViewParser> p = finalizeDataViewParsers();
-
-        SRUSimpleClient client = new SRUSimpleClient(defaultSruVersion);
-        client.registerRecordParser(new ClarinFCSRecordDataParser(p));
-        if (legacySupport) {
-            client.registerRecordParser(new LegacyClarinFCSRecordDataParser(p));
-        }
-        return client;
+        return new SRUSimpleClient(makeClientConfig());
     }
 
 
-    @SuppressWarnings("deprecation")
+    /**
+     * Create a {@link SRUClient} instance.
+     *
+     * @return a configured {@link SRUClient} instance
+     */
     public SRUClient buildClient() {
-        final List<DataViewParser> p = finalizeDataViewParsers();
+        return new SRUClient(makeClientConfig());
+    }
 
-        SRUClient client = new SRUClient(defaultSruVersion);
-        client.registerRecordParser(new ClarinFCSRecordDataParser(p));
-        if (legacySupport) {
-            client.registerRecordParser(new LegacyClarinFCSRecordDataParser(p));
-        }
-        return client;
+
+    /**
+     * Create a {@link SRUThreadedClient} instance.
+     *
+     * @return a configured {@link SRUThreadedClient} instance
+     */
+    public SRUThreadedClient buildThreadedClient() {
+        return new SRUThreadedClient(makeClientConfig());
     }
 
 
     @SuppressWarnings("deprecation")
-    public SRUThreadedClient buildThreadedClient() {
+    private SRUClientConfig makeClientConfig() {
+        final SRUClientConfig.Builder builder = new SRUClientConfig.Builder();
+        builder
+            .setDefaultVersion(defaultVersion)
+            .setConnectTimeout(connectTimeout)
+            .setSocketTimeout(socketTimeout);
         final List<DataViewParser> p = finalizeDataViewParsers();
-
-        SRUThreadedClient client = new SRUThreadedClient(defaultSruVersion);
-        client.registerRecordParser(new ClarinFCSRecordDataParser(p));
+        builder.addRecordDataParser(new ClarinFCSRecordDataParser(p));
         if (legacySupport) {
-            client.registerRecordParser(new LegacyClarinFCSRecordDataParser(p));
+            builder.addRecordDataParser(new LegacyClarinFCSRecordDataParser(p));
         }
-        return client;
+        return builder.build();
     }
 
 
@@ -139,16 +271,6 @@ public class ClarinFCSClientBuilder {
         }
 
         return result;
-    }
-
-
-    public static ClarinFCSClientBuilder create() {
-        return new ClarinFCSClientBuilder();
-    }
-
-
-    public static ClarinFCSClientBuilder create(boolean unknownAsDom) {
-        return new ClarinFCSClientBuilder(unknownAsDom);
     }
 
 

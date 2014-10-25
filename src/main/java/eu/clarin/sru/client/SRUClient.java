@@ -18,10 +18,8 @@ package eu.clarin.sru.client;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.XMLConstants;
@@ -76,29 +74,18 @@ public class SRUClient {
 
 
     /**
-     * Constructor. This constructor will create a <em>strict</em> client and
-     * use the default SRU version.
+     * Constructor.
      *
-     * @see SRUSimpleClient#DEFAULT_SRU_VERSION
+     * @param config
+     *            the configuration to be used for this client.
+     * @throws NullPointerException
+     *             if argument <code>config</code> is <node>null</code>
+     * @throws IllegalArgumentException
+     *             if an error occurred while registering record data parsers
+     * @see SRUClientConfig
      */
-    public SRUClient() {
-        this(SRUSimpleClient.DEFAULT_SRU_VERSION,
-                new HashMap<String, SRURecordDataParser>(),
-                DocumentBuilderFactory.newInstance());
-    }
-
-
-    /**
-     * Constructor. This constructor will create a <em>strict</em> client.
-     *
-     * @param defaultVersion
-     *            the default version to use for SRU requests; may be overridden
-     *            by individual requests
-     */
-    public SRUClient(SRUVersion defaultVersion) {
-        this(defaultVersion,
-                new HashMap<String, SRURecordDataParser>(),
-                DocumentBuilderFactory.newInstance());
+    public SRUClient(final SRUClientConfig config) {
+        this(config, DocumentBuilderFactory.newInstance());
     }
 
 
@@ -119,19 +106,15 @@ public class SRUClient {
      *            the Document Builder factory to be used to create Document
      *            Builders
      */
-    SRUClient(SRUVersion defaultVersion,
-            Map<String, SRURecordDataParser> parsers,
-            DocumentBuilderFactory documentBuilderFactory) {
-        if (defaultVersion == null) {
-            throw new NullPointerException("version == null");
-        }
-        if (parsers == null) {
-            throw new NullPointerException("parsers == null");
+    SRUClient(final SRUClientConfig config,
+            final DocumentBuilderFactory documentBuilderFactory) {
+        if (config == null) {
+            throw new NullPointerException("config == null");
         }
         if (documentBuilderFactory == null) {
             throw new NullPointerException("documentBuilderFactory == null");
         }
-        this.client = new SRUSimpleClient(defaultVersion, parsers);
+        this.client = new SRUSimpleClient(config);
         this.handler = new Handler();
         try {
             synchronized (documentBuilderFactory) {
@@ -144,22 +127,6 @@ public class SRUClient {
             throw new Error("error initialzing document builder factory", e);
         }
         reset();
-    }
-
-
-    /**
-     * Register a record data parser.
-     *
-     * @param parser
-     *            a parser instance
-     * @throws NullPointerException
-     *             if any required argument is <code>null</code>
-     * @throws IllegalArgumentException
-     *             if the supplied parser is invalid or a parser handing the
-     *             same record schema is already registered
-     */
-    public void registerRecordParser(SRURecordDataParser parser) {
-        client.registerRecordParser(parser);
     }
 
 
