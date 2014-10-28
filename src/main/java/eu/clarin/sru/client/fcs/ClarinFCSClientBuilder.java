@@ -56,10 +56,11 @@ public class ClarinFCSClientBuilder {
 
 
     /**
-     * Parse unknown data views into a DOM.
+     * Configure client to parse unknown Data Views into a DOM representation.
      *
      * @return this {@link ClarinFCSClientBuilder} instance
      * @see DataViewParserGenericDOM
+     * @see DataViewGenericDOM
      */
     public ClarinFCSClientBuilder unknownDataViewAsDOM() {
         unknownAsDom = true;
@@ -68,10 +69,12 @@ public class ClarinFCSClientBuilder {
 
 
     /**
-     * Parse unknown data views into a String.
+     * Configure client to parse unknown Data Views into a String
+     * representation.
      *
      * @return this {@link ClarinFCSClientBuilder} instance
      * @see DataViewParserGenericString
+     * @see DataViewGenericString
      */
     public ClarinFCSClientBuilder unknownDataViewAsString() {
         unknownAsDom = false;
@@ -98,7 +101,7 @@ public class ClarinFCSClientBuilder {
 
 
     /**
-     * Enable support for legacy CLARIN-FCS endpoints.
+     * Configure client to enable support for legacy CLARIN-FCS endpoints.
      *
      * @return this {@link ClarinFCSClientBuilder} instance
      */
@@ -109,7 +112,7 @@ public class ClarinFCSClientBuilder {
 
 
     /**
-     * Disable support for legacy CLARIN-FCS endpoints.
+     * Configure client to disable support for legacy CLARIN-FCS endpoints.
      *
      * @return this {@link ClarinFCSClientBuilder} instance
      */
@@ -183,13 +186,14 @@ public class ClarinFCSClientBuilder {
 
 
     /**
-     * Register a data view parser.
+     * Register a Data View parser.
      *
      * @param parser
      *            the data view parser to be registered
      * @return this {@link ClarinFCSClientBuilder} instance
      * @throws IllegalArgumentException
      *             if an error occurred while registering the data view parser
+     * @see DataViewParser
      */
     public ClarinFCSClientBuilder registerDataViewParser(DataViewParser parser) {
         if (parser == null) {
@@ -199,7 +203,7 @@ public class ClarinFCSClientBuilder {
                 (parser instanceof DataViewParserGenericString)) {
             throw new IllegalArgumentException("parsers of type '" +
                     parser.getClass().getName() +
-                    "' should not be added manually");
+                    "' cannot be added manually");
         }
 
         if (!doRegisterDataViewParser(parsers, parser)) {
@@ -256,6 +260,7 @@ public class ClarinFCSClientBuilder {
     }
 
 
+    @SuppressWarnings("deprecation")
     private List<DataViewParser> finalizeDataViewParsers() {
         final List<DataViewParser> result =
                 new ArrayList<DataViewParser>(parsers.size() +

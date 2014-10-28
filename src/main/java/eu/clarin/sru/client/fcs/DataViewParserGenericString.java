@@ -26,6 +26,12 @@ import javax.xml.stream.XMLStreamWriter;
 import eu.clarin.sru.client.SRUClientException;
 
 
+/**
+ * An implementation of a DataView parser that stores the content of a Data
+ * Views in String representation.
+ * 
+ * @see DataViewGenericString
+ */
 public class DataViewParserGenericString implements DataViewParser {
     private static final XMLOutputFactory factory =
             XMLOutputFactory.newInstance();

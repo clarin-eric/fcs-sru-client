@@ -20,7 +20,8 @@ import org.w3c.dom.Document;
 
 
 /**
- * A generic DataView implementation that stores the content as a DOM document.
+ * A generic Data View implementation that stores the content of the Data View
+ * as a DOM document.
  */
 public class DataViewGenericDOM extends DataView {
     private final Document document;

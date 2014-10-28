@@ -1,5 +1,8 @@
 package eu.clarin.sru.client.fcs;
 
+/**
+ * A Data View implementation that stores the content of a HITS Data View.
+ */
 public class DataViewHits extends DataView {
     /**
      * The MIME type for CLARIN-FCS KWIC data views.
@@ -54,19 +57,40 @@ public class DataViewHits extends DataView {
     }
 
 
+    /**
+     * Get the total number of hits in the result.
+     * @return the number of hits
+     */
     public int getHitCount() {
         return max_offset;
     }
 
 
+    /**
+     * Get the text content of the hit. Usually this is complete sentence.
+     * 
+     * @return the text content of the hit
+     */
     public String getText() {
         return text;
     }
 
 
+    /**
+     * Get the offsets pointing to range in the text content that yield the hit.
+     * 
+     * @param idx
+     *            the hit to retrieve. Must be larger than <code>0</code> and
+     *            smaller than the result of {@link #getHitCount()}.
+     * @return An array of two elements. The first array element is the start
+     *         offset, the second array element is the end offset of the hit
+     *         range.
+     * @throws ArrayIndexOutOfBoundsException
+     *             of the <code>idx</code> argument is out of bounds.
+     */
     public int[] getHitOffsets(int idx) {
         if (idx < 0) {
-            throw new IllegalArgumentException("idx < 0");
+            throw new ArrayIndexOutOfBoundsException("idx < 0");
         }
         if (idx < max_offset) {
             int[] result = new int[2];

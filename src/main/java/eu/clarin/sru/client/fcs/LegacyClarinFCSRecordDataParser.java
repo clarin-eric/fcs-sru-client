@@ -12,7 +12,8 @@ import eu.clarin.sru.client.SRURecordData;
 /**
  * A record data parse to parse legacy records.
  *
- * @deprecated Use only to talk to legacy clients
+ * @deprecated Use only to talk to legacy clients. Endpoints should upgrade to
+ *             recent CLARIN-FCS specification.
  */
 @Deprecated
 public class LegacyClarinFCSRecordDataParser extends

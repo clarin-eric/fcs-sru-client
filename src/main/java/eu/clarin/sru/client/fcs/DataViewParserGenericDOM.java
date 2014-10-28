@@ -34,6 +34,12 @@ import org.w3c.dom.NodeList;
 import eu.clarin.sru.client.SRUClientException;
 
 
+/**
+ * An implementation of a Data View parser that stores the content of a Data
+ * View in DOM representation.
+ * 
+ * @see DataViewGenericDOM
+ */
 public class DataViewParserGenericDOM implements DataViewParser {
     private static class TransformHelper {
         private final DocumentBuilder builder;

@@ -17,7 +17,7 @@
 package eu.clarin.sru.client.fcs;
 
 /**
- * Base class for DataView implementations according to the CLARIN-FCS record
+ * Base class for Data View implementations according to the CLARIN-FCS record
  * schema.
  */
 public abstract class DataView {

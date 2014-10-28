@@ -23,10 +23,12 @@ import eu.clarin.sru.client.SRUClientException;
 
 
 /**
- * Base class for implementing parsers for parsing a specific DataView in a
- * CLARIN-FCS record.
- * <p>If multiple record parsers support a certain type, the one
- * with the highest priority is selected.</p>
+ * Base class for implementing parsers for parsing a specific Data View embedded
+ * in a CLARIN-FCS record.
+ * <p>
+ * If multiple record parsers support a certain type, the one with the highest
+ * priority is selected.
+ * </p>
  */
 public interface DataViewParser {
 

@@ -25,6 +25,17 @@ import org.slf4j.LoggerFactory;
 import eu.clarin.sru.client.SRUClientException;
 import eu.clarin.sru.client.XmlStreamReaderUtils;
 
+
+/**
+ * An implementation of a Data View parser that parses legacy KWIC Data Views.
+ * The input will automatically be upgraded to a HITS Data View and an instance
+ * of {@link DataViewHits} will be returned.
+ *
+ * @see DataViewHits
+ * @deprecated Use only to talk to legacy clients. Endpoints should upgrade to
+ *             recent CLARIN-FCS specification.
+ */
+@Deprecated
 public class DataViewParserKWIC implements DataViewParser {
     private static final String FCS_KWIC_NS = "http://clarin.eu/fcs/1.0/kwic";
     private static final String KWIC_LEGACY_TYPE = "kwic";

@@ -12,6 +12,13 @@ import eu.clarin.sru.client.SRUClientException;
 import eu.clarin.sru.client.XmlStreamReaderUtils;
 
 
+/**
+ * An implementation of a Data View parser that parses HITS Data Views. This
+ * parser expects input that conforms to the CLARIN-FCS specification for the
+ * HITS Data View.
+ *
+ * @see DataViewHits
+ */
 public final class DataViewParserHits implements DataViewParser {
     private static final int OFFSET_CHUNK_SIZE = 8;
     private static final String FCS_HITS_NS =

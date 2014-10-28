@@ -17,7 +17,8 @@
 package eu.clarin.sru.client.fcs;
 
 /**
- * A generic DataView implementation that stores the content as a String.
+ * A generic Data View implementation that stores the content of a Data View as
+ * a String.
  */
 public class DataViewGenericString extends DataView {
     private final String content;
