@@ -1,3 +1,19 @@
+/**
+ * This software is copyright (c) 2012-2014 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.client;
 
 import java.util.ArrayList;
@@ -23,7 +39,7 @@ public class SRUClientConfig {
 
     /**
      * Get default SRU version to be used.
-     * 
+     *
      * @return the default SRU version to be used.
      */
     public SRUVersion getDefaultVersion() {
@@ -33,7 +49,7 @@ public class SRUClientConfig {
 
     /**
      * Get the connect timeout.
-     * 
+     *
      * @return the connect timeout
      */
     public int getConnectTimeout() {
@@ -43,7 +59,7 @@ public class SRUClientConfig {
 
     /**
      * Get the socket timeout.
-     * 
+     *
      * @return the connect timeout
      */
     public int getSocketTimeout() {
@@ -54,7 +70,7 @@ public class SRUClientConfig {
     /**
      * Get the number of worker threads. This value is only relevant for the
      * {@link SRUThreadedClient}.
-     * 
+     *
      * @return the number of worker threads
      */
     public int getThreadCount() {
@@ -64,7 +80,7 @@ public class SRUClientConfig {
 
     /**
      * Get the list of record data parsers to be used.
-     * 
+     *
      * @return the list of record data parsers.
      */
     public List<SRURecordDataParser> getRecordDataParsers() {
@@ -87,7 +103,7 @@ public class SRUClientConfig {
     /**
      * A class that implements the builder pattern to create
      * {@link SRUClientConfig} instances.
-     * 
+     *
      * @see SRUClientConfig
      */
     public static class Builder {
@@ -102,7 +118,7 @@ public class SRUClientConfig {
 
         /**
          * Constructor.
-         * 
+         *
          */
         public Builder() {
         }
@@ -110,7 +126,7 @@ public class SRUClientConfig {
 
         /**
          * Get the default SRU version to be used
-         * 
+         *
          * @return the defaultSRU version to be used
          */
         public SRUVersion getDefaultVersion() {
@@ -120,7 +136,7 @@ public class SRUClientConfig {
 
         /**
          * Set the default SRU version to be used.
-         * 
+         *
          * @param defaultVersion
          *            the default SRU version to be used
          * @return this {@link Builder} instance
@@ -138,7 +154,7 @@ public class SRUClientConfig {
 
         /**
          * Get the connect timeout.
-         * 
+         *
          * @return the connect timeout.
          */
         public int getConnectTimeout() {
@@ -152,7 +168,7 @@ public class SRUClientConfig {
          * A timeout value of <code>0</code> is interpreted as an infinite
          * timeout; <code>-1</code> is interpreted as system default.
          * </p>
-         * 
+         *
          * @param connectTimeout
          *            the timeout in milliseconds
          * @return this {@link Builder} instance
@@ -169,7 +185,7 @@ public class SRUClientConfig {
         /**
          * Get the socket timeout (<code>SO_TIMEOUT</code>) in milliseconds,
          * which is the timeout for waiting for data.
-         * 
+         *
          * @return the socket timeout in milliseconds
          */
         public int getSocketTimeout() {
@@ -184,7 +200,7 @@ public class SRUClientConfig {
          * A timeout value of <code>0</code> is interpreted as an infinite
          * timeout; <code>-1</code> is interpreted as system default.
          * </p>
-         * 
+         *
          * @param socketTimeout
          *            the socket timeout in milliseconds
          * @return this {@link Builder} instance
@@ -201,7 +217,7 @@ public class SRUClientConfig {
         /**
          * Get the number of worker threads. This value is only relevant for the
          * {@link SRUThreadedClient}.
-         * 
+         *
          * @return the number of worker threads
          */
         public int getThreadCount() {
@@ -212,7 +228,7 @@ public class SRUClientConfig {
         /**
          * Set the number of worker threads. This value is only relevant for the
          * {@link SRUThreadedClient}.
-         * 
+         *
          * @param threadCount
          *            the number of worker threads
          * @return this {@link Builder} instance
@@ -228,7 +244,7 @@ public class SRUClientConfig {
 
         /**
          * Get the list of record data parsers.
-         * 
+         *
          * @return the list of record data parsers
          * @see SRURecordDataParser
          */
@@ -239,7 +255,7 @@ public class SRUClientConfig {
 
         /**
          * Add a record data parser instance to the list of record data parsers
-         * 
+         *
          * @param parser
          *            the record data parser to be added
          * @return this {@link Builder} instance
@@ -274,7 +290,7 @@ public class SRUClientConfig {
 
         /**
          * Create a configuration instance object for configuring SRU clients
-         * 
+         *
          * @return a immutable configuration instance
          */
         public SRUClientConfig build() {

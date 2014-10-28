@@ -32,6 +32,10 @@ import eu.clarin.sru.client.SRURecordData;
 import eu.clarin.sru.client.SRURecordDataParser;
 import eu.clarin.sru.client.XmlStreamReaderUtils;
 
+
+/**
+ * An abstract base class for CLARIN-FCS record data parsers.
+ */
 abstract class AbstractClarinFCSRecordDataParser implements SRURecordDataParser {
     protected static final Logger logger =
             LoggerFactory.getLogger(AbstractClarinFCSRecordDataParser.class);

@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -18,14 +18,14 @@ package eu.clarin.sru.client;
 
 /**
  * Interface for parsed record data.
- * 
+ *
  */
 public interface SRURecordData {
 
     /**
      * This record is transient. If you want to store the data to process it
      * later, you need to create a copy of the data.
-     * 
+     *
      * @return <code>true</code>, if record is transient,
      *         <code>false</code> otherwise
      */
@@ -34,7 +34,7 @@ public interface SRURecordData {
 
     /**
      * The record schema for this record.
-     * 
+     *
      * @return the record schema
      */
     public String getRecordSchema();

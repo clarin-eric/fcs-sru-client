@@ -1,3 +1,19 @@
+/**
+ * This software is copyright (c) 2012-2014 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.client.fcs;
 
 /**
@@ -68,7 +84,7 @@ public class DataViewHits extends DataView {
 
     /**
      * Get the text content of the hit. Usually this is complete sentence.
-     * 
+     *
      * @return the text content of the hit
      */
     public String getText() {
@@ -78,7 +94,7 @@ public class DataViewHits extends DataView {
 
     /**
      * Get the offsets pointing to range in the text content that yield the hit.
-     * 
+     *
      * @param idx
      *            the hit to retrieve. Must be larger than <code>0</code> and
      *            smaller than the result of {@link #getHitCount()}.

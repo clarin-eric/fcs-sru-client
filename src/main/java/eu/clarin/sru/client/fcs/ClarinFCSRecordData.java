@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -33,7 +33,7 @@ public final class ClarinFCSRecordData implements
             "http://clarin.eu/fcs/resource";
     /**
      * The legacy record schema for CLARIN-FCS records.
-     * 
+     *
      * @deprecated Only use to talk to legacy clients
      */
     @Deprecated
