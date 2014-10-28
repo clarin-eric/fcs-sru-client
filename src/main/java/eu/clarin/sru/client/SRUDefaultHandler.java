@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -18,7 +18,7 @@ package eu.clarin.sru.client;
 
 /**
  * A handler implementing all interfaces for all three response handler types.
- * 
+ *
  * <p>
  * This class is available as a convenience base class for SRU applications: it
  * implements the three response handler interfaces:
@@ -28,7 +28,7 @@ package eu.clarin.sru.client;
  * <li>{@link SRUScanHandler}</li>
  * <li>{@link SRUSearchRetrieveHandler}</li>
  * </ul>
- * 
+ *
  * @see SRUExplainHandler
  * @see SRUScanHandler
  * @see SRUSearchRetrieveHandler

@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -20,7 +20,8 @@ import org.w3c.dom.Document;
 
 
 /**
- * A generic DataView implementation that stores the content as a DOM document.
+ * A generic Data View implementation that stores the content of the Data View
+ * as a DOM document.
  */
 public class DataViewGenericDOM extends DataView {
     private final Document document;
@@ -35,7 +36,7 @@ public class DataViewGenericDOM extends DataView {
 
     /**
      * Get the DataView content.
-     * 
+     *
      * @return the DataView content as DOM document.
      */
     public Document getDocument() {

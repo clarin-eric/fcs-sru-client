@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -34,6 +34,12 @@ import org.w3c.dom.NodeList;
 import eu.clarin.sru.client.SRUClientException;
 
 
+/**
+ * An implementation of a Data View parser that stores the content of a Data
+ * View in DOM representation.
+ *
+ * @see DataViewGenericDOM
+ */
 public class DataViewParserGenericDOM implements DataViewParser {
     private static class TransformHelper {
         private final DocumentBuilder builder;
