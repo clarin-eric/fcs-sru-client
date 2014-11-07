@@ -292,18 +292,8 @@ public class SRUClient {
         @Override
         public void onExtraResponseData(XMLStreamReader reader)
                 throws XMLStreamException, SRUClientException {
-            final List<SRURecord> records = SRUClient.this.records;
-            if ((records != null) && !records.isEmpty()) {
-                final SRURecord record = records.get(records.size() - 1);
-                record.setExtraRecordData(copyStaxToDocumentFragment(
-                        documentBuilder, stack, reader));
-            } else {
-                /*
-                 * should never happen ...
-                 */
-                throw new SRUClientException(
-                        "internal error; 'records' are null or empty");
-            }
+            SRUClient.this.extraResponseData =
+                    copyStaxToDocumentFragment(documentBuilder, stack, reader);
         }
 
 
@@ -369,8 +359,18 @@ public class SRUClient {
         public void onExtraRecordData(String identifier, int position,
                 XMLStreamReader reader) throws XMLStreamException,
                 SRUClientException {
-            extraResponseData =
-                    copyStaxToDocumentFragment(documentBuilder, stack, reader);
+            final List<SRURecord> records = SRUClient.this.records;
+            if ((records != null) && !records.isEmpty()) {
+                final SRURecord record = records.get(records.size() - 1);
+                record.setExtraRecordData(copyStaxToDocumentFragment(
+                        documentBuilder, stack, reader));
+            } else {
+                /*
+                 * should never happen ...
+                 */
+                throw new SRUClientException(
+                        "internal error; 'records' are null or empty");
+            }
         }
 
 

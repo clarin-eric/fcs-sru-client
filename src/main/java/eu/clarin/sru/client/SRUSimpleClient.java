@@ -561,6 +561,7 @@ public class SRUSimpleClient {
                     reader.consumeWhitespace();
                     proxy.reset(reader);
                     try {
+                        logger.debug("parsing extra response data");
                         handler.onExtraRecordData(null, -1, proxy);
                     } catch (XMLStreamException e) {
                         throw new SRUClientException("handler "
@@ -613,6 +614,7 @@ public class SRUSimpleClient {
                 reader.consumeWhitespace();
                 proxy.reset(reader);
                 try {
+                    logger.debug("parsing extra response data");
                     handler.onExtraResponseData(proxy);
                 } catch (XMLStreamException e) {
                     throw new SRUClientException("handler triggered "
@@ -792,6 +794,7 @@ public class SRUSimpleClient {
                     reader.consumeWhitespace();
                     proxy.reset(reader);
                     try {
+                        logger.debug("parsing extra response data");
                         handler.onExtraResponseData(proxy);
                     } catch (XMLStreamException e) {
                         throw new SRUClientException("handler triggered "
