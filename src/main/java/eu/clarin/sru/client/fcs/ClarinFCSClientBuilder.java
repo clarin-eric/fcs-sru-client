@@ -21,6 +21,7 @@ import java.util.List;
 
 import eu.clarin.sru.client.SRUClient;
 import eu.clarin.sru.client.SRUClientConfig;
+import eu.clarin.sru.client.SRUExtraResponseDataParser;
 import eu.clarin.sru.client.SRUSimpleClient;
 import eu.clarin.sru.client.SRUThreadedClient;
 import eu.clarin.sru.client.SRUVersion;
@@ -37,6 +38,8 @@ public class ClarinFCSClientBuilder {
     private static final SRUVersion DEFAULT_SRU_VERSION =
             SRUVersion.VERSION_1_2;
     private List<DataViewParser> parsers = new ArrayList<DataViewParser>();
+    private List<SRUExtraResponseDataParser> extraDataParsers =
+            new ArrayList<SRUExtraResponseDataParser>();
     private SRUVersion defaultVersion = DEFAULT_SRU_VERSION;
     private boolean unknownAsDom      = DEFAULT_UNKNOWN_AS_DOM;
     private boolean legacySupport     = false;
@@ -231,6 +234,25 @@ public class ClarinFCSClientBuilder {
 
 
     /**
+     * Register a Data View parser.
+     *
+     * @param parser
+     *            the extra response data parser to be registered
+     * @return this {@link ClarinFCSClientBuilder} instance
+     * @throws IllegalArgumentException
+     *             if an error occurred while registering the data view parser
+     * @see SRUExtraResponseDataParser
+     */
+    public ClarinFCSClientBuilder registerExtraResponseDatar(SRUExtraResponseDataParser parser) {
+        if (parser == null) {
+            throw new NullPointerException("parser == null");
+        }
+        extraDataParsers.add(parser);
+        return this;
+    }
+
+
+    /**
      * Create a {@link SRUSimpleClient} instance.
      *
      * @return a configured {@link SRUSimpleClient} instance
@@ -272,6 +294,11 @@ public class ClarinFCSClientBuilder {
         if (legacySupport) {
             builder.addRecordDataParser(new LegacyClarinFCSRecordDataParser(p));
         }
+        if ((extraDataParsers != null) && !extraDataParsers.isEmpty()) {
+            for (SRUExtraResponseDataParser parser : extraDataParsers) {
+                builder.addExtraResponseDataParser(parser);
+            }
+        }
         return builder.build();
     }
 
@@ -290,7 +317,6 @@ public class ClarinFCSClientBuilder {
         if (legacySupport) {
             result.add(new DataViewParserKWIC());
         }
-
         return result;
     }
 
