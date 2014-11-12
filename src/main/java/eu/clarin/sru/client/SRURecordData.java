@@ -17,7 +17,7 @@
 package eu.clarin.sru.client;
 
 /**
- * Interface for parsed record data.
+ * Interface for parsed record data objects.
  *
  */
 public interface SRURecordData {

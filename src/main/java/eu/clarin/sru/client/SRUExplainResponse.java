@@ -18,8 +18,6 @@ package eu.clarin.sru.client;
 
 import java.util.List;
 
-import org.w3c.dom.DocumentFragment;
-
 
 
 /**
@@ -32,7 +30,7 @@ public final class SRUExplainResponse extends
 
     SRUExplainResponse(SRUExplainRequest request,
             List<SRUDiagnostic> diagnostics,
-            DocumentFragment extraResponseData,
+            List<SRUExtraResponseData> extraResponseData,
             int totalBytesTransferred,
             long timeTotal,
             long timeQueued,

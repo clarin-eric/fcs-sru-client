@@ -34,7 +34,8 @@ public class SRUClientConfig {
     private final int connectTimeout;
     private final int socketTimeout;
     private final int threadCount;
-    private final List<SRURecordDataParser> parsers;
+    private final List<SRURecordDataParser> recordParsers;
+    private final List<SRUExtraResponseDataParser> extraDataParsers;
 
 
     /**
@@ -84,7 +85,17 @@ public class SRUClientConfig {
      * @return the list of record data parsers.
      */
     public List<SRURecordDataParser> getRecordDataParsers() {
-        return parsers;
+        return recordParsers;
+    }
+
+
+    /**
+     * Get the list of extra response data parsers to be used.
+     *
+     * @return the list of extra response data parsers.
+     */
+    public List<SRUExtraResponseDataParser> getExtraResponseDataParsers() {
+        return extraDataParsers;
     }
 
 
@@ -92,11 +103,12 @@ public class SRUClientConfig {
         if (builder == null) {
             throw new NullPointerException("builder == null");
         }
-        this.defaultVersion = builder.getDefaultVersion();
-        this.connectTimeout = builder.getConnectTimeout();
-        this.socketTimeout  = builder.getSocketTimeout();
-        this.parsers        = builder.getRecordDataParsers();
-        this.threadCount    = builder.getThreadCount();
+        this.defaultVersion   = builder.getDefaultVersion();
+        this.connectTimeout   = builder.getConnectTimeout();
+        this.socketTimeout    = builder.getSocketTimeout();
+        this.threadCount      = builder.getThreadCount();
+        this.recordParsers    = builder.getRecordDataParsers();
+        this.extraDataParsers = builder.getExtraResponseDataParsers();
     }
 
 
@@ -112,8 +124,9 @@ public class SRUClientConfig {
         private int socketTimeout         = DEFAULT_SOCKET_TIMEOUT;
         private int threadCount           =
                 Runtime.getRuntime().availableProcessors() * 2;
-        private List<SRURecordDataParser> parsers =
+        private List<SRURecordDataParser> recordParsers =
                 new ArrayList<SRURecordDataParser>();
+        private List<SRUExtraResponseDataParser> extraDataParsers = null;
 
 
         /**
@@ -249,7 +262,22 @@ public class SRUClientConfig {
          * @see SRURecordDataParser
          */
         public List<SRURecordDataParser> getRecordDataParsers() {
-            return Collections.unmodifiableList(parsers);
+            return Collections.unmodifiableList(recordParsers);
+        }
+
+
+        /**
+         * Get the list of extra response data parsers.
+         *
+         * @return the list of extra response data parsers
+         * @see SRUExtraResponseDataParser
+         */
+        public List<SRUExtraResponseDataParser> getExtraResponseDataParsers() {
+            if (extraDataParsers != null) {
+                return Collections.unmodifiableList(extraDataParsers);
+            } else {
+                return null;
+            }
         }
 
 
@@ -260,7 +288,8 @@ public class SRUClientConfig {
          *            the record data parser to be added
          * @return this {@link Builder} instance
          * @throws IllegalArgumentException
-         *             if registering the parser fails
+         *             if registering of the parser fails
+         * @see SRURecordDataParser
          */
         public Builder addRecordDataParser(SRURecordDataParser parser) {
             if (parser == null) {
@@ -276,14 +305,37 @@ public class SRUClientConfig {
                         "parser.getRecordSchema() returns empty string");
             }
 
-            for (SRURecordDataParser p : parsers) {
+            for (SRURecordDataParser p : recordParsers) {
                 if (p.getRecordSchema().equals(recordSchema)) {
                     throw new IllegalArgumentException(
                             "record data parser already registered: " +
                                     recordSchema);
                 }
             }
-            parsers.add(parser);
+            recordParsers.add(parser);
+            return this;
+        }
+
+
+        /**
+         * Add an extra response data parser instance to the list of extra
+         * response data parsers
+         *
+         * @param parser
+         *            the extra response data parser to be added
+         * @return this {@link Builder} instance
+         * @throws IllegalArgumentException
+         *             if registering of the parser fails
+         * @see SRUExtraResponseDataParser
+         */
+        public Builder addExtraResponseDataParser(SRUExtraResponseDataParser parser) {
+            if (parser == null) {
+                throw new NullPointerException("parser == null");
+            }
+            if (extraDataParsers == null) {
+                extraDataParsers = new ArrayList<SRUExtraResponseDataParser>();
+            }
+            extraDataParsers.add(parser);
             return this;
         }
 

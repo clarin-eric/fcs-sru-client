@@ -17,12 +17,14 @@
 package eu.clarin.sru.client;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,6 +32,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -48,11 +52,12 @@ import org.w3c.dom.Node;
  * </p>
  */
 public class SRUClient {
+    private static final Logger logger = LoggerFactory.getLogger(SRUClient.class);
     private final SRUSimpleClient client;
     private final Handler handler;
     /* common */
     private List<SRUDiagnostic> diagnostics;
-    private DocumentFragment extraResponseData;
+    private List<SRUExtraResponseData> extraResponseData;
     /* scan */
     private List<SRUTerm> terms;
     /* searchRetrieve */
@@ -115,7 +120,7 @@ public class SRUClient {
             throw new NullPointerException("documentBuilderFactory == null");
         }
         this.client = new SRUSimpleClient(config);
-        this.handler = new Handler();
+        this.handler = new Handler(config);
         try {
             synchronized (documentBuilderFactory) {
                 documentBuilderFactory.setNamespaceAware(true);
@@ -281,7 +286,16 @@ public class SRUClient {
     }
 
 
+
     private class Handler extends SRUDefaultHandlerAdapter {
+        private final List<SRUExtraResponseDataParser> parsers;
+
+
+        private Handler(SRUClientConfig config) {
+            this.parsers = config.getExtraResponseDataParsers();
+        }
+
+
         @Override
         public void onDiagnostics(List<SRUDiagnostic> diagnostics)
                 throws SRUClientException {
@@ -292,8 +306,58 @@ public class SRUClient {
         @Override
         public void onExtraResponseData(XMLStreamReader reader)
                 throws XMLStreamException, SRUClientException {
-            SRUClient.this.extraResponseData =
-                    copyStaxToDocumentFragment(documentBuilder, stack, reader);
+            if (reader.getEventType() == XMLStreamConstants.START_DOCUMENT) {
+                reader.next();
+            }
+
+            while (reader.hasNext()) {
+                SRUExtraResponseData data = null;
+
+                XmlStreamReaderUtils.consumeWhitespace(reader);
+                switch (reader.getEventType()) {
+                case XMLStreamConstants.START_ELEMENT:
+                    final QName root = reader.getName();
+                    logger.debug("@start: {}", root);
+
+                    /*
+                     * The content model of "extraResponseData" is a sequence
+                     * of elements. Parse each child element into a separate
+                     * entity, i.e. if a parse is available for handling the
+                     * element use it, otherwise parse into a document fragment.
+                     */
+                    if ((parsers != null) && !parsers.isEmpty()) {
+                        for (SRUExtraResponseDataParser parser: parsers) {
+                            if (parser.supports(root)) {
+                                logger.debug("parsing extra response data with parser '{}'",
+                                        parser.getClass().getName());
+                                data = parser.parse(reader);
+                                break;
+                            }
+                        }
+                    }
+                    if (data == null) {
+                        logger.debug("parsing of extra response data (generic)");
+                        data = parseExtraResponseAsDocumentFragment(
+                                root, documentBuilder, stack, reader);
+                    }
+                    break;
+                case XMLStreamConstants.END_DOCUMENT:
+                    break;
+                default:
+                  throw new SRUClientException("expected a start element at " +
+                          "this location (event code = " +
+                          reader.getEventType() + ")");
+                }
+
+                if (data != null) {
+                    if (SRUClient.this.extraResponseData == null) {
+                        SRUClient.this.extraResponseData =
+                                new ArrayList<SRUExtraResponseData>();
+                    }
+                    SRUClient.this.extraResponseData.add(data);
+                }
+            } // while
+
         }
 
 
@@ -390,6 +454,14 @@ public class SRUClient {
     } // inner class Handler
 
 
+    private static SRUExtraResponseData parseExtraResponseAsDocumentFragment(
+            QName name, DocumentBuilder builder, Deque<Node> stack, XMLStreamReader reader)
+            throws XMLStreamException {
+        return new SRUGenericExtraResponseData(name,
+                copyStaxToDocumentFragment(builder, stack, reader));
+    }
+
+
     private static DocumentFragment copyStaxToDocumentFragment(
             DocumentBuilder builder, Deque<Node> stack, XMLStreamReader reader)
             throws XMLStreamException {
@@ -397,7 +469,8 @@ public class SRUClient {
             final Document doc = builder.newDocument();
             stack.push(doc.createDocumentFragment());
 
-            while (reader.hasNext()) {
+            boolean stop = false;
+            while (!stop && reader.hasNext()) {
                 final Node parent = stack.peek();
                 switch (reader.getEventType()) {
                 case XMLStreamConstants.START_ELEMENT:
@@ -405,6 +478,9 @@ public class SRUClient {
                     break;
                 case XMLStreamConstants.END_ELEMENT:
                     stack.pop();
+                    if (stack.size() == 1) {
+                        stop = true;
+                    }
                     break;
                 case XMLStreamConstants.CHARACTERS:
                     parent.appendChild(doc.createTextNode(reader.getText()));
