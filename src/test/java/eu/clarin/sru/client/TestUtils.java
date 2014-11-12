@@ -16,6 +16,7 @@
  */
 package eu.clarin.sru.client;
 
+import java.net.URI;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -24,6 +25,8 @@ import org.w3c.dom.Node;
 
 import eu.clarin.sru.client.SRUExplainRecordData.ConfigInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.Schema;
+import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription;
+import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.ResourceInfo;
 import eu.clarin.sru.client.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.client.fcs.DataView;
 import eu.clarin.sru.client.fcs.DataViewGenericDOM;
@@ -38,6 +41,7 @@ class TestUtils {
     public static SRUExplainRequest makeExplainRequest(String baseURI) {
         SRUExplainRequest request = new SRUExplainRequest(baseURI);
         request.setExtraRequestData("x-indent-response", "4");
+        request.setExtraRequestData("x-fcs-endpoint-description", "true");
         request.setParseRecordDataEnabled(true);
         return request;
     }
@@ -81,6 +85,22 @@ class TestUtils {
             logger.info("schema = {}", record.getRecordSchema());
             if (record.isRecordSchema(SRUExplainRecordData.RECORD_SCHEMA)) {
                 dumpExplainRecordData(record.getRecordData());
+            }
+            if (record.hasExtraRecordData()) {
+                logger.info("extraRecordInfo = {}",
+                        record.getExtraRecordData());
+            }
+        }
+        if (response.hasExtraResponseData()) {
+            for (SRUExtraResponseData data : response.getExtraResponseData()) {
+                if (data instanceof ClarinFCSEndpointDescription) {
+                    dumpEndpointDescription(
+                            (ClarinFCSEndpointDescription) data);
+                } else {
+                    logger.info("extraResponseData = {} (class={})",
+                            data.getRootElement(), data.getClass().getName());
+                }
+
             }
         }
     }
@@ -199,6 +219,50 @@ class TestUtils {
                 if (fragment.hasDataViews()) {
                     dumpDataView("CLARIN-FCS: ResourceFragment/", fragment.getDataViews());
                 }
+            }
+        }
+    }
+
+
+    private static void dumpEndpointDescription(ClarinFCSEndpointDescription ed) {
+        logger.info("dumping <EndpointDescription> (version={})",
+                ed.getVersion());
+        for (URI capability : ed.getCapabilities()) {
+            logger.info("  capability: {}", capability);
+        } // for
+        for (ClarinFCSEndpointDescription.DataView dataView :
+            ed.getSupportedDataViews()) {
+            logger.info("  supportedDataView: id={}, type={}, policy={}",
+                    dataView.getIdentifier(),
+                    dataView.getMimeType(),
+                    dataView.getDeliveryPolicy());
+        } // for
+        dumpResourceInfo(ed.getResources(), 1, "  ");
+    }
+
+
+    private static void dumpResourceInfo(List<ResourceInfo> ris, int depth,
+            String indent) {
+        for (ResourceInfo ri : ris) {
+            logger.info("{}[depth={}] <ResourceInfo>", indent, depth);
+            logger.info("{}    pid={}", indent, ri.getPid());
+            logger.info("{}    title: {}", indent, ri.getTitle());
+            if (ri.getDescription() != null) {
+                logger.info("{}    description: {}",
+                        indent, ri.getDescription());
+            }
+            if (ri.getLandingPageURI() != null) {
+                logger.info("{}    landingPageURI: {}",
+                        indent, ri.getLandingPageURI());
+            }
+            for (ClarinFCSEndpointDescription.DataView dv :
+                ri.getAvailableDataViews()) {
+                logger.info("{}    available dataviews: type={}, policy={}",
+                        indent, dv.getMimeType(), dv.getDeliveryPolicy());
+            }
+            if (ri.hasSubResources()) {
+                dumpResourceInfo(ri.getSubResources(),
+                        depth + 1, indent + "  ");
             }
         }
     }

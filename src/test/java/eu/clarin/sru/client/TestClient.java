@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.client.fcs.ClarinFCSClientBuilder;
+import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescriptionParser;
 
 
 public class TestClient {
@@ -35,6 +36,8 @@ public class TestClient {
                     .addDefaultDataViewParsers()
                     .unknownDataViewAsString()
                     .enableLegacySupport()
+                    .registerExtraResponseDatar(
+                            new ClarinFCSEndpointDescriptionParser())
                     .buildClient();
 
             // explain
