@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -17,7 +17,8 @@
 package eu.clarin.sru.client.fcs;
 
 /**
- * A generic DataView implementation that stores the content as a String.
+ * A generic Data View implementation that stores the content of a Data View as
+ * a String.
  */
 public class DataViewGenericString extends DataView {
     private final String content;
@@ -32,7 +33,7 @@ public class DataViewGenericString extends DataView {
 
     /**
      * Get DataView content.
-     * 
+     *
      * @return the DataView content as String.
      */
     public String getContent() {

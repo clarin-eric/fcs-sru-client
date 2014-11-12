@@ -16,12 +16,19 @@
  */
 package eu.clarin.sru.client;
 
+import javax.xml.namespace.QName;
+
 /**
- * Some constants for the SRUClient.
+ * Interface for parsed extra response data objects.
+ *
  */
-public class SRUClientConstants {
+public interface SRUExtraResponseData {
 
-    /** constant record data schema parser to match any schema */
-    public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
+    /**
+     * The QName of a chuck of extra response data.
+     *
+     * @return the record schema
+     */
+    public QName getRootElement();
 
-} // class SRUClientConstants
+} // interface SRUExtraResponseData

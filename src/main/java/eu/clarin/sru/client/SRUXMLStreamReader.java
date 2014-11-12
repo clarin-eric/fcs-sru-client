@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -421,9 +421,16 @@ class SRUXMLStreamReader implements XMLStreamReader {
         if (required) {
             // System.err.println("--> error, not found @ " +
             // toReadable(reader));
+            String what;
+            if (reader.isStartElement() || reader.isEndElement() ||
+                    reader.isEmptyElement()) {
+                what = "'" + reader.getName().toString() + "'";
+            } else {
+                what = "some character data";
+            }
             throw new XMLStreamException("expected element '" +
-                    new QName(namespaceURI, localName) + "', but found '" +
-                    reader.getName() + "'", reader.getLocation());
+                    new QName(namespaceURI, localName) + "', but found " +
+                    what, reader.getLocation());
         }
         // System.err.println("--> not found @ " + toReadable(reader));
         return false;
@@ -454,8 +461,8 @@ class SRUXMLStreamReader implements XMLStreamReader {
                     continue;
                 }
                 if (reader.isStartElement()) {
-                    if (!(namespaceURI.equals(reader.getNamespaceURI()) && localName
-                            .equals(reader.getLocalName()))) {
+                    if (!(namespaceURI.equals(reader.getNamespaceURI()) &&
+                            localName.equals(reader.getLocalName()))) {
                         level++;
                     }
                     reader.next();
@@ -472,10 +479,16 @@ class SRUXMLStreamReader implements XMLStreamReader {
                         reader.next(); // consume tag
                         break;
                     } else {
+                        String what;
+                        if (reader.isStartElement() || reader.isEndElement() ||
+                                reader.isEmptyElement()) {
+                            what = "'" + reader.getName().toString() + "'";
+                        } else {
+                            what = "some character data";
+                        }
                         throw new XMLStreamException("expected end tag for '" +
                                 new QName(namespaceURI, localName) +
-                                "', but found '" + reader.getName() + "'",
-                                reader.getLocation());
+                                "', but found " + what, reader.getLocation());
                     }
                 }
             }
@@ -517,7 +530,7 @@ class SRUXMLStreamReader implements XMLStreamReader {
         return readContent(namespaceURI, localName, required, true);
     }
 
-        
+
     String readContent(String namespaceURI, String localName, boolean required,
             boolean contentRequired) throws XMLStreamException {
         String result = null;

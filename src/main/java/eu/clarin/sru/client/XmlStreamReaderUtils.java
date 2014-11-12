@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -42,11 +42,8 @@ public final class XmlStreamReaderUtils {
     public static boolean readStart(XMLStreamReader reader,
             String namespaceURI, String localName, boolean required,
             boolean attributes) throws XMLStreamException {
-        // System.err.println("readStart (" + localName + ", required = " +
-        // required + ") @ " + toReadable(reader));
         if (!reader.isEndElement()) {
             while (reader.hasNext()) {
-                // System.err.println("  LOOP: " + dumpState());
                 if (reader.isWhiteSpace()) {
                     reader.next();
                     continue;
@@ -54,12 +51,9 @@ public final class XmlStreamReaderUtils {
                 if (reader.isStartElement()) {
                     if (namespaceURI.equals(reader.getNamespaceURI()) &&
                             localName.equals(reader.getLocalName())) {
-                        // System.err.print("--> found ");
                         if (!attributes) {
-                            // System.err.print("and consumed ");
                             reader.next(); // skip to next event
                         }
-                        // System.err.println("@ " + toReadable(reader));
                         return true;
                     }
                     break;
@@ -71,13 +65,10 @@ public final class XmlStreamReaderUtils {
             } // while
         }
         if (required) {
-            // System.err.println("--> error, not found @ " +
-            // toReadable(reader));
             throw new XMLStreamException("expected element '" +
                     new QName(namespaceURI, localName) + "', but found '" +
                     reader.getName() + "'", reader.getLocation());
         }
-        // System.err.println("--> not found @ " + toReadable(reader));
         return false;
     }
 
@@ -90,12 +81,8 @@ public final class XmlStreamReaderUtils {
 
     public static void readEnd(XMLStreamReader reader, String namespaceURI,
             String localName, boolean skipContent) throws XMLStreamException {
-        // System.err.println("readEnd (" + localName + ") @ " + dumpState() +
-        // ", skipContent = " + skipContent);
         int level = 1;
         while (reader.hasNext()) {
-            // System.err.println("  LOOP " + dumpState() + " [" +
-            // level + "]");
             if (reader.isWhiteSpace()) {
                 reader.next();
                 continue;
@@ -106,18 +93,13 @@ public final class XmlStreamReaderUtils {
                     continue;
                 }
                 if (reader.isStartElement()) {
-                    if (!(namespaceURI.equals(reader.getNamespaceURI()) &&
-                            localName.equals(reader.getLocalName()))) {
-                        level++;
-                    }
+                    level++;
                     reader.next();
                     continue;
                 }
-            }
+            } // skipContent
             if (reader.isEndElement()) {
                 level--;
-                // System.err.println("   @END-TAG: " + dumpState() + " [" +
-                // level + "]");
                 if (level == 0) {
                     if (namespaceURI.equals(reader.getNamespaceURI()) &&
                             localName.equals(reader.getLocalName())) {
@@ -126,14 +108,25 @@ public final class XmlStreamReaderUtils {
                     } else {
                         throw new XMLStreamException("expected end tag for '" +
                                 new QName(namespaceURI, localName) +
-                                "', but found '" + reader.getName() + "'",
-                                reader.getLocation());
+                                "', but found end tag for '" +
+                                reader.getName() + "'", reader.getLocation());
                     }
+                } else {
+                    reader.next(); // consume tag
+                }
+            } else {
+                if (reader.isStartElement()) {
+                    throw new XMLStreamException("expected end tag for '" +
+                            new QName(namespaceURI, localName) +
+                            "', but found start tag for '" + reader.getName() +
+                            "'", reader.getLocation());
+                } else {
+                    throw new XMLStreamException("expected end tag for '" +
+                            new QName(namespaceURI, localName) + "'",
+                            reader.getLocation());
                 }
             }
-            reader.next();
-        }
-        // System.err.println("--> ok @ " + dumpState());
+        } // while
     }
 
 
@@ -170,12 +163,19 @@ public final class XmlStreamReaderUtils {
             throws XMLStreamException {
         // System.err.println("readString @ " + toReadable(reader));
         String s = null;
-        if (reader.isCharacters()) {
-            s = reader.getText();
-            if (s != null) {
-                s = s.trim();
+        StringBuilder sb = null;
+        while (reader.isCharacters()) {
+            if (sb == null) {
+                sb = new StringBuilder();
+            }
+            String tmp = reader.getText();
+            if (!tmp.isEmpty()) {
+                sb.append(tmp);
             }
             reader.next();
+        } // while
+        if ((sb != null) && (sb.length() > 0)) {
+            s = sb.toString().trim();
         }
         if (required && ((s == null) || s.isEmpty())) {
             throw new XMLStreamException("expected character content "
@@ -237,8 +237,36 @@ public final class XmlStreamReaderUtils {
         return namespaceURI.equals(reader.getNamespaceURI()) &&
                 localName.equals(reader.getLocalName());
     }
-    
-    
+
+
+    public static boolean peekEnd(XMLStreamReader reader,
+            String namespaceURI, String localName)
+            throws XMLStreamException {
+        if (reader.isWhiteSpace()) {
+            consumeWhitespace(reader);
+        }
+        if (!reader.isEndElement()) {
+            return false;
+        }
+        return namespaceURI.equals(reader.getNamespaceURI()) &&
+                localName.equals(reader.getLocalName());
+    }
+
+
+    public static void skipTag(XMLStreamReader reader, String namespaceURI,
+            String localName, boolean required) throws XMLStreamException {
+        if (readStart(reader, namespaceURI, localName, required)) {
+            readEnd(reader, namespaceURI, localName, true);
+        }
+    }
+
+
+    public static void skipTag(XMLStreamReader reader, String namespaceURI,
+            String localName) throws XMLStreamException {
+        skipTag(reader, namespaceURI, localName, false);
+    }
+
+
     public static void consumeStart(XMLStreamReader reader)
             throws XMLStreamException {
         if (!reader.isStartElement()) {

@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -19,8 +19,6 @@ package eu.clarin.sru.client;
 import java.util.Collections;
 import java.util.List;
 
-import org.w3c.dom.DocumentFragment;
-
 
 
 /**
@@ -33,7 +31,7 @@ import org.w3c.dom.DocumentFragment;
 class SRUAbstractResponse<T extends SRUAbstractRequest> {
     private final T request;
     private final List<SRUDiagnostic> diagnostics;
-    private final DocumentFragment extraResponseData;
+    private final List<SRUExtraResponseData> extraResponseData;
     private final int totalBytesTransferred;
     private final long timeTotal;
     private final long timeQueued;
@@ -67,7 +65,7 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
      */
     protected SRUAbstractResponse(T request,
             List<SRUDiagnostic> diagnostics,
-            DocumentFragment extraResponseData,
+            List<SRUExtraResponseData> extraResponseData,
             int totalBytesTransferred,
             long timeTotal,
             long timeQueued,
@@ -77,7 +75,10 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
         this.diagnostics = ((diagnostics != null) && !diagnostics.isEmpty())
                 ? Collections.unmodifiableList(diagnostics)
                 : null;
-        this.extraResponseData     = extraResponseData;
+        this.extraResponseData = ((extraResponseData != null) &&
+                                                !extraResponseData.isEmpty())
+                ? Collections.unmodifiableList(extraResponseData)
+                : null;
         this.totalBytesTransferred = totalBytesTransferred;
         this.timeTotal             = timeTotal;
         this.timeQueued            = timeQueued;
@@ -124,11 +125,11 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
     /**
      * Get the extra response data for this result.
      *
-     * @return get an instance of {@link DocumentFragment} containing the XML
-     *         fragment for the extra response data from the SRU response or
-     *         <code>null</code> if none are available
+     * @return get a list of {@link SRUExtraResponseData} instances for the
+     *         extra response data from the SRU response or <code>null</code> if
+     *         none are available
      */
-    public DocumentFragment getExtraResponseData() {
+    public List<SRUExtraResponseData> getExtraResponseData() {
         return extraResponseData;
     }
 

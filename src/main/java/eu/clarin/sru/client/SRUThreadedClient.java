@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -17,8 +17,6 @@
 package eu.clarin.sru.client;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -42,8 +40,6 @@ import org.slf4j.LoggerFactory;
 public class SRUThreadedClient {
     private static final Logger logger =
             LoggerFactory.getLogger(SRUThreadedClient.class);
-    private final ConcurrentMap<String, SRURecordDataParser> parsers =
-            new ConcurrentHashMap<String, SRURecordDataParser>();
     private final DocumentBuilderFactory documentBuilderFactory =
             DocumentBuilderFactory.newInstance();
     private final ThreadLocal<SRUClient> client;
@@ -51,68 +47,29 @@ public class SRUThreadedClient {
 
 
     /**
-     * Constructor. This constructor will create a <em>strict</em> client and
-     * use the default SRU version.
-     *
-     * @see SRUSimpleClient#DEFAULT_SRU_VERSION
-     */
-    public SRUThreadedClient() {
-        this(SRUSimpleClient.DEFAULT_SRU_VERSION);
-    }
-
-
-    /**
      * Constructor.
      *
-     * @param defaultVersion
-     *            the default version to use for SRU requests; may be overridden
-     *            by individual requests
+     * @param config
+     *            the configuration to be used for this client.
+     * @throws NullPointerException
+     *             if argument <code>config</code> is <node>null</code>
+     * @throws IllegalArgumentException
+     *             if an error occurred while registering record data parsers
+     * @see SRUClientConfig
      */
-    public SRUThreadedClient(final SRUVersion defaultVersion) {
+   public SRUThreadedClient(final SRUClientConfig config) {
         client = new ThreadLocal<SRUClient>() {
             @Override
             protected SRUClient initialValue() {
                 logger.debug("instantiated new sru client");
-                return new SRUClient(defaultVersion, parsers,
-                        documentBuilderFactory);
+                return new SRUClient(config, documentBuilderFactory);
             }
         };
-        // TODO: make worker count configurable
-        int workerCount = Runtime.getRuntime().availableProcessors() * 2;
-        logger.debug("using {} workers", workerCount);
-        executor = Executors.newFixedThreadPool(workerCount, new Factory());
-    }
 
-
-    /**
-     * Register a record data parser.
-     *
-     * @param parser
-     *            a parser instance
-     * @throws NullPointerException
-     *             if any required argument is <code>null</code>
-     * @throws IllegalArgumentException
-     *             if the supplied parser is invalid or a parser handing the
-     *             same record schema is already registered
-     */
-    public void registerRecordParser(SRURecordDataParser parser) {
-        if (parser == null) {
-            throw new NullPointerException("parser == null");
-        }
-        final String recordSchema = parser.getRecordSchema();
-        if (recordSchema == null) {
-            throw new NullPointerException("parser.getRecordSchema() == null");
-        }
-        if (recordSchema.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "parser.getRecordSchema() returns empty string");
-        }
-
-        if (parsers.putIfAbsent(recordSchema, parser) != null) {
-            throw new IllegalArgumentException(
-                    "record data parser already registered: " + recordSchema);
-
-        }
+        // launch workers ...
+        final int threadCount = config.getThreadCount();
+        logger.debug("using {} workers", threadCount);
+        executor = Executors.newFixedThreadPool(threadCount, new Factory());
     }
 
 

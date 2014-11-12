@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -391,7 +391,7 @@ abstract class SRUAbstractRequest {
 
     /**
      * <em>Note: this method is not a part of public API.</em>
-     * @return a constant for this
+     * @return a operation constant for this request
      */
     abstract SRUOperation getOperation();
 
@@ -399,4 +399,4 @@ abstract class SRUAbstractRequest {
     abstract void addParametersToURI(URIHelper uriBuilder)
             throws SRUClientException;
 
-} // class AbstractSRURequest
+} // class SRUAbstractRequest
