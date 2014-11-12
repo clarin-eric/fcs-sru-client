@@ -433,7 +433,7 @@ public class SRUClient {
                  * should never happen ...
                  */
                 throw new SRUClientException(
-                        "internal error; 'records' are null or empty");
+                        "internal error; 'records' is null or empty");
             }
         }
 
@@ -450,7 +450,6 @@ public class SRUClient {
             SRUClient.this.timeNetwork = millisNetwork;
             SRUClient.this.timeParsing = millisProcessing;
         }
-
     } // inner class Handler
 
 

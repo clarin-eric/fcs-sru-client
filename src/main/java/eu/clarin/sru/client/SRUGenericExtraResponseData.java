@@ -31,6 +31,14 @@ public class SRUGenericExtraResponseData implements SRUExtraResponseData {
     private final DocumentFragment fragment;
 
 
+    /**
+     * Constructor.
+     * 
+     * @param name
+     *            the root element of this extra response data fragment
+     * @param fragment
+     *            the extra response data fragment as {@link DocumentFragment}
+     */
     SRUGenericExtraResponseData(QName name, DocumentFragment fragment) {
         if (name == null) {
             throw new NullPointerException("name == null");

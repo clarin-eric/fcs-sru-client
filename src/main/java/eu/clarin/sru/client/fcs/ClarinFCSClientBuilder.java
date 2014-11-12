@@ -234,16 +234,18 @@ public class ClarinFCSClientBuilder {
 
 
     /**
-     * Register a Data View parser.
+     * Register an extra response data parser.
      *
      * @param parser
      *            the extra response data parser to be registered
      * @return this {@link ClarinFCSClientBuilder} instance
      * @throws IllegalArgumentException
-     *             if an error occurred while registering the data view parser
+     *             if an error occurred while registering the extra response
+     *             data parser
      * @see SRUExtraResponseDataParser
      */
-    public ClarinFCSClientBuilder registerExtraResponseDatar(SRUExtraResponseDataParser parser) {
+    public ClarinFCSClientBuilder registerExtraResponseDataParser(
+            SRUExtraResponseDataParser parser) {
         if (parser == null) {
             throw new NullPointerException("parser == null");
         }

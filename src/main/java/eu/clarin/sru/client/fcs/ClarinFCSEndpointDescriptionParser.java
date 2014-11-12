@@ -45,7 +45,13 @@ import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.ResourceInfo;
  */
 public class ClarinFCSEndpointDescriptionParser implements
         SRUExtraResponseDataParser {
+    /**
+     * constant for infinite resource enumeration parsing depth
+     */
     public static final int INFINITE_MAX_DEPTH = -1;
+    /**
+     * constant for default parsing resource enumeration parsing depth
+     */
     public static final int DEFAULT_MAX_DEPTH  = INFINITE_MAX_DEPTH;
     private static final Logger logger =
             LoggerFactory.getLogger(ClarinFCSClientBuilder.class);
@@ -63,11 +69,23 @@ public class ClarinFCSEndpointDescriptionParser implements
     private final int maxDepth;
 
 
+    /**
+     * Constructor. By default, the parser will parse the endpoint resource
+     * enumeration to an infinite depth.
+     */
     public ClarinFCSEndpointDescriptionParser() {
         this(DEFAULT_MAX_DEPTH);
     }
 
 
+    /**
+     * Constructor.
+     *
+     * @param maxDepth
+     *            maximum depth for parsing the endpoint resource enumeration.
+     * @throws IllegalArgumentException
+     *             if an argument is illegal
+     */
     public ClarinFCSEndpointDescriptionParser(int maxDepth) {
         if (maxDepth < -1) {
             throw new IllegalArgumentException("maxDepth < -1");
@@ -186,7 +204,7 @@ public class ClarinFCSEndpointDescriptionParser implements
 
         // Resources
         final List<ResourceInfo> resources =
-                parseResources(reader, 0, supportedDataViews);
+                parseResources(reader, 0, maxDepth, supportedDataViews);
 
         // skip over extensions
         while (!XmlStreamReaderUtils.peekEnd(reader,
@@ -207,8 +225,21 @@ public class ClarinFCSEndpointDescriptionParser implements
     }
 
 
-    private List<ResourceInfo> parseResources(XMLStreamReader reader, int depth,
-            List<DataView> supportedDataviews) throws XMLStreamException {
+    /**
+     * Get the maximum resource enumeration parsing depth. The first level is
+     * indicate by the value <code>0</code>.
+     *
+     * @return the default resource parsing depth or <code>-1</code> for
+     *         infinite.
+     */
+    public int getMaximumResourcePArsingDepth() {
+        return maxDepth;
+    }
+
+
+    private static List<ResourceInfo> parseResources(XMLStreamReader reader,
+            int depth, int maxDepth, List<DataView> supportedDataviews)
+            throws XMLStreamException {
         List<ResourceInfo> resources = null;
 
         XmlStreamReaderUtils.readStart(reader, ED_NS_URI, "Resources", true);
@@ -284,11 +315,13 @@ public class ClarinFCSEndpointDescriptionParser implements
             logger.debug("DataViews: {}", dataviews);
 
             List<ResourceInfo> subResources = null;
-            if (XmlStreamReaderUtils.peekStart(reader, ED_NS_URI, "Resources")) {
+            if (XmlStreamReaderUtils.peekStart(reader,
+                    ED_NS_URI, "Resources")) {
                 final int nextDepth = depth + 1;
-                if ((maxDepth == INFINITE_MAX_DEPTH) || (nextDepth < maxDepth)) {
+                if ((maxDepth == INFINITE_MAX_DEPTH) ||
+                        (nextDepth < maxDepth)) {
                     subResources = parseResources(reader, nextDepth,
-                            supportedDataviews);
+                            maxDepth, supportedDataviews);
                 } else {
                     XmlStreamReaderUtils.skipTag(reader, ED_NS_URI,
                             "Resources", true);

@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.client.fcs.ClarinFCSClientBuilder;
+import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescriptionParser;
 
 
 public class TestThreadedClientCallback {
@@ -34,6 +35,10 @@ public class TestThreadedClientCallback {
 
             SRUThreadedClient client = new ClarinFCSClientBuilder()
                     .addDefaultDataViewParsers()
+                    .unknownDataViewAsString()
+                    .enableLegacySupport()
+                    .registerExtraResponseDataParser(
+                            new ClarinFCSEndpointDescriptionParser())
                     .buildThreadedClient();
 
             try {

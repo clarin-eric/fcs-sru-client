@@ -36,7 +36,7 @@ public class TestClient {
                     .addDefaultDataViewParsers()
                     .unknownDataViewAsString()
                     .enableLegacySupport()
-                    .registerExtraResponseDatar(
+                    .registerExtraResponseDataParser(
                             new ClarinFCSEndpointDescriptionParser())
                     .buildClient();
 

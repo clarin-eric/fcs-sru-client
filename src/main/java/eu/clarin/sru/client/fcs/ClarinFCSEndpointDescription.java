@@ -51,27 +51,52 @@ public class ClarinFCSEndpointDescription implements Serializable,
     }
 
 
+    /**
+     * Get the version of this endpoint description.
+     *
+     * @return the version of the endpoint description
+     */
     public int getVersion() {
         return version;
     }
 
 
+    /**
+     * Get the list of capabilities supported by this endpoint. The list
+     * contains the appropriate URIs defined by the CLARIN-FCS specification to
+     * indicate support for certain capabilities.
+     *
+     * @return the list of capabilities supported by this endpoint
+     */
     public List<URI> getCapabilities() {
         return capabilites;
     }
 
 
+    /**
+     * Get the list of data views supported by this endpoint.
+     *
+     * @return the list of data views supported by this endpoint
+     */
     public List<DataView> getSupportedDataViews() {
         return supportedDataViews;
     }
 
 
+    /**
+     * Get the list of top-level resources of this endpoint.
+     *
+     * @return the list of top-level resources of this endpoint
+     */
     public List<ResourceInfo> getResources() {
         return resources;
     }
 
 
-    public static class DataView implements Serializable {
+    /**
+     * This class implements a description of a data view supported by the endpoint.
+     */
+    public static final class DataView implements Serializable {
         private static final long serialVersionUID = -5628565233032672627L;
 
 
@@ -93,6 +118,9 @@ public class ClarinFCSEndpointDescription implements Serializable,
         private final DeliveryPolicy deliveryPolicy;
 
 
+        /**
+         * Constructor. <em>Internal use only!</em>
+         */
         DataView(String identifier, String mimeType,
                 DeliveryPolicy deliveryPolicy) {
             if (identifier == null) {
@@ -163,7 +191,11 @@ public class ClarinFCSEndpointDescription implements Serializable,
     } // class DataView
 
 
-    public static class ResourceInfo implements Serializable {
+    /**
+     * This class implements a description of a resource available at an
+     * endpoint.
+     */
+    public static final class ResourceInfo implements Serializable {
         private static final long serialVersionUID = 1046130188435071544L;
         private final String pid;
         private final Map<String, String> title;
@@ -174,6 +206,9 @@ public class ClarinFCSEndpointDescription implements Serializable,
         private final List<ResourceInfo> subResources;
 
 
+        /**
+         * Constructor. <em>Internal use only!</em>
+         */
         ResourceInfo(String pid, Map<String, String> title,
                 Map<String, String> description, String landingPageURI,
                 List<String> languages, List<DataView> availableDataViews,
@@ -310,10 +345,32 @@ public class ClarinFCSEndpointDescription implements Serializable,
 
 
         /**
+         * Check, if this resource supports a certain language.
+         *
+         * @param language
+         *            a language encoded as a ISO-632-3 three letter language
+         *            code
+         * @return <code>true</code> if the language is supported by this
+         *         resource, <code>false</code> otherwise
+         */
+        public boolean supportsLanguage(String language) {
+            if (language == null) {
+                throw new NullPointerException("language == null");
+            }
+            for (String l : languages) {
+                if (language.equals(l)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        /**
          * Get the direct sub-ordinate resources of this resource.
          *
-         * @return a list of resources or <code>null</code> if this resource has no
-         *         sub-ordinate resources
+         * @return a list of resources or <code>null</code> if this resource has
+         *         no sub-ordinate resources
          */
         public List<ResourceInfo> getSubResources() {
             return subResources;
