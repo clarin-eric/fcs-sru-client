@@ -476,8 +476,8 @@ public class SRUSimpleClient {
 
             // explainResponse/version
             SRUVersion version = parseVersion(reader);
-            logger.debug("version = {}, requested = {}",
-                    version, request.getVersionPerformed());
+            logger.debug("version = {}, requested = {}", version,
+                    request.getRequestedVersion());
 
             // explainResponse/record
             reader.readStart(SRU_NS, "record", true);
@@ -698,7 +698,7 @@ public class SRUSimpleClient {
                 // scanResponse/version
                 SRUVersion version = parseVersion(reader);
                 logger.debug("version = {}, requested = {}", version,
-                        request.getVersionPerformed());
+                        request.getRequestedVersion());
 
                 // scanResponse/terms
                 if (reader.readStart(SRU_NS, "terms", false)) {
@@ -878,7 +878,7 @@ public class SRUSimpleClient {
                 // searchRetrieveResponse/version
                 SRUVersion version = parseVersion(reader);
                 logger.debug("version = {}, requested = {}", version,
-                        request.getVersionPerformed());
+                        request.getRequestedVersion());
 
                 // searchRetrieveResponse/numberOfRecords
                 int numberOfRecords = reader.readContent(SRU_NS,

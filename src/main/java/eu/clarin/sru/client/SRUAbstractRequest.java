@@ -119,7 +119,16 @@ abstract class SRUAbstractRequest {
     protected SRUVersion version;
     /** A map of extra request data parameters. */
     protected Map<String, String> extraRequestData;
-    private SRUVersion versionPerformed;
+    /*
+     * The version that was used to perform the request.
+     * It is set as a side-effect of makeURI().
+     */
+    private SRUVersion versionRequested;
+    /*
+     * The URI that was used to perform the request.
+     * It is set a a side-effect of makeURI().
+     */
+    private URI uriRequested;
 
 
     /**
@@ -288,12 +297,46 @@ abstract class SRUAbstractRequest {
     }
 
 
-    final SRUVersion getVersionPerformed() {
-        return versionPerformed;
+    /**
+     * Get the URI that was used to perform the request. This method may only be
+     * called <em>after</em> the request was carried out, otherwise it will
+     * throw an {@link IllegalStateException}.
+     *
+     * @return the URI that was used to carry out this request
+     * @throws IllegalStateException
+     *             if the request was not yet carried out
+     */
+    public final URI getRequestedURI() {
+        if (uriRequested == null) {
+            throw new IllegalStateException(
+                    "The request was not yet carried out");
+        }
+        return uriRequested;
     }
 
 
-    final URI makeURI(SRUVersion defaultVersion)
+    /**
+     * Get the version that was used to carry out this request. This method may
+     * only be called <em>after</em> the request was carried out, otherwise it
+     * will throw an {@link IllegalStateException}.
+     *
+     * @return the version that was used to carry out this request
+     * @throws IllegalStateException
+     *             if the request was not yet carried out
+     */
+    public final SRUVersion getRequestedVersion() {
+        if (versionRequested == null) {
+            throw new IllegalStateException(
+                    "The request was not yet carried out");
+        }
+        return versionRequested;
+    }
+
+
+    /*
+     * This is not public API.
+     */
+    protected final URI makeURI(SRUVersion defaultVersion)
             throws SRUClientException {
         if (defaultVersion == null) {
             throw new NullPointerException("defaultVersion == null");
@@ -345,8 +388,8 @@ abstract class SRUAbstractRequest {
             final String malformedVersion =
                     getExtraRequestData(X_MALFORMED_VERSION);
             if (malformedVersion == null) {
-                versionPerformed = (version != null) ? version : defaultVersion;
-                switch (versionPerformed) {
+                versionRequested = (version != null) ? version : defaultVersion;
+                switch (versionRequested) {
                 case VERSION_1_1:
                     uriBuilder.append(PARAM_VERSION, VERSION_1_1);
                     break;
@@ -355,7 +398,7 @@ abstract class SRUAbstractRequest {
                     break;
                 default:
                     throw new SRUClientException("unsupported version: " +
-                            versionPerformed);
+                            versionRequested);
                 } // switch
             } else {
                 if (!malformedVersion.equalsIgnoreCase(MALFORMED_OMIT)) {
@@ -382,7 +425,9 @@ abstract class SRUAbstractRequest {
                 }
             }
 
-            return uriBuilder.makeURI();
+            final URI uri = uriBuilder.makeURI();
+            uriRequested = uri;
+            return uri;
         } catch (URISyntaxException e) {
             throw new SRUClientException("error while building request URI", e);
         }
