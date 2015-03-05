@@ -307,7 +307,7 @@ abstract class SRUAbstractRequest {
              * append operation parameter
              *
              * NB: Setting "x-malformed-operation" as an extra request parameter
-             * makes the client to send invalid requests. This is intended to
+             * makes the client send invalid requests. This is intended to
              * use for testing SRU servers for protocol conformance (i.e.
              * provoke an error) and SHOULD NEVER be used in production!
              */
@@ -338,7 +338,7 @@ abstract class SRUAbstractRequest {
              * append version parameter
              *
              * NB: Setting "x-malformed-version" as an extra request parameter
-             * makes the client to send invalid requests. This is intended to
+             * makes the client send invalid requests. This is intended to
              * use for testing SRU servers for protocol conformance (i.e.
              * provoke an error) and SHOULD NEVER be used in production!
              */
