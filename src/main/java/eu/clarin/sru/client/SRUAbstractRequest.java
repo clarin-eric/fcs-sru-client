@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -71,7 +71,7 @@ abstract class SRUAbstractRequest {
     } // enum SRUOperation
 
 
-    static class URIHelper {
+    protected static class URIHelper {
         private final URIBuilder uriBuilder;
 
 
@@ -80,7 +80,7 @@ abstract class SRUAbstractRequest {
         }
 
 
-        public URIHelper append(String name, String value) {
+        protected URIHelper append(String name, String value) {
             if (name == null) {
                 throw new NullPointerException("name == null");
             }
@@ -99,7 +99,7 @@ abstract class SRUAbstractRequest {
         }
 
 
-        public URIHelper append(String name, int value) {
+        protected URIHelper append(String name, int value) {
             return append(name, Integer.toString(value));
         }
 
@@ -119,7 +119,16 @@ abstract class SRUAbstractRequest {
     protected SRUVersion version;
     /** A map of extra request data parameters. */
     protected Map<String, String> extraRequestData;
-    private SRUVersion versionPerformed;
+    /*
+     * The version that was used to perform the request.
+     * It is set as a side-effect of makeURI().
+     */
+    private SRUVersion versionRequested;
+    /*
+     * The URI that was used to perform the request.
+     * It is set a a side-effect of makeURI().
+     */
+    private URI uriRequested;
 
 
     /**
@@ -288,12 +297,46 @@ abstract class SRUAbstractRequest {
     }
 
 
-    final SRUVersion getVersionPerformed() {
-        return versionPerformed;
+    /**
+     * Get the URI that was used to perform the request. This method may only be
+     * called <em>after</em> the request was carried out, otherwise it will
+     * throw an {@link IllegalStateException}.
+     *
+     * @return the URI that was used to carry out this request
+     * @throws IllegalStateException
+     *             if the request was not yet carried out
+     */
+    public final URI getRequestedURI() {
+        if (uriRequested == null) {
+            throw new IllegalStateException(
+                    "The request was not yet carried out");
+        }
+        return uriRequested;
     }
 
 
-    final URI makeURI(SRUVersion defaultVersion)
+    /**
+     * Get the version that was used to carry out this request. This method may
+     * only be called <em>after</em> the request was carried out, otherwise it
+     * will throw an {@link IllegalStateException}.
+     *
+     * @return the version that was used to carry out this request
+     * @throws IllegalStateException
+     *             if the request was not yet carried out
+     */
+    public final SRUVersion getRequestedVersion() {
+        if (versionRequested == null) {
+            throw new IllegalStateException(
+                    "The request was not yet carried out");
+        }
+        return versionRequested;
+    }
+
+
+    /*
+     * This is not public API.
+     */
+    protected final URI makeURI(SRUVersion defaultVersion)
             throws SRUClientException {
         if (defaultVersion == null) {
             throw new NullPointerException("defaultVersion == null");
@@ -307,7 +350,7 @@ abstract class SRUAbstractRequest {
              * append operation parameter
              *
              * NB: Setting "x-malformed-operation" as an extra request parameter
-             * makes the client to send invalid requests. This is intended to
+             * makes the client send invalid requests. This is intended to
              * use for testing SRU servers for protocol conformance (i.e.
              * provoke an error) and SHOULD NEVER be used in production!
              */
@@ -338,15 +381,15 @@ abstract class SRUAbstractRequest {
              * append version parameter
              *
              * NB: Setting "x-malformed-version" as an extra request parameter
-             * makes the client to send invalid requests. This is intended to
+             * makes the client send invalid requests. This is intended to
              * use for testing SRU servers for protocol conformance (i.e.
              * provoke an error) and SHOULD NEVER be used in production!
              */
             final String malformedVersion =
                     getExtraRequestData(X_MALFORMED_VERSION);
             if (malformedVersion == null) {
-                versionPerformed = (version != null) ? version : defaultVersion;
-                switch (versionPerformed) {
+                versionRequested = (version != null) ? version : defaultVersion;
+                switch (versionRequested) {
                 case VERSION_1_1:
                     uriBuilder.append(PARAM_VERSION, VERSION_1_1);
                     break;
@@ -355,7 +398,7 @@ abstract class SRUAbstractRequest {
                     break;
                 default:
                     throw new SRUClientException("unsupported version: " +
-                            versionPerformed);
+                            versionRequested);
                 } // switch
             } else {
                 if (!malformedVersion.equalsIgnoreCase(MALFORMED_OMIT)) {
@@ -382,7 +425,9 @@ abstract class SRUAbstractRequest {
                 }
             }
 
-            return uriBuilder.makeURI();
+            final URI uri = uriBuilder.makeURI();
+            uriRequested = uri;
+            return uri;
         } catch (URISyntaxException e) {
             throw new SRUClientException("error while building request URI", e);
         }
@@ -391,7 +436,7 @@ abstract class SRUAbstractRequest {
 
     /**
      * <em>Note: this method is not a part of public API.</em>
-     * @return a constant for this
+     * @return a operation constant for this request
      */
     abstract SRUOperation getOperation();
 
@@ -399,4 +444,4 @@ abstract class SRUAbstractRequest {
     abstract void addParametersToURI(URIHelper uriBuilder)
             throws SRUClientException;
 
-} // class AbstractSRURequest
+} // class SRUAbstractRequest

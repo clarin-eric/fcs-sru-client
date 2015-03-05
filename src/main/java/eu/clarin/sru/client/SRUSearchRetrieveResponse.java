@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -19,8 +19,6 @@ package eu.clarin.sru.client;
 import java.util.Collections;
 import java.util.List;
 
-import org.w3c.dom.DocumentFragment;
-
 
 
 /**
@@ -37,7 +35,7 @@ public final class SRUSearchRetrieveResponse extends
 
     SRUSearchRetrieveResponse(SRUSearchRetrieveRequest request,
             List<SRUDiagnostic> diagnostics,
-            DocumentFragment extraResponseData,
+            List<SRUExtraResponseData> extraResponseData,
             int totalBytesTransferred,
             long timeTotal,
             long timeQueued,

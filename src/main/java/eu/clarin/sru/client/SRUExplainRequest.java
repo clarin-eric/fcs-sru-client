@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -41,7 +41,7 @@ public class SRUExplainRequest extends SRUAbstractRequest {
 
     /**
      * Constructor.
-     * 
+     *
      * @param baseURI
      *            the baseURI of the endpoint
      */
@@ -52,7 +52,7 @@ public class SRUExplainRequest extends SRUAbstractRequest {
 
     /**
      * Set the requested record packing.
-     * 
+     *
      * @param recordPacking
      *            the requested record packing
      * @see SRURecordPacking
@@ -79,7 +79,7 @@ public class SRUExplainRequest extends SRUAbstractRequest {
     /**
      * Enable or disable parsing of explain record data (ZeeRex record) of the
      * explain response.
-     * 
+     *
      * @param enabled
      *            <code>true</code> enabled parsing, <code>false</code> disables
      *            parsing
@@ -87,12 +87,12 @@ public class SRUExplainRequest extends SRUAbstractRequest {
     public void setParseRecordDataEnabled(boolean enabled) {
         this.parseRecordDataEnabled = enabled;
     }
-    
+
 
     /**
      * Check, whether the record data of a explain response (ZeeRex record)
      * shall be parsed or not.
-     * 
+     *
      * @return <code>true</code> if parsing is enabled, <code>false</code>
      *         otherwise
      */

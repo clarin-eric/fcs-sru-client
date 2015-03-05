@@ -1,6 +1,5 @@
 /**
-/**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -17,6 +16,7 @@
  */
 package eu.clarin.sru.client;
 
+import java.net.URI;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -25,11 +25,13 @@ import org.w3c.dom.Node;
 
 import eu.clarin.sru.client.SRUExplainRecordData.ConfigInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.Schema;
+import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription;
+import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.ResourceInfo;
 import eu.clarin.sru.client.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.client.fcs.DataView;
 import eu.clarin.sru.client.fcs.DataViewGenericDOM;
 import eu.clarin.sru.client.fcs.DataViewGenericString;
-import eu.clarin.sru.client.fcs.DataViewKWIC;
+import eu.clarin.sru.client.fcs.DataViewHits;
 import eu.clarin.sru.client.fcs.Resource;
 
 class TestUtils {
@@ -39,6 +41,7 @@ class TestUtils {
     public static SRUExplainRequest makeExplainRequest(String baseURI) {
         SRUExplainRequest request = new SRUExplainRequest(baseURI);
         request.setExtraRequestData("x-indent-response", "4");
+        request.setExtraRequestData("x-fcs-endpoint-description", "true");
         request.setParseRecordDataEnabled(true);
         return request;
     }
@@ -59,7 +62,7 @@ class TestUtils {
         }
         SRUSearchRetrieveRequest request = new SRUSearchRetrieveRequest(baseURI);
         request.setQuery(query);
-        request.setRecordSchema(ClarinFCSRecordData.RECORD_SCHEMA);
+//        request.setRecordSchema(ClarinFCSRecordData.LEGACY_RECORD_SCHEMA);
         request.setMaximumRecords(5);
         request.setRecordPacking(SRURecordPacking.XML);
         request.setExtraRequestData("x-indent-response", "4");
@@ -82,6 +85,22 @@ class TestUtils {
             logger.info("schema = {}", record.getRecordSchema());
             if (record.isRecordSchema(SRUExplainRecordData.RECORD_SCHEMA)) {
                 dumpExplainRecordData(record.getRecordData());
+            }
+            if (record.hasExtraRecordData()) {
+                logger.info("extraRecordInfo = {}",
+                        record.getExtraRecordData());
+            }
+        }
+        if (response.hasExtraResponseData()) {
+            for (SRUExtraResponseData data : response.getExtraResponseData()) {
+                if (data instanceof ClarinFCSEndpointDescription) {
+                    dumpEndpointDescription(
+                            (ClarinFCSEndpointDescription) data);
+                } else {
+                    logger.info("extraResponseData = {} (class={})",
+                            data.getRootElement(), data.getClass().getName());
+                }
+
             }
         }
     }
@@ -205,6 +224,50 @@ class TestUtils {
     }
 
 
+    private static void dumpEndpointDescription(ClarinFCSEndpointDescription ed) {
+        logger.info("dumping <EndpointDescription> (version={})",
+                ed.getVersion());
+        for (URI capability : ed.getCapabilities()) {
+            logger.info("  capability: {}", capability);
+        } // for
+        for (ClarinFCSEndpointDescription.DataView dataView :
+            ed.getSupportedDataViews()) {
+            logger.info("  supportedDataView: id={}, type={}, policy={}",
+                    dataView.getIdentifier(),
+                    dataView.getMimeType(),
+                    dataView.getDeliveryPolicy());
+        } // for
+        dumpResourceInfo(ed.getResources(), 1, "  ");
+    }
+
+
+    private static void dumpResourceInfo(List<ResourceInfo> ris, int depth,
+            String indent) {
+        for (ResourceInfo ri : ris) {
+            logger.info("{}[depth={}] <ResourceInfo>", indent, depth);
+            logger.info("{}    pid={}", indent, ri.getPid());
+            logger.info("{}    title: {}", indent, ri.getTitle());
+            if (ri.getDescription() != null) {
+                logger.info("{}    description: {}",
+                        indent, ri.getDescription());
+            }
+            if (ri.getLandingPageURI() != null) {
+                logger.info("{}    landingPageURI: {}",
+                        indent, ri.getLandingPageURI());
+            }
+            for (ClarinFCSEndpointDescription.DataView dv :
+                ri.getAvailableDataViews()) {
+                logger.info("{}    available dataviews: type={}, policy={}",
+                        indent, dv.getMimeType(), dv.getDeliveryPolicy());
+            }
+            if (ri.hasSubResources()) {
+                dumpResourceInfo(ri.getSubResources(),
+                        depth + 1, indent + "  ");
+            }
+        }
+    }
+
+
     private static void dumpDataView(String s, List<DataView> dataviews) {
         for (DataView dataview : dataviews) {
             logger.info("{}DataView: type={}, pid={}, ref={}",
@@ -213,18 +276,38 @@ class TestUtils {
             if (dataview instanceof DataViewGenericDOM) {
                 final DataViewGenericDOM view = (DataViewGenericDOM) dataview;
                 final Node root = view.getDocument().getFirstChild();
-                logger.info("{}DataView: root element <{}> / {}",
+                logger.info("{}DataView (generic dom): root element <{}> / {}",
                         s, root.getNodeName(),
                         root.getOwnerDocument().hashCode());
             } else if (dataview instanceof DataViewGenericString) {
-                final DataViewGenericString view = (DataViewGenericString) dataview;
-                logger.info("{}DataView: data = {}", s, view.getContent());
-            } else if (dataview.isMimeType(DataViewKWIC.TYPE)) {
-                final DataViewKWIC kw = (DataViewKWIC) dataview;
-                logger.info("{}DataView: {} / {} / {}",
-                        s, kw.getLeft(), kw.getKeyword(), kw.getRight());
+                final DataViewGenericString view =
+                        (DataViewGenericString) dataview;
+                logger.info("{}DataView (generic string): data = {}",
+                        s, view.getContent());
+            } else if (dataview instanceof DataViewHits) {
+                final DataViewHits hits = (DataViewHits) dataview;
+                logger.info("{}DataView: {}",
+                        s, addHitHighlights(hits));
+            } else {
+                logger.info("{}DataView: cannot display " +
+                        "contents of unexpected class '{}'",
+                        s, dataview.getClass().getName());
             }
         }
+    }
+
+
+    private static String addHitHighlights(DataViewHits hits) {
+        StringBuilder sb = new StringBuilder(hits.getText());
+        int corr = 0;
+        for (int i = 0; i < hits.getHitCount(); i++) {
+            int[] offsets = hits.getHitOffsets(i);
+            sb.insert(offsets[0] + corr, "[");
+            corr += 1;
+            sb.insert(offsets[1] + corr, "]");
+            corr += 1;
+        }
+        return sb.toString();
     }
 
 } // class TestUtils

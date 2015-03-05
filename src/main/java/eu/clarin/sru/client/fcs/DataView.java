@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -17,7 +17,7 @@
 package eu.clarin.sru.client.fcs;
 
 /**
- * Base class for DataView implementations according to the CLARIN-FCS record
+ * Base class for Data View implementations according to the CLARIN-FCS record
  * schema.
  */
 public abstract class DataView {

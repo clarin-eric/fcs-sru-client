@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -39,13 +39,13 @@ import javax.xml.stream.XMLStreamReader;
  * part of an interface; parser writers can instantiate this class to provide
  * default handlers when the application has not supplied its own.
  * </p>
- * 
+ *
  * @see SRUExplainHandler
  * @see SRUScanHandler
  * @see SRUSearchRetrieveHandler
  */
 public class SRUDefaultHandlerAdapter implements SRUDefaultHandler {
-    
+
     @Override
     public void onDiagnostics(List<SRUDiagnostic> diagnostics)
             throws SRUClientException {

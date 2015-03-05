@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2013 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -18,7 +18,7 @@ package eu.clarin.sru.client;
 
 /**
  * Class to hold a SRU diagnostic.
- * 
+ *
  * @see <a href="http://www.loc.gov/standards/sru/specs/diagnostics.html">SRU
  *      Diagnostics</a>
  * @see <a
@@ -33,7 +33,7 @@ public final class SRUDiagnostic {
 
     /**
      * Constructor.
-     * 
+     *
      * @param uri
      *            the URI identifying the diagnostic
      * @param details
@@ -52,7 +52,7 @@ public final class SRUDiagnostic {
 
     /**
      * Get diagnostic's identifying URI.
-     * 
+     *
      * @return diagnostic code
      */
     public String getURI() {
@@ -63,7 +63,7 @@ public final class SRUDiagnostic {
     /**
      * Get supplementary information for this diagnostic. The format for this
      * value is often specified by the diagnostic code.
-     * 
+     *
      * @return supplementary information
      */
     public String getDetails() {
@@ -73,7 +73,7 @@ public final class SRUDiagnostic {
 
     /**
      * Get human readable message.
-     * 
+     *
      * @return human readable message
      */
     public String getMessage() {
