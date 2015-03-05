@@ -71,7 +71,7 @@ abstract class SRUAbstractRequest {
     } // enum SRUOperation
 
 
-    static class URIHelper {
+    protected static class URIHelper {
         private final URIBuilder uriBuilder;
 
 
@@ -80,7 +80,7 @@ abstract class SRUAbstractRequest {
         }
 
 
-        public URIHelper append(String name, String value) {
+        protected URIHelper append(String name, String value) {
             if (name == null) {
                 throw new NullPointerException("name == null");
             }
@@ -99,7 +99,7 @@ abstract class SRUAbstractRequest {
         }
 
 
-        public URIHelper append(String name, int value) {
+        protected URIHelper append(String name, int value) {
             return append(name, Integer.toString(value));
         }
 
