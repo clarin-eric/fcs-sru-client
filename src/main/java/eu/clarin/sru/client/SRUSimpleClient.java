@@ -542,9 +542,8 @@ public class SRUSimpleClient {
                     }
                 }
                 if (recordData == null) {
-                    // FIXME: error message
-                    throw new SRUClientException(
-                            "error parsing explain record");
+                    throw new SRUClientException("no record data could " +
+                            "be extracted from the response");
                 }
                 reader.consumeWhitespace();
                 reader.readEnd(SRU_NS, "recordData", true);
