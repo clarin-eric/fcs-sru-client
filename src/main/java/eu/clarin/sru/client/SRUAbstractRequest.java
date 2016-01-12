@@ -33,28 +33,42 @@ import org.apache.http.client.utils.URIBuilder;
  * @see SRUSearchRetrieveResponse
  */
 abstract class SRUAbstractRequest {
-    static final String PARAM_OPERATION                = "operation";
-    static final String PARAM_VERSION                  = "version";
-    static final String PARAM_RECORD_PACKING           = "recordPacking";
-    static final String PARAM_STYLESHEET               = "stylesheet";
-    static final String PARAM_QUERY                    = "query";
-    static final String PARAM_START_RECORD             = "startRecord";
-    static final String PARAM_MAXIMUM_RECORDS          = "maximumRecords";
-    static final String PARAM_RECORD_SCHEMA            = "recordSchema";
-    static final String PARAM_RECORD_X_PATH            = "recordXPath";
-    static final String PARAM_RESULT_SET_TTL           = "resultSetTTL";
-    static final String PARAM_SORT_KEYS                = "sortKeys";
-    static final String PARAM_SCAN_CLAUSE              = "scanClause";
-    static final String PARAM_RESPONSE_POSITION        = "responsePosition";
-    static final String PARAM_MAXIMUM_TERMS            = "maximumTerms";
-    static final String RECORD_PACKING_XML             = "xml";
-    static final String RECORD_PACKING_STRING          = "string";
-    private static final String OP_EXPLAIN             = "explain";
-    private static final String OP_SCAN                = "scan";
-    private static final String OP_SEARCH_RETRIEVE     = "searchRetrieve";
-    private static final String VERSION_1_1            = "1.1";
-    private static final String VERSION_1_2            = "1.2";
-    private static final String PARAM_EXTENSION_PREFIX = "x-";
+    /* general / explain related parameter names */
+    protected static final String PARAM_OPERATION            = "operation";
+    protected static final String PARAM_VERSION              = "version";
+    protected static final String PARAM_STYLESHEET           = "stylesheet";
+    protected static final String PARAM_RENDER_BY            = "renderedBy";
+    protected static final String PARAM_HTTP_ACCEPT          = "httpAccept";
+    protected static final String PARAM_RESPONSE_TYPE        = "responseType";
+    /* searchRetrieve related parameter names */
+    protected static final String PARAM_QUERY                = "query";
+    protected static final String PARAM_QUERY_TYPE           = "queryType";
+    protected static final String PARAM_START_RECORD         = "startRecord";
+    protected static final String PARAM_MAXIMUM_RECORDS      = "maximumRecords";
+    protected static final String PARAM_RECORD_XML_ESCAPING  = "recordXMLEscaping";
+    protected static final String PARAM_RECORD_PACKING       = "recordPacking";
+    protected static final String PARAM_RECORD_SCHEMA        = "recordSchema";
+    protected static final String PARAM_RECORD_X_PATH        = "recordXPath";
+    protected static final String PARAM_RESULT_SET_TTL       = "resultSetTTL";
+    protected static final String PARAM_SORT_KEYS            = "sortKeys";
+    /* scan related parameter names */
+    protected static final String PARAM_SCAN_CLAUSE          = "scanClause";
+    protected static final String PARAM_RESPONSE_POSITION    = "responsePosition";
+    protected static final String PARAM_MAXIMUM_TERMS        = "maximumTerms";
+    /* operations */
+    protected static final String OP_EXPLAIN                 = "explain";
+    protected static final String OP_SCAN                    = "scan";
+    protected static final String OP_SEARCH_RETRIEVE         = "searchRetrieve";
+    protected static final String VERSION_1_1                = "1.1";
+    protected static final String VERSION_1_2                = "1.2";
+    /* various parameter values */
+    protected static final String RECORD_XML_ESCAPING_XML    = "xml";
+    protected static final String RECORD_XML_ESCPAING_STRING = "string";
+    protected static final String RECORD_PACKING_PACKED      = "packed";
+    protected static final String RECORD_PACKING_UNPACKED    = "unpacked";
+    protected static final String RENDER_BY_CLIENT           = "client";
+    protected static final String RENDER_BY_SERVER           = "server";
+    protected static final String PARAM_EXTENSION_PREFIX = "x-";
     /** for end-point conformance testing only. never use in production. */
     public static final String X_MALFORMED_OPERATION   =
             "x-malformed-operation";
@@ -219,7 +233,7 @@ abstract class SRUAbstractRequest {
     /**
      * Get the version for this request.
      *
-     * @return version for this request or <code>null</code> of client default
+     * @return version for this request or <code>null</code> if client default
      *         is used
      */
     public SRUVersion getVersion() {
@@ -346,68 +360,90 @@ abstract class SRUAbstractRequest {
             final URIHelper uriBuilder =
                     new URIHelper(new URIBuilder(baseURI));
 
-            /*
-             * append operation parameter
-             *
-             * NB: Setting "x-malformed-operation" as an extra request parameter
-             * makes the client send invalid requests. This is intended to
-             * use for testing SRU servers for protocol conformance (i.e.
-             * provoke an error) and SHOULD NEVER be used in production!
-             */
-            final String malformedOperation =
-                    getExtraRequestData(X_MALFORMED_OPERATION);
-            if (malformedOperation == null) {
-                switch (getOperation()) {
-                case EXPLAIN:
-                    uriBuilder.append(PARAM_OPERATION, OP_EXPLAIN);
-                    break;
-                case SCAN:
-                    uriBuilder.append(PARAM_OPERATION, OP_SCAN);
-                    break;
-                case SEARCH_RETRIEVE:
-                    uriBuilder.append(PARAM_OPERATION, OP_SEARCH_RETRIEVE);
-                    break;
-                default:
-                    throw new SRUClientException("unsupported operation: " +
-                            getOperation());
-                } // switch
-            } else {
-                if (!malformedOperation.equals(MALFORMED_OMIT)) {
-                    uriBuilder.append(PARAM_OPERATION, malformedOperation);
-                }
-            }
+            /* store the version, we use for this request */
+            versionRequested = (version != null) ? version : defaultVersion;
 
-            /*
-             * append version parameter
-             *
-             * NB: Setting "x-malformed-version" as an extra request parameter
-             * makes the client send invalid requests. This is intended to
-             * use for testing SRU servers for protocol conformance (i.e.
-             * provoke an error) and SHOULD NEVER be used in production!
-             */
-            final String malformedVersion =
-                    getExtraRequestData(X_MALFORMED_VERSION);
-            if (malformedVersion == null) {
-                versionRequested = (version != null) ? version : defaultVersion;
-                switch (versionRequested) {
-                case VERSION_1_1:
-                    uriBuilder.append(PARAM_VERSION, VERSION_1_1);
-                    break;
-                case VERSION_1_2:
-                    uriBuilder.append(PARAM_VERSION, VERSION_1_2);
-                    break;
-                default:
-                    throw new SRUClientException("unsupported version: " +
-                            versionRequested);
-                } // switch
-            } else {
-                if (!malformedVersion.equalsIgnoreCase(MALFORMED_OMIT)) {
-                    uriBuilder.append(PARAM_VERSION, malformedVersion);
+            switch (versionRequested) {
+            case VERSION_1_1:
+                /* $FALL-THROUGH$ */
+            case VERSION_1_2:
+                /*
+                 * append operation parameter
+                 *
+                 * NB: Setting "x-malformed-operation" as an extra request parameter
+                 * makes the client send invalid requests. This is intended to
+                 * use for testing SRU servers for protocol conformance (i.e.
+                 * provoke an error) and SHOULD NEVER be used in production!
+                 */
+                final String malformedOperation =
+                        getExtraRequestData(X_MALFORMED_OPERATION);
+                if (malformedOperation == null) {
+                    switch (getOperation()) {
+                    case EXPLAIN:
+                        uriBuilder.append(PARAM_OPERATION, OP_EXPLAIN);
+                        break;
+                    case SCAN:
+                        uriBuilder.append(PARAM_OPERATION, OP_SCAN);
+                        break;
+                    case SEARCH_RETRIEVE:
+                        uriBuilder.append(PARAM_OPERATION, OP_SEARCH_RETRIEVE);
+                        break;
+                    default:
+                    } // switch
+                } else {
+                    if (!malformedOperation.equals(MALFORMED_OMIT)) {
+                        uriBuilder.append(PARAM_OPERATION, malformedOperation);
+                    }
                 }
+
+                /*
+                 * append version parameter
+                 *
+                 * NB: Setting "x-malformed-version" as an extra request parameter
+                 * makes the client send invalid requests. This is intended to
+                 * use for testing SRU servers for protocol conformance (i.e.
+                 * provoke an error) and SHOULD NEVER be used in production!
+                 */
+                final String malformedVersion =
+                        getExtraRequestData(X_MALFORMED_VERSION);
+                if (malformedVersion == null) {
+                    versionRequested = (version != null) ? version : defaultVersion;
+                    switch (versionRequested) {
+                    case VERSION_1_1:
+                        uriBuilder.append(PARAM_VERSION, VERSION_1_1);
+                        break;
+                    case VERSION_1_2:
+                        uriBuilder.append(PARAM_VERSION, VERSION_1_2);
+                        break;
+                    default:
+                        throw new SRUClientException("unsupported version: " +
+                                versionRequested);
+                    } // switch
+                } else {
+                    if (!malformedVersion.equalsIgnoreCase(MALFORMED_OMIT)) {
+                        uriBuilder.append(PARAM_VERSION, malformedVersion);
+                    }
+                }
+                break;
+            case VERSION_2_0:
+                if (getExtraRequestData(X_MALFORMED_OPERATION) != null) {
+                    throw new SRUClientException("parameter '" +
+                            X_MALFORMED_OPERATION +
+                            "' is not supported when using version 2.0");
+                }
+                if (getExtraRequestData(X_MALFORMED_VERSION) != null) {
+                    throw new SRUClientException("parameter '" +
+                            X_MALFORMED_VERSION +
+                            "' is not supported when using version 2.0");
+                }
+                break;
+            default:
+                throw new SRUClientException("unsupported version: " +
+                        versionRequested);
             }
 
             // request specific parameters
-            addParametersToURI(uriBuilder);
+            addParametersToURI(uriBuilder, versionRequested);
 
             // extraRequestData
             if ((extraRequestData != null) && !extraRequestData.isEmpty()) {
@@ -417,7 +453,7 @@ abstract class SRUAbstractRequest {
 
                     /*
                      * make sure, we skip the client-internal parameters
-                     * to generate invalid requests ...
+                     * used to generate invalid requests ...
                      */
                     if (!key.startsWith(MALFORMED_KEY_PREFIX)) {
                         uriBuilder.append(key, entry.getValue());
@@ -441,7 +477,7 @@ abstract class SRUAbstractRequest {
     abstract SRUOperation getOperation();
 
 
-    abstract void addParametersToURI(URIHelper uriBuilder)
+    abstract void addParametersToURI(URIHelper uriBuilder, SRUVersion version)
             throws SRUClientException;
 
 } // class SRUAbstractRequest

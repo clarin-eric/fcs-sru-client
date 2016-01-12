@@ -157,7 +157,8 @@ public class SRUScanRequest extends SRUAbstractRequest {
 
 
     @Override
-    void addParametersToURI(URIHelper uriHelper) throws SRUClientException {
+    void addParametersToURI(URIHelper uriHelper, SRUVersion version)
+            throws SRUClientException {
         // scanClause
         final String malformedScan =
                 getExtraRequestData(X_MALFORMED_SCAN_CLAUSE);

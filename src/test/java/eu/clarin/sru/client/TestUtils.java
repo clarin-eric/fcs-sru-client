@@ -64,7 +64,8 @@ class TestUtils {
         request.setQuery(query);
 //        request.setRecordSchema(ClarinFCSRecordData.LEGACY_RECORD_SCHEMA);
         request.setMaximumRecords(5);
-        request.setRecordPacking(SRURecordPacking.XML);
+        request.setRecordXmlEscaping(SRURecordXmlEscaping.XML);
+        request.setRecordPacking(SRURecordPacking.PACKED);
         request.setExtraRequestData("x-indent-response", "4");
         return request;
     }

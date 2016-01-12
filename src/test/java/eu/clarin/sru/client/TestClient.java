@@ -34,6 +34,7 @@ public class TestClient {
 
             SRUClient client = new ClarinFCSClientBuilder()
                     .addDefaultDataViewParsers()
+                    .setDefaultSRUVersion(SRUVersion.VERSION_2_0)
                     .unknownDataViewAsString()
                     .enableLegacySupport()
                     .registerExtraResponseDataParser(

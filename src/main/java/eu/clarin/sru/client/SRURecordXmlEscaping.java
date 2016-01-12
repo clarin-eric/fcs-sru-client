@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2011-2015 by
+ * This software is copyright (c) 2012-2014 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -17,18 +17,29 @@
 package eu.clarin.sru.client;
 
 /**
- * SRU 2.0 record packing.
+ * SRU record packing
  */
-public enum SRURecordPacking {
+public enum SRURecordXmlEscaping {
     /**
-     * The client requests that the server should supply records strictly
-     * according to the requested schema.
+     * XML record packing
      */
-    PACKED,
+    XML {
+        @Override
+        String getStringValue() {
+            return "xml";
+        }
+    },
 
     /**
-     * The server is free to allow the location of application data to vary
-     * within the record.
+     * String record packing
      */
-    UNPACKED
+    STRING {
+        @Override
+        String getStringValue() {
+            return "string";
+        }
+    };
+
+    abstract String getStringValue();
+
 } // enum SRURecordPacking

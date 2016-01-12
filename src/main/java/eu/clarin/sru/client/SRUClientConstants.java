@@ -24,4 +24,7 @@ public class SRUClientConstants {
     /** constant record data schema parser to match any schema */
     public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
 
+    /** constant for CQL query type */
+    public static final String QUERY_TYPE_CQL = "cql";
+
 } // class SRUClientConstants

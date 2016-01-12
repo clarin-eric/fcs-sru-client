@@ -104,7 +104,8 @@ public class ClarinFCSEndpointDescriptionParser implements
     public SRUExtraResponseData parse(XMLStreamReader reader)
             throws XMLStreamException, SRUClientException {
         final int version = parseVersion(reader);
-        if (version != EXPECTED_VERSION) {
+        // FIXME: actually handle other version
+        if ((version != EXPECTED_VERSION) && (version != 2)) {
             throw new SRUClientException("Attribute 'version' of " +
                     "element '<EndpointDescription>' must be of value '1'");
         }
@@ -200,6 +201,14 @@ public class ClarinFCSEndpointDescriptionParser implements
                     "generic hits dataview (expected MIME type '" +
                     MIMETYPE_HITS_DATAVIEW +
                     "') to conform to CLARIN-FCS specification");
+        }
+
+        // SupportedLayers
+        // FIXME: actually do something useful
+        if (XmlStreamReaderUtils.readStart(reader, ED_NS_URI,
+                "SupportedLayers", false)) {
+            XmlStreamReaderUtils.readEnd(reader, ED_NS_URI,
+                    "SupportedLayers", true);
         }
 
         // Resources
@@ -313,6 +322,16 @@ public class ClarinFCSEndpointDescriptionParser implements
                 }
             } // for
             logger.debug("DataViews: {}", dataviews);
+
+
+            // FIXME: actually do something useful
+            if (XmlStreamReaderUtils.readStart(reader, ED_NS_URI, "AvailableLayers", false, true)) {
+                final String ls = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref", true);
+                reader.next(); // consume start tag
+                XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "AvailableLayers");
+                logger.debug("Layers: {}", dataviews);
+            }
+
 
             List<ResourceInfo> subResources = null;
             if (XmlStreamReaderUtils.peekStart(reader,
