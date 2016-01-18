@@ -61,7 +61,7 @@ class TestUtils {
             query = "Faustus";
         }
         SRUSearchRetrieveRequest request = new SRUSearchRetrieveRequest(baseURI);
-        request.setQuery(query);
+        request.setQuery(SRUClientConstants.QUERY_TYPE_CQL, query);
 //        request.setRecordSchema(ClarinFCSRecordData.LEGACY_RECORD_SCHEMA);
         request.setMaximumRecords(5);
         request.setRecordXmlEscaping(SRURecordXmlEscaping.XML);

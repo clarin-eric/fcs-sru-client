@@ -33,7 +33,9 @@ import org.slf4j.LoggerFactory;
  * is wrapped in a SRU response.
  * <p>
  * This client is reusable and thread-safe: the application may reuse a
- * client object and may shared it between multiple threads. <br />
+ * client object and may shared it between multiple threads.
+ * </p>
+ * <p>
  * NB: The registered {@link SRURecordDataParser} need to be thread-safe
  * </p>
  */
@@ -52,7 +54,7 @@ public class SRUThreadedClient {
      * @param config
      *            the configuration to be used for this client.
      * @throws NullPointerException
-     *             if argument <code>config</code> is <node>null</code>
+     *             if argument <code>config</code> is <code>null</code>
      * @throws IllegalArgumentException
      *             if an error occurred while registering record data parsers
      * @see SRUClientConfig

@@ -416,8 +416,9 @@ abstract class SRUAbstractRequest {
                         uriBuilder.append(PARAM_VERSION, VERSION_1_2);
                         break;
                     default:
-                        throw new SRUClientException("unsupported version: " +
-                                versionRequested);
+                        throw new SRUClientException("internal error: " +
+                                "unsupported value for version (" +
+                                versionRequested + ")");
                     } // switch
                 } else {
                     if (!malformedVersion.equalsIgnoreCase(MALFORMED_OMIT)) {
@@ -438,8 +439,9 @@ abstract class SRUAbstractRequest {
                 }
                 break;
             default:
-                throw new SRUClientException("unsupported version: " +
-                        versionRequested);
+                throw new SRUClientException("internal error: " +
+                        "unsupported value for version (" +
+                        versionRequested + ")");
             }
 
             // request specific parameters

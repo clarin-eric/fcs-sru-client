@@ -19,12 +19,13 @@ package eu.clarin.sru.client;
 import java.net.URI;
 
 /**
- * An object for performing a <em>explain</em> operation.
+ * An object for performing a <em>searchRetrieve</em> operation.
  * <p>
  * The following argument arguments are mandatory:
  * </p>
  * <ul>
  * <li><em>query</em></li>
+ * <li><em>queryType</em>, if using query language other than CQL (only SRU 2.0)</li>
  * </ul>
  *
  * @see SRUSearchRetrieveHandler
@@ -89,17 +90,47 @@ public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
 
 
     /**
-     * (SRU 2.0) Set the value of the <em>queryType</em> argument for this
-     * request.
+     * Get the value of the <em>query</em> argument for this request.
+     *
+     * @return the value for the <em>query</em> argument or <code>null</code> of
+     *         none was set
+     */
+    public String getQuery() {
+        return query;
+    }
+
+
+    /**
+     * Set the value of the <em>queryType</em> (SRU 2.0) and the <em>query</em>
+     * argument for this request.
+     * <p>
+     * For SRU 1.1 and SRU 1.2 requests use the following:</p>
+     * <pre>
+     * {@code
+     * String cql_query = ...
+     * SRUSearchRetrieveRequest req =
+     *      new SRUSearchRetrieveRequest("http://endpoint.example.org");
+     * req.setQuery(SRUClientConstants.QUERY_TYPE_CQL, cql_query);
+     * }
+     * </pre>
      *
      * @param queryType
      *            the value for the <em>queryType</em> argument
+     * @param query
+     *            the value for the <em>query</em> argument
      * @throws NullPointerException
      *             if any required argument is <code>null</code>
      * @throws IllegalArgumentException
      *             if any argument is invalid
+     * @see SRUClientConstants#QUERY_TYPE_CQL
      */
-    public void setQueryType(String queryType) {
+    public void setQuery(String queryType, String query) {
+        if (query == null) {
+            throw new NullPointerException("query == null");
+        }
+        if (query.isEmpty()) {
+            throw new IllegalArgumentException("query is an empty string");
+        }
         if (queryType == null) {
             throw new NullPointerException("queryType == null");
         }
@@ -116,38 +147,8 @@ public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
                         "queryType contains illegal characters");
             }
         }
+
         this.queryType = queryType;
-    }
-
-
-    /**
-     * Get the value of the <em>query</em> argument for this request.
-     *
-     * @return the value for the <em>query</em> argument or <code>null</code> of
-     *         none was set
-     */
-    public String getQuery() {
-        return query;
-    }
-
-
-    /**
-     * Set the value of the <em>query</em> argument for this request.
-     *
-     * @param query
-     *            the value for the <em>query</em> argument
-     * @throws NullPointerException
-     *             if any required argument is <code>null</code>
-     * @throws IllegalArgumentException
-     *             if any argument is invalid
-     */
-    public void setQuery(String query) {
-        if (query == null) {
-            throw new NullPointerException("query == null");
-        }
-        if (query.isEmpty()) {
-            throw new IllegalArgumentException("query is an empty string");
-        }
         this.query = query;
     }
 
@@ -274,8 +275,8 @@ public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
     /**
      * Set the <em>recordPacking</em> (SRU 2.0) parameter of this request.
      *
-     * @param getRecordXmlEscaping
-     *            the requested record XML escaping
+     * @param recordPacking
+     *            the requested recordPacking mode
      * @see SRURecordXmlEscaping
      */
     public void setRecordPacking(SRURecordPacking recordPacking) {
@@ -422,8 +423,8 @@ public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
                     }
                     break;
                 default:
-                    throw new SRUClientException(
-                            "unsupported record XML escpaing: " + recordXmlEscaping);
+                    throw new SRUClientException("internal error: invalid " +
+                            "recordXmlEscaping (" + recordXmlEscaping + ")");
                 } // switch
             }
         } else {
@@ -442,16 +443,17 @@ public class SRUSearchRetrieveRequest extends SRUAbstractRequest {
          * (SRU 2.0) append recordPacking argument (optional)
          */
         if ((version == SRUVersion.VERSION_2_0) && (recordPacking != null)) {
-            String s = null;
             switch (recordPacking) {
             case PACKED:
-                s = "packed";
+                uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_PACKED);
                 break;
             case UNPACKED:
-                s = "unpacked";
+                uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_UNPACKED);
                 break;
+            default:
+                throw new SRUClientException("internal error: invalid value " +
+                        "for recordPacking (" + recordPacking + ")");
             }
-            uriHelper.append(PARAM_RECORD_PACKING, s);
         }
 
         /*

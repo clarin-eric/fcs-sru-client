@@ -30,6 +30,9 @@ public interface SRUExtraResponseDataParser {
     /**
      * Check, if the current element can be handled by this parser.
      *
+     * @param name
+     *            the name of the element to be examined
+     * 
      * @return <code>true</code> if the element can be handled by this parser;
      *         <code>false</code> otherwise
      */

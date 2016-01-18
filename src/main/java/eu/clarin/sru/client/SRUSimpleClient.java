@@ -97,7 +97,7 @@ public class SRUSimpleClient {
      * @param config
      *            the configuration to be used for this client.
      * @throws NullPointerException
-     *             if argument <code>config</code> is <node>null</code>
+     *             if argument <code>config</code> is <code>null</code>
      * @throws IllegalArgumentException
      *             if an error occurred while registering record data parsers
      * @see SRUClientConfig

@@ -49,6 +49,10 @@ public class ClarinFCSClientBuilder {
 
     /**
      * Constructor.
+     * 
+     * @param unknownAsDom
+     *            if <code>true</code> unknown data views are parsed into a DOM
+     * 
      */
     public ClarinFCSClientBuilder(boolean unknownAsDom) {
         this.unknownAsDom = unknownAsDom;
