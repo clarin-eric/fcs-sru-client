@@ -20,11 +20,13 @@ public class ClarinFCSEndpointDescription implements Serializable,
     private final int version;
     private final List<URI> capabilites;
     private final List<DataView> supportedDataViews;
+    private final List<Layer> supportedLayers;
     private final List<ResourceInfo> resources;
 
 
     ClarinFCSEndpointDescription(int version, List<URI> capabilites,
-            List<DataView> supportedDataViews, List<ResourceInfo> resources) {
+            List<DataView> supportedDataViews, List<Layer> supportedLayers,
+            List<ResourceInfo> resources) {
         this.version = version;
         if ((capabilites != null) && !capabilites.isEmpty()) {
             this.capabilites = Collections.unmodifiableList(capabilites);
@@ -36,6 +38,12 @@ public class ClarinFCSEndpointDescription implements Serializable,
                     Collections.unmodifiableList(supportedDataViews);
         } else {
             this.supportedDataViews = Collections.emptyList();
+        }
+        if ((supportedLayers != null) && !supportedLayers.isEmpty()) {
+            this.supportedLayers =
+                    Collections.unmodifiableList(supportedLayers);
+        } else {
+            this.supportedLayers = Collections.emptyList();
         }
         if ((resources != null) && !resources.isEmpty()) {
             this.resources = Collections.unmodifiableList(resources);
@@ -84,6 +92,16 @@ public class ClarinFCSEndpointDescription implements Serializable,
 
 
     /**
+     * Get the list of data views supported by this endpoint.
+     *
+     * @return the list of data views supported by this endpoint
+     */
+    public List<Layer> getSupportedLayers() {
+        return supportedLayers;
+    }
+
+
+    /**
      * Get the list of top-level resources of this endpoint.
      *
      * @return the list of top-level resources of this endpoint
@@ -97,9 +115,6 @@ public class ClarinFCSEndpointDescription implements Serializable,
      * This class implements a description of a data view supported by the endpoint.
      */
     public static final class DataView implements Serializable {
-        private static final long serialVersionUID = -5628565233032672627L;
-
-
         /**
          * Enumeration to indicate the delivery policy of a data view.
          */
@@ -113,6 +128,7 @@ public class ClarinFCSEndpointDescription implements Serializable,
              */
             NEED_TO_REQUEST;
         } // enum PayloadDelivery
+        private static final long serialVersionUID = -5628565233032672627L;
         private final String identifier;
         private final String mimeType;
         private final DeliveryPolicy deliveryPolicy;
@@ -187,8 +203,161 @@ public class ClarinFCSEndpointDescription implements Serializable,
             sb.append("]");
             return sb.toString();
         }
-
     } // class DataView
+
+
+    public static final class Layer implements Serializable {
+        /**
+         * Enumeration to indicate the content encoding of a layer.
+         */
+        public enum ContentEncoding {
+            /**
+             * The layer is encoded as content values.
+             */
+            VALUE,
+            /**
+             * The layer is encoded just as segment units.
+             */
+            EMPTY
+        }
+        private static final long serialVersionUID = 6641490182609459912L;
+        private final String identifier;
+        private final URI resultId;
+        private final String layerType;
+        private final ContentEncoding encoding;
+        private final String qualifier;
+        private final String altValueInfo;
+        private final URI altValueInfoURI;
+
+
+        public Layer(String identifier, URI resultId, String layerType,
+                ContentEncoding encoding, String qualifier,
+                String altValueInfo, URI altValueInfoURI) {
+            if (identifier == null) {
+                throw new NullPointerException("identifier == null");
+            }
+            if (identifier.isEmpty()) {
+                throw new IllegalArgumentException("identifier is empty");
+            }
+            this.identifier = identifier;
+
+            if (resultId == null) {
+                throw new NullPointerException("resultId == null");
+            }
+            this.resultId = resultId;
+
+            if (layerType == null) {
+                throw new NullPointerException("layerType == null");
+            }
+            if (layerType.isEmpty()) {
+                throw new IllegalArgumentException("layerType is empty");
+            }
+            this.layerType = layerType;
+            this.encoding = (encoding != null)
+                    ? encoding
+                    : ContentEncoding.VALUE;
+            this.qualifier = qualifier;
+            this.altValueInfo = altValueInfo;
+            this.altValueInfoURI = altValueInfoURI;
+        }
+
+
+        /**
+         * Get the identifier of this layer
+         *
+         * @return the identifier of the layer
+         */
+        public String getIdentifier() {
+            return identifier;
+        }
+
+
+        /**
+         * Get the result URI of this layer
+         *
+         * @return the result URI of the layer
+         */
+        public URI getResultId() {
+            return resultId;
+        }
+
+
+        /**
+         * Get the layer type of this layer
+         *
+         * @return the layer type of the layer
+         */
+        public String getLayerType() {
+            return layerType;
+        }
+
+
+        /**
+         * Get the content encoding of this layer
+         *
+         * @return the content encoding of the layer
+         */
+        public ContentEncoding getEncoding() {
+            return encoding;
+        }
+
+
+        /**
+         * Get the qualifier of this layer
+         *
+         * @return the qualifier of the layer or <code>null</code> if none
+         */
+        public String getQualifier() {
+            return qualifier;
+        }
+
+
+        /**
+         * Get the alternative value information of this layer
+         *
+         * @return the alternative value information of the layer or
+         *         <code>null</code> if none
+         */
+        public String getAltValueInfo() {
+            return altValueInfo;
+        }
+
+
+        /**
+         * Get the alternative value information URI of this layer
+         *
+         * @return the alternative value information URI of the layer or
+         *         <code>null</code> if none
+         */
+        public URI getAltValueInfoURI() {
+            return altValueInfoURI;
+        }
+
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(getClass().getSimpleName());
+            sb.append("[");
+            sb.append("identifier=").append(identifier);
+            sb.append(", result-id=").append(resultId);
+            sb.append(", layer-type=").append(layerType);
+            if (encoding != null) {
+                sb.append(", encoding=").append(encoding);
+            }
+            if (qualifier != null) {
+                sb.append(", qualifier=").append(qualifier);
+            }
+            if (altValueInfo != null) {
+                sb.append(", alt-value-info=").append(altValueInfo);
+            }
+            if (altValueInfoURI != null) {
+                sb.append(", alt-value-info-uri=").append(altValueInfoURI);
+            }
+            sb.append("]");
+            return sb.toString();
+        }
+    }
 
 
     /**
@@ -203,6 +372,7 @@ public class ClarinFCSEndpointDescription implements Serializable,
         private final String landingPageURI;
         private final List<String> languages;
         private final List<DataView> availableDataViews;
+        private final List<Layer> availableLayers;
         private final List<ResourceInfo> subResources;
 
 
@@ -212,6 +382,7 @@ public class ClarinFCSEndpointDescription implements Serializable,
         ResourceInfo(String pid, Map<String, String> title,
                 Map<String, String> description, String landingPageURI,
                 List<String> languages, List<DataView> availableDataViews,
+                List<Layer> availableLayers,
                 List<ResourceInfo> subResources) {
             if (pid == null) {
                 throw new NullPointerException("pid == null");
@@ -245,6 +416,13 @@ public class ClarinFCSEndpointDescription implements Serializable,
             }
             this.availableDataViews =
                     Collections.unmodifiableList(availableDataViews);
+
+            if ((availableLayers != null) && !availableLayers.isEmpty()) {
+                this.availableLayers =
+                        Collections.unmodifiableList(availableLayers);
+            } else {
+                this.availableLayers = Collections.emptyList();
+            }
 
             if ((subResources != null) && !subResources.isEmpty()) {
                 this.subResources = Collections.unmodifiableList(subResources);
@@ -377,10 +555,25 @@ public class ClarinFCSEndpointDescription implements Serializable,
         }
 
 
+        /**
+         * Get the list of data views that are available for this resource.
+         *
+         * @return the list of data views available for this resource
+         */
         public List<DataView> getAvailableDataViews() {
             return availableDataViews;
         }
 
+
+        /**
+         * (ADV-FCS) Get the list of layers that are available for this
+         * resource.
+         *
+         * @return the list of layers views available for this resource
+         */
+        public List<Layer> getAvailableLayers() {
+            return availableLayers;
+        }
     } // class ResourceInfo
 
 } // class ClarinFCSEndpointDescription

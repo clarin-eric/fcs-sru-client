@@ -37,6 +37,8 @@ import eu.clarin.sru.client.SRUExtraResponseDataParser;
 import eu.clarin.sru.client.XmlStreamReaderUtils;
 import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.DataView;
 import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.DataView.DeliveryPolicy;
+import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.Layer;
+import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.Layer.ContentEncoding;
 import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.ResourceInfo;
 
 
@@ -59,11 +61,14 @@ public class ClarinFCSEndpointDescriptionParser implements
             "http://clarin.eu/fcs/endpoint-description";
     private static final QName ED_ROOT_ELEMENT =
             new QName(ED_NS_URI, "EndpointDescription");
-    private static final int EXPECTED_VERSION = 1;
+    private static final int VERSION_1 = 1;
+    private static final int VERSION_2 = 2;
     private static final String CAPABILITY_PREFIX =
             "http://clarin.eu/fcs/capability/";
     private static final URI CAPABILITY_BASIC_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/basic-search");
+    private static final URI CAPABILITY_ADVANCED_SEARCH =
+            URI.create("http://clarin.eu/fcs/capability/advanced-search");
     private static final String MIMETYPE_HITS_DATAVIEW =
             "application/x-clarin-fcs-hits+xml";
     private final int maxDepth;
@@ -104,12 +109,10 @@ public class ClarinFCSEndpointDescriptionParser implements
     public SRUExtraResponseData parse(XMLStreamReader reader)
             throws XMLStreamException, SRUClientException {
         final int version = parseVersion(reader);
-        // FIXME: actually handle other version
-        if ((version != EXPECTED_VERSION) && (version != 2)) {
+        if ((version != VERSION_1) && (version != VERSION_2)) {
             throw new SRUClientException("Attribute 'version' of " +
-                    "element '<EndpointDescription>' must be of value '1'");
+                    "element '<EndpointDescription>' must be of value '1' or '2'");
         }
-        logger.error("VERSION: {}", version);
         reader.next(); // consume start tag
 
         // Capabilities
@@ -138,8 +141,16 @@ public class ClarinFCSEndpointDescriptionParser implements
             XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "Capability");
         } // while
         XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "Capabilities");
-        if ((capabilities == null) ||
-                (capabilities.indexOf(CAPABILITY_BASIC_SEARCH) == -1)) {
+
+        if (capabilities == null) {
+            throw new SRUClientException("Endpoint must support at " +
+                    "least one capability!");
+        }
+        final boolean hasBasicSearch =
+                (capabilities.indexOf(CAPABILITY_BASIC_SEARCH) != -1);
+        final boolean hasAdvancedSearch =
+                (capabilities.indexOf(CAPABILITY_ADVANCED_SEARCH) != -1);
+        if (!hasBasicSearch) {
             throw new SRUClientException("Endpoint must support " +
                     "'basic-search' (" + CAPABILITY_BASIC_SEARCH +
                     ") to conform to CLARIN-FCS specification");
@@ -204,16 +215,79 @@ public class ClarinFCSEndpointDescriptionParser implements
         }
 
         // SupportedLayers
-        // FIXME: actually do something useful
+        List<Layer> supportedLayers = null;
         if (XmlStreamReaderUtils.readStart(reader, ED_NS_URI,
                 "SupportedLayers", false)) {
+            while (XmlStreamReaderUtils.readStart(reader, ED_NS_URI,
+                    "SupportedLayer", (supportedLayers == null), true)) {
+                final String id = XmlStreamReaderUtils.readAttributeValue(reader, null, "id");
+                if ((id.indexOf(' ') != -1) || (id.indexOf(',') != -1) ||
+                        (id.indexOf(';') != -1)) {
+                    throw new XMLStreamException("Value of attribute 'id' on " +
+                            "element '<SupportedLayer>' may not contain the " +
+                            "characters ',' (comma) or ';' (semicolon) " +
+                            "or ' ' (space)", reader.getLocation());
+                }
+                URI resultId = null;
+                final String s1 =
+                        XmlStreamReaderUtils.readAttributeValue(reader,
+                                null, "result-id");
+                try {
+                    resultId = new URI(s1);
+                } catch (URISyntaxException e) {
+                    throw new XMLStreamException("'result-id' must be encoded " +
+                            "as URIs (offending value = '" + s1 + "')",
+                            reader.getLocation(), e);
+                }
+                final ContentEncoding encoding = parseContentEncoding(reader);
+                String qualifier = XmlStreamReaderUtils.readAttributeValue(reader, null, "qualifier", false);
+                String altValueInfo = XmlStreamReaderUtils.readAttributeValue(reader, null, "alt-value-info", false);
+                URI altValueInfoURI = null;
+                final String s2 =
+                        XmlStreamReaderUtils.readAttributeValue(reader, null,
+                                "alt-value-info-uri", false);
+                if (s2 != null) {
+                    try {
+                        altValueInfoURI = new URI(s2);
+                    } catch (URISyntaxException e) {
+                        throw new XMLStreamException("'alt-value-info-uri' must be encoded " +
+                                "as URIs (offending value = '" + s2 + "')",
+                                reader.getLocation(), e);
+                    }
+                }
+                reader.next(); // consume element
+                final String layer = XmlStreamReaderUtils.readString(reader, true);
+                logger.debug("layer: id={}, resultId={}, layer={}, encoding={}, qualifier={}, alt-value-info={}, alt-value-info-uri={}",
+                        id, resultId, layer, encoding, qualifier, altValueInfo, altValueInfoURI);
+
+                XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "SupportedLayer");
+                if (supportedLayers == null) {
+                    supportedLayers = new ArrayList<Layer>();
+                }
+                supportedLayers.add(new Layer(id, resultId, layer,
+                        encoding, qualifier, altValueInfo,
+                        altValueInfoURI));
+            } // while
             XmlStreamReaderUtils.readEnd(reader, ED_NS_URI,
                     "SupportedLayers", true);
+        }
+        if (hasAdvancedSearch && (supportedLayers == null)) {
+            throw new SRUClientException("Endpoint must declare " +
+                    "all supported layers (<SupportedLayers>) if they " +
+                    "provide the 'advanced-search' (" +
+                    CAPABILITY_ADVANCED_SEARCH + ") capability");
+        }
+        if (!hasAdvancedSearch && (supportedLayers != null)) {
+            // XXX: hard error?!
+            logger.warn("Endpoint superflously declared supported " +
+                    "layers (<SupportedLayers> without providing the " +
+                    "'advanced-search' (" + CAPABILITY_ADVANCED_SEARCH + ") capability");
         }
 
         // Resources
         final List<ResourceInfo> resources =
-                parseResources(reader, 0, maxDepth, supportedDataViews);
+                parseResources(reader, 0, maxDepth,
+                        supportedDataViews, supportedLayers);
 
         // skip over extensions
         while (!XmlStreamReaderUtils.peekEnd(reader,
@@ -230,7 +304,7 @@ public class ClarinFCSEndpointDescriptionParser implements
         XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "EndpointDescription");
 
         return new ClarinFCSEndpointDescription(version, capabilities,
-                supportedDataViews, resources);
+                supportedDataViews, supportedLayers, resources);
     }
 
 
@@ -247,8 +321,8 @@ public class ClarinFCSEndpointDescriptionParser implements
 
 
     private static List<ResourceInfo> parseResources(XMLStreamReader reader,
-            int depth, int maxDepth, List<DataView> supportedDataviews)
-            throws XMLStreamException {
+            int depth, int maxDepth, List<DataView> supportedDataviews,
+            List<Layer> supportedLayers) throws XMLStreamException {
         List<ResourceInfo> resources = null;
 
         XmlStreamReaderUtils.readStart(reader, ED_NS_URI, "Resources", true);
@@ -297,11 +371,11 @@ public class ClarinFCSEndpointDescriptionParser implements
             XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "Languages", true);
             logger.debug("languages: {}", languages);
 
+            // AvailableDataViews
             XmlStreamReaderUtils.readStart(reader, ED_NS_URI, "AvailableDataViews", true, true);
             final String dvs = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref", true);
             reader.next(); // consume start tag
             XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "AvailableDataViews");
-
             List<DataView> dataviews = null;
             for (String dv : dvs.split("\\s+")) {
                 boolean found = false;
@@ -323,13 +397,34 @@ public class ClarinFCSEndpointDescriptionParser implements
             } // for
             logger.debug("DataViews: {}", dataviews);
 
-
-            // FIXME: actually do something useful
-            if (XmlStreamReaderUtils.readStart(reader, ED_NS_URI, "AvailableLayers", false, true)) {
-                final String ls = XmlStreamReaderUtils.readAttributeValue(reader, null, "ref", true);
+            // AvailableLayers
+            List<Layer> layers = null;
+            if (XmlStreamReaderUtils.readStart(reader, ED_NS_URI,
+                    "AvailableLayers", false, true)) {
+                final String ls =
+                        XmlStreamReaderUtils.readAttributeValue(reader,
+                                null, "ref", true);
                 reader.next(); // consume start tag
                 XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "AvailableLayers");
-                logger.debug("Layers: {}", dataviews);
+                for (String l : ls.split("\\s+")) {
+                    boolean found = false;
+                    for (Layer layer : supportedLayers) {
+                        if (layer.getIdentifier().equals(l)) {
+                            found = true;
+                            if (layers == null) {
+                                layers = new ArrayList<Layer>();
+                            }
+                            layers.add(layer);
+                            break;
+                        }
+                    } // for
+                    if (!found) {
+                        throw new XMLStreamException("Layer with id '" + l +
+                                "' was not declared in <SupportedLayers>",
+                                reader.getLocation());
+                    }
+                } // for
+                logger.debug("Layers: {}", layers);
             }
 
 
@@ -340,7 +435,7 @@ public class ClarinFCSEndpointDescriptionParser implements
                 if ((maxDepth == INFINITE_MAX_DEPTH) ||
                         (nextDepth < maxDepth)) {
                     subResources = parseResources(reader, nextDepth,
-                            maxDepth, supportedDataviews);
+                            maxDepth, supportedDataviews, supportedLayers);
                 } else {
                     XmlStreamReaderUtils.skipTag(reader, ED_NS_URI,
                             "Resources", true);
@@ -365,7 +460,8 @@ public class ClarinFCSEndpointDescriptionParser implements
                 resources = new ArrayList<ResourceInfo>();
             }
             resources.add(new ResourceInfo(pid, title, description,
-                    landingPageURI, languages, dataviews, subResources));
+                    landingPageURI, languages, dataviews, layers,
+                    subResources));
         } // while
         XmlStreamReaderUtils.readEnd(reader, ED_NS_URI, "Resources");
 
@@ -423,6 +519,27 @@ public class ClarinFCSEndpointDescriptionParser implements
             throw new XMLStreamException("Unexpected value '" + s +
                     "' for attribute 'delivery-policy' on " +
                     "element '<SupportedDataView>'", reader.getLocation());
+        }
+    }
+
+
+    private static ContentEncoding parseContentEncoding(XMLStreamReader reader)
+            throws XMLStreamException {
+        final String s = XmlStreamReaderUtils.readAttributeValue(reader,
+                null, "encoding", false);
+        if (s != null) {
+            if ("value".equals(s)) {
+                return ContentEncoding.VALUE;
+            } else if ("need-to-request".equals(s)) {
+                return ContentEncoding.EMPTY;
+            } else {
+                throw new XMLStreamException("Unexpected value '" + s +
+                                "' for attribute 'encoding' on " +
+                                "element '<SupportedLayer>'",
+                        reader.getLocation());
+            }
+        } else {
+            return null;
         }
     }
 

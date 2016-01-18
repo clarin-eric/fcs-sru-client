@@ -238,6 +238,19 @@ class TestUtils {
                     dataView.getMimeType(),
                     dataView.getDeliveryPolicy());
         } // for
+        for (ClarinFCSEndpointDescription.Layer layer :
+            ed.getSupportedLayers()) {
+            logger.info("  supportedLayer: id={}, result-id={}, " +
+                    "layer-type={}, encoding={}, qualifier={}, " +
+                    "alt-value-info={}, alt-value-info-uri={}",
+                    layer.getIdentifier(),
+                    layer.getResultId(),
+                    layer.getLayerType(),
+                    layer.getEncoding(),
+                    layer.getQualifier(),
+                    layer.getAltValueInfo(),
+                    layer.getAltValueInfoURI());
+        }
         dumpResourceInfo(ed.getResources(), 1, "  ");
     }
 
@@ -260,6 +273,11 @@ class TestUtils {
                 ri.getAvailableDataViews()) {
                 logger.info("{}    available dataviews: type={}, policy={}",
                         indent, dv.getMimeType(), dv.getDeliveryPolicy());
+            }
+            for (ClarinFCSEndpointDescription.Layer l :
+                ri.getAvailableLayers()) {
+                logger.info("{}    available layers: result-id={}, layer-type={}",
+                        indent, l.getResultId(), l.getLayerType());
             }
             if (ri.hasSubResources()) {
                 dumpResourceInfo(ri.getSubResources(),
