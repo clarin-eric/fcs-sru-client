@@ -1205,7 +1205,7 @@ public class SRUSimpleClient {
 
                 // searchRetrieveResponse/diagnostics
                 final List<SRUDiagnostic> diagnostics =
-                        parseDiagnostics(reader, ns, ns.toString(), strictMode);
+                        parseDiagnostics(reader, ns, ns.sruNS(), strictMode);
                 if (diagnostics != null) {
                     handler.onDiagnostics(diagnostics);
                 }
