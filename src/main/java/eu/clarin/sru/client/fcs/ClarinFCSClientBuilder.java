@@ -74,6 +74,7 @@ public class ClarinFCSClientBuilder {
      */
     public ClarinFCSClientBuilder addDefaultDataViewParsers() {
         doRegisterDataViewParser(parsers, new DataViewParserHits());
+        doRegisterDataViewParser(parsers, new DataViewParserAdvanced());
         return this;
     }
 

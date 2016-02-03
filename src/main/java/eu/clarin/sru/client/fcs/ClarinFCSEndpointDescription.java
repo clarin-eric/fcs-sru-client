@@ -230,7 +230,10 @@ public class ClarinFCSEndpointDescription implements Serializable,
         private final URI altValueInfoURI;
 
 
-        public Layer(String identifier, URI resultId, String layerType,
+        /**
+         * Constructor. <em>Internal use only!</em>
+         */
+        Layer(String identifier, URI resultId, String layerType,
                 ContentEncoding encoding, String qualifier,
                 String altValueInfo, URI altValueInfoURI) {
             if (identifier == null) {

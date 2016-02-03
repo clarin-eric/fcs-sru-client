@@ -29,6 +29,7 @@ import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription;
 import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription.ResourceInfo;
 import eu.clarin.sru.client.fcs.ClarinFCSRecordData;
 import eu.clarin.sru.client.fcs.DataView;
+import eu.clarin.sru.client.fcs.DataViewAdvanced;
 import eu.clarin.sru.client.fcs.DataViewGenericDOM;
 import eu.clarin.sru.client.fcs.DataViewGenericString;
 import eu.clarin.sru.client.fcs.DataViewHits;
@@ -58,10 +59,10 @@ class TestUtils {
 
     public static SRUSearchRetrieveRequest makeSearchRequest(String baseURI, String query) {
         if ((query == null) || query.isEmpty()) {
-            query = "Faustus";
+            query = "'Faustus'";
         }
         SRUSearchRetrieveRequest request = new SRUSearchRetrieveRequest(baseURI);
-        request.setQuery(SRUClientConstants.QUERY_TYPE_CQL, query);
+        request.setQuery("fcs" /*SRUClientConstants.QUERY_TYPE_CQL*/, query);
 //        request.setRecordSchema(ClarinFCSRecordData.LEGACY_RECORD_SCHEMA);
         request.setMaximumRecords(5);
         request.setRecordXmlEscaping(SRURecordXmlEscaping.XML);
@@ -307,6 +308,18 @@ class TestUtils {
                 final DataViewHits hits = (DataViewHits) dataview;
                 logger.info("{}DataView: {}",
                         s, addHitHighlights(hits));
+            } else if (dataview instanceof DataViewAdvanced) {
+                final DataViewAdvanced adv = (DataViewAdvanced) dataview;
+                logger.info("{}DataView: unit={}",
+                        s, adv.getUnit());
+                for (DataViewAdvanced.Layer layer : adv.getLayers()) {
+                    logger.info("{}DataView: Layer: id={}",
+                            s, layer.getId());
+                    for (DataViewAdvanced.Span span : layer.getSpans()) {
+                        logger.info("{}DataView:   Span: start={}, end={}, content={}",
+                                s, span.getStartOffset(), span.getEndOffset(), span.getContent());
+                    }
+                }
             } else {
                 logger.info("{}DataView: cannot display " +
                         "contents of unexpected class '{}'",
