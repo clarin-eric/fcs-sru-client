@@ -39,6 +39,10 @@ public class DataViewAdvanced extends DataView {
      *            a persistent identifier or <code>null</code>
      * @param ref
      *            a reference URI or <code>null</code>
+     * @param unit
+     *            the unit for offsets in this Data View
+     * @param layers
+     *            the list of layers in this Data View
      * @throws NullPointerException
      *             if any mandatory argument is <code>null</code>
      * @throws IllegalArgumentException

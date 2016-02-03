@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2014 by
+ * This software is copyright (c) 2012-2016 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -33,7 +33,7 @@ public class SRUGenericExtraResponseData implements SRUExtraResponseData {
 
     /**
      * Constructor.
-     * 
+     *
      * @param name
      *            the root element of this extra response data fragment
      * @param fragment

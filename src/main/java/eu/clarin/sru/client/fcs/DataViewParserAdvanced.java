@@ -105,7 +105,7 @@ public final class DataViewParserAdvanced implements DataViewParser {
             String id = XmlStreamReaderUtils.readAttributeValue(reader, null, "id");
             reader.next(); // skip start element
             logger.debug("layer: id={}", id);
-            
+
             final List<DataViewAdvanced.Span> spans =
                     new ArrayList<DataViewAdvanced.Span>();
             while (XmlStreamReaderUtils.readStart(reader, FCS_ADV_NS, "Span",
@@ -129,7 +129,7 @@ public final class DataViewParserAdvanced implements DataViewParser {
                 spans.add(span);
             } // while
             XmlStreamReaderUtils.readEnd(reader, FCS_ADV_NS, "Layer");
-            
+
             DataViewAdvanced.Layer layer =
                     new DataViewAdvanced.Layer(id, spans);
             layers.add(layer);
@@ -140,7 +140,7 @@ public final class DataViewParserAdvanced implements DataViewParser {
         return new DataViewAdvanced(pid, ref, unit, layers);
     }
 
-    
+
     private static final DataViewAdvanced.Unit readUnit(XMLStreamReader reader)
             throws XMLStreamException {
 
@@ -157,8 +157,8 @@ public final class DataViewParserAdvanced implements DataViewParser {
                     reader.getLocation());
         }
     }
-    
-    
+
+
     private static final URI readAttributeURI(XMLStreamReader reader,
             String namespaceURI, String localName, boolean required)
                     throws XMLStreamException, SRUClientException {
@@ -177,7 +177,7 @@ public final class DataViewParserAdvanced implements DataViewParser {
         }
     }
 
-    
+
     private static final long readOffset(XMLStreamReader reader,
             String localName, DataViewAdvanced.Unit unit)
                     throws XMLStreamException, SRUClientException {

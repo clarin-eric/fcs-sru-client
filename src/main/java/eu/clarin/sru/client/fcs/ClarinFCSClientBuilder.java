@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2014 by
+ * This software is copyright (c) 2012-2016 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -49,10 +49,10 @@ public class ClarinFCSClientBuilder {
 
     /**
      * Constructor.
-     * 
+     *
      * @param unknownAsDom
      *            if <code>true</code> unknown data views are parsed into a DOM
-     * 
+     *
      */
     public ClarinFCSClientBuilder(boolean unknownAsDom) {
         this.unknownAsDom = unknownAsDom;
