@@ -14,7 +14,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  *  GNU General Public License v3
  */
-package eu.clarin.sru.client;
+package eu.clarin.sru.client.fcs;
 
 import java.net.URI;
 import java.util.List;
@@ -23,6 +23,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
+import eu.clarin.sru.client.SRUDiagnostic;
+import eu.clarin.sru.client.SRUExplainRecordData;
+import eu.clarin.sru.client.SRUExplainRequest;
+import eu.clarin.sru.client.SRUExplainResponse;
+import eu.clarin.sru.client.SRUExtraResponseData;
+import eu.clarin.sru.client.SRURecord;
+import eu.clarin.sru.client.SRURecordData;
+import eu.clarin.sru.client.SRURecordPacking;
+import eu.clarin.sru.client.SRURecordXmlEscaping;
+import eu.clarin.sru.client.SRUScanRequest;
+import eu.clarin.sru.client.SRUScanResponse;
+import eu.clarin.sru.client.SRUSearchRetrieveRequest;
+import eu.clarin.sru.client.SRUSearchRetrieveResponse;
+import eu.clarin.sru.client.SRUSurrogateRecordData;
+import eu.clarin.sru.client.SRUTerm;
 import eu.clarin.sru.client.SRUExplainRecordData.ConfigInfo;
 import eu.clarin.sru.client.SRUExplainRecordData.Schema;
 import eu.clarin.sru.client.fcs.ClarinFCSEndpointDescription;
