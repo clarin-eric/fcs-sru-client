@@ -41,14 +41,6 @@
             <artifactId>woodstox-core-lgpl</artifactId>
             <version>4.4.1</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <!-- <artifactId>slf4j-jdk14</artifactId> -->
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -93,4 +85,15 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>CLARIN-snapshot</id>
+            <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+        </snapshotRepository>
+
+        <repository>
+            <id>CLARIN</id>
+            <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+        </repository>
+    </distributionManagement>
 </project>
