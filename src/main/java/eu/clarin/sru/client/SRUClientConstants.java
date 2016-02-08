@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2014 by
+ * This software is copyright (c) 2012-2016 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -23,5 +23,8 @@ public class SRUClientConstants {
 
     /** constant record data schema parser to match any schema */
     public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
+
+    /** constant for CQL query type */
+    public static final String QUERY_TYPE_CQL = "cql";
 
 } // class SRUClientConstants

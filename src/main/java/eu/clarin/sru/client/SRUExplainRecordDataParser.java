@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2014 by
+ * This software is copyright (c) 2012-2016 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -51,6 +51,8 @@ class SRUExplainRecordDataParser {
             "http://explain.z3950.org/dtd/2.1/";
     private static final String VERSION_1_1     = "1.1";
     private static final String VERSION_1_2     = "1.2";
+    private static final String VERSION_2       = "2";
+    private static final String VERSION_2_0     = "2.0";
     private static final String TRANSPORT_HTTP  = "http";
     private static final String TRANSPORT_HTTPS = "https";
     private static final String STRING_TRUE     = "true";
@@ -179,9 +181,11 @@ class SRUExplainRecordDataParser {
                 version = SRUVersion.VERSION_1_1;
             } else if (VERSION_1_2.equals(s)) {
                 version = SRUVersion.VERSION_1_2;
+            } else if (VERSION_2.equals(s) || VERSION_2_0.equals(s)) {
+                version = SRUVersion.VERSION_2_0;
             } else {
                 throw new SRUClientException("invalid or unsupported value '" +
-                        s + "'for attribute 'version' on element '" +
+                        s + " 'for attribute 'version' on element '" +
                         reader.getName() + "'");
             }
         }

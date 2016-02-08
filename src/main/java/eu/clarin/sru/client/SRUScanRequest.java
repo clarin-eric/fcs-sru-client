@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2014 by
+ * This software is copyright (c) 2012-2016 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -157,7 +157,8 @@ public class SRUScanRequest extends SRUAbstractRequest {
 
 
     @Override
-    void addParametersToURI(URIHelper uriHelper) throws SRUClientException {
+    void addParametersToURI(URIHelper uriHelper, SRUVersion version)
+            throws SRUClientException {
         // scanClause
         final String malformedScan =
                 getExtraRequestData(X_MALFORMED_SCAN_CLAUSE);

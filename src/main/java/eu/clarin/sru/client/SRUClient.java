@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2014 by
+ * This software is copyright (c) 2012-2016 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -84,7 +84,7 @@ public class SRUClient {
      * @param config
      *            the configuration to be used for this client.
      * @throws NullPointerException
-     *             if argument <code>config</code> is <node>null</code>
+     *             if argument <code>config</code> is <code>null</code>
      * @throws IllegalArgumentException
      *             if an error occurred while registering record data parsers
      * @see SRUClientConfig

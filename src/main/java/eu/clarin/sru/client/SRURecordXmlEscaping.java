@@ -17,18 +17,29 @@
 package eu.clarin.sru.client;
 
 /**
- * SRU 2.0 record packing.
+ * SRU record packing
  */
-public enum SRURecordPacking {
+public enum SRURecordXmlEscaping {
     /**
-     * The client requests that the server should supply records strictly
-     * according to the requested schema.
+     * XML record packing
      */
-    PACKED,
+    XML {
+        @Override
+        String getStringValue() {
+            return "xml";
+        }
+    },
 
     /**
-     * The server is free to allow the location of application data to vary
-     * within the record.
+     * String record packing
      */
-    UNPACKED
+    STRING {
+        @Override
+        String getStringValue() {
+            return "string";
+        }
+    };
+
+    abstract String getStringValue();
+
 } // enum SRURecordPacking

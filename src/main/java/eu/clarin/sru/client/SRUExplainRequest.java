@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2014 by
+ * This software is copyright (c) 2012-2016 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -25,7 +25,7 @@ import java.net.URI;
  * @see <a href="http://www.loc.gov/standards/sru/specs/explain.html">SRU Explain Operation</a>
  */
 public class SRUExplainRequest extends SRUAbstractRequest {
-    private SRURecordPacking recordPacking;
+    private SRURecordXmlEscaping recordXmlEscaping;
     private boolean parseRecordDataEnabled = false;
 
     /**
@@ -51,28 +51,42 @@ public class SRUExplainRequest extends SRUAbstractRequest {
 
 
     /**
-     * Set the requested record packing.
+     * Get the <em>recordXmlEscpaing</em> (SRU 2.0) or <em>recordPacking</em>
+     * (SRU 1.1 and SRU 1.2) parameter of this request.
      *
-     * @param recordPacking
-     *            the requested record packing
-     * @see SRURecordPacking
+     * @return the requested record packing
+     * @see SRURecordXmlEscaping
      */
-    public void setRecordPacking(SRURecordPacking recordPacking) {
-        if (recordPacking == null) {
-            throw new NullPointerException("recordPacking == null");
-        }
-        this.recordPacking = recordPacking;
+    public SRURecordXmlEscaping getRecordXmlEscaping() {
+        return recordXmlEscaping;
     }
 
 
     /**
-     * Get the requested record packing.
+     * Set the <em>recordXmlEscpaing</em> (SRU 2.0) or <em>recordPacking</em>
+     * (SRU 1.1 and SRU 1.2) parameter of this request.
      *
-     * @return the requested record packing
-     * @see SRURecordPacking
+     * @param getRecordXmlEscaping
+     *            the requested record XML escaping
+     * @see SRURecordXmlEscaping
      */
-    public SRURecordPacking getRecordPacking() {
-        return recordPacking;
+    public void setRecordXmlEscaping(SRURecordXmlEscaping getRecordXmlEscaping) {
+        if (getRecordXmlEscaping == null) {
+            throw new NullPointerException("getRecordXmlEscaping == null");
+        }
+        this.recordXmlEscaping = getRecordXmlEscaping;
+    }
+
+
+    /**
+     * Check, whether the record data of a explain response (ZeeRex record)
+     * shall be parsed or not.
+     *
+     * @return <code>true</code> if parsing is enabled, <code>false</code>
+     *         otherwise
+     */
+    public boolean isParseRecordDataEnabled() {
+        return parseRecordDataEnabled;
     }
 
 
@@ -89,18 +103,6 @@ public class SRUExplainRequest extends SRUAbstractRequest {
     }
 
 
-    /**
-     * Check, whether the record data of a explain response (ZeeRex record)
-     * shall be parsed or not.
-     *
-     * @return <code>true</code> if parsing is enabled, <code>false</code>
-     *         otherwise
-     */
-    public boolean isParseRecordDataEnabled() {
-        return parseRecordDataEnabled;
-    }
-
-
     @Override
     SRUOperation getOperation() {
         return SRUOperation.EXPLAIN;
@@ -108,20 +110,48 @@ public class SRUExplainRequest extends SRUAbstractRequest {
 
 
     @Override
-    void addParametersToURI(URIHelper uriHelper) throws SRUClientException {
-        // recordPacking
-        if (recordPacking != null) {
-            switch (recordPacking) {
-            case XML:
-                uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_XML);
+    void addParametersToURI(URIHelper uriHelper, SRUVersion version)
+            throws SRUClientException {
+        // recordXMLEscaping / recordPacking
+        if (recordXmlEscaping != null) {
+            switch (version) {
+            case VERSION_1_1:
+                /* $FALL-THROUGH$ */
+            case VERSION_1_2:
+                switch (recordXmlEscaping) {
+                case XML:
+                    uriHelper.append(PARAM_RECORD_PACKING,
+                            RECORD_XML_ESCAPING_XML);
+                    break;
+                case STRING:
+                    uriHelper.append(PARAM_RECORD_PACKING,
+                            RECORD_XML_ESCPAING_STRING);
+                    break;
+                default:
+                    throw new SRUClientException("unsupported record packing: " +
+                            recordXmlEscaping);
+                } // switch
                 break;
-            case STRING:
-                uriHelper.append(PARAM_RECORD_PACKING, RECORD_PACKING_STRING);
+            case VERSION_2_0:
+                switch (recordXmlEscaping) {
+                case XML:
+                    uriHelper.append(PARAM_RECORD_XML_ESCAPING,
+                            RECORD_XML_ESCAPING_XML);
+                    break;
+                case STRING:
+                    uriHelper.append(PARAM_RECORD_XML_ESCAPING,
+                            RECORD_XML_ESCPAING_STRING);
+                    break;
+                default:
+                    throw new SRUClientException(
+                            "unsupported record packing: " +
+                                    recordXmlEscaping);
+                }
                 break;
             default:
-                throw new SRUClientException("unsupported record packing: " +
-                        recordPacking);
-            } // switch
+                /* cannot happen */
+                break;
+            }
         }
     }
 

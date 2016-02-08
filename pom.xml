@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.clarin.sru</groupId>
     <artifactId>sru-client</artifactId>
-    <version>0.9.5-SNAPSHOT</version>
+    <version>1.8.0</version>
     <name>SRU/CQL Client</name>
-    <description>A SRU/CQL client implementation conforming to SRU/CQL protocol version 1.1 and 1.2	</description>
+    <description>A SRU/CQL client implementation conforming to SRU/CQL protocol version 1.1, 1.2 and (partially) 2.0</description>
     <organization>
         <name>IDS Mannheim</name>
         <url>http://www.ids-mannheim.de/</url>
@@ -19,7 +20,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <!-- versions of common dependencies -->
-        <slf4j.version>1.7.10</slf4j.version>
+        <slf4j.version>1.7.12</slf4j.version>
     </properties>
 
     <dependencies>
@@ -28,7 +29,6 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -40,14 +40,6 @@
             <groupId>org.codehaus.woodstox</groupId>
             <artifactId>woodstox-core-lgpl</artifactId>
             <version>4.4.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <!-- <artifactId>slf4j-jdk14</artifactId> -->
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -90,59 +82,18 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.5.1</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includeScope>compile</includeScope>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <!-- m2e settings -->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <!-- copy-dependency plugin -->
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.apache.maven.plugins</groupId>
-                                        <artifactId>maven-dependency-plugin</artifactId>
-                                        <versionRange>[1.0.0,)</versionRange>
-                                        <goals>
-                                            <goal>copy-dependencies</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>CLARIN-snapshot</id>
+            <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+        </snapshotRepository>
+
+        <repository>
+            <id>CLARIN</id>
+            <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+        </repository>
+    </distributionManagement>
 </project>

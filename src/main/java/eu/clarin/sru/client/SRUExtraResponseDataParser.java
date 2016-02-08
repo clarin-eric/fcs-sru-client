@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2012-2014 by
+ * This software is copyright (c) 2012-2016 by
  *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -29,6 +29,9 @@ public interface SRUExtraResponseDataParser {
 
     /**
      * Check, if the current element can be handled by this parser.
+     *
+     * @param name
+     *            the name of the element to be examined
      *
      * @return <code>true</code> if the element can be handled by this parser;
      *         <code>false</code> otherwise
