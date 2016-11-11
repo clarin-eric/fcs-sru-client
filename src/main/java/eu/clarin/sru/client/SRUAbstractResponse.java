@@ -197,9 +197,11 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
         if (clazz == null) {
             throw new NullPointerException("clazz == null");
         }
-        for (SRUExtraResponseData i : extraResponseData) {
-            if (clazz.isInstance(i)) {
-                return clazz.cast(i);
+        if (extraResponseData != null) {
+            for (SRUExtraResponseData i : extraResponseData) {
+                if (clazz.isInstance(i)) {
+                    return clazz.cast(i);
+                }
             }
         }
         return null;
