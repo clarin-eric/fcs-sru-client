@@ -68,10 +68,6 @@ import org.slf4j.LoggerFactory;
 public class SRUSimpleClient {
     private static final String USER_AGENT = "SRU-Client/1.0.0";
     /** default version the client will use, if not otherwise specified */
-//    private static final String SRU_NS =
-//            "http://www.loc.gov/zing/srw/";
-//    private static final String SRU_DIAGNOSIC_NS =
-//            "http://www.loc.gov/zing/srw/diagnostic/";
     private static final String SRU_DIAGNOSTIC_RECORD_SCHEMA =
             "info:srw/schema/1/diagnostics-v1.1";
     private static final String VERSION_1_1 = "1.1";
