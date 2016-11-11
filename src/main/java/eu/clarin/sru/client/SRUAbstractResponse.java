@@ -16,6 +16,7 @@
  */
 package eu.clarin.sru.client;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -142,6 +143,94 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
      */
     public boolean hasExtraResponseData() {
         return extraResponseData != null;
+    }
+
+
+    /**
+     * Get the extra response data of a specific class for this result.
+     *
+     * @param clazz
+     *            the specific class to check for
+     * @param <V>
+     *            the type of {@link SRUExtraResponseData} to check for
+     *
+     * @return a {@link SRUExtraResponseData} instances for the
+     *         extra response data from the SRU response or <code>null</code> if
+     *         none are available
+     */
+    public <V extends SRUExtraResponseData> List<V> getExtraResponseData(
+            Class<V> clazz) {
+        if (clazz == null) {
+            throw new NullPointerException("clazz == null");
+        }
+        List<V> result = null;
+        for (SRUExtraResponseData i : extraResponseData) {
+            if (clazz.isInstance(i)) {
+                if (result == null) {
+                    result = new ArrayList<V>();
+                }
+                result.add(clazz.cast(i));
+            }
+        }
+        if (result != null) {
+            return Collections.unmodifiableList(result);
+        } else {
+            return null;
+        }
+    }
+
+
+    /**
+     * Get the first instance of extra response data of a specific class for
+     * this result.
+     *
+     * @param clazz
+     *            the specific class to check for
+     * @param <V>
+     *            the type of {@link SRUExtraResponseData} to check for
+     * @return a list of {@link SRUExtraResponseData} instances for the extra
+     *         response data from the SRU response or <code>null</code> if none
+     *         are available
+     */
+    public <V extends SRUExtraResponseData> V getFirstExtraResponseData(
+            Class<V> clazz) {
+        if (clazz == null) {
+            throw new NullPointerException("clazz == null");
+        }
+        for (SRUExtraResponseData i : extraResponseData) {
+            if (clazz.isInstance(i)) {
+                return clazz.cast(i);
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * Check, if this response has any extra response data of a specific class
+     * attached to it.
+     *
+     * @param clazz
+     *            the specific class to check for
+     * @param <V>
+     *            the type of {@link SRUExtraResponseData} to check for
+     *
+     * @return <code>true</code> if extra response is attached,
+     *         <code>false</code> otherwise
+     */
+    public <V extends SRUExtraResponseData> boolean hasExtraResponseData(
+            Class<V> clazz) {
+        if (clazz == null) {
+            throw new NullPointerException("clazz == null");
+        }
+        if (extraResponseData != null) {
+            for (SRUExtraResponseData i : extraResponseData) {
+                if (clazz.isInstance(i)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 
