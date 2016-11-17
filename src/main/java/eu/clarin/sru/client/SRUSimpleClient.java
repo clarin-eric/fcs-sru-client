@@ -1457,14 +1457,25 @@ public class SRUSimpleClient {
             logger.debug("found namespace URI '{}', requested version = {}",
                     namespaceURI, requestedVersion);
 
-            if (NAMESPACES_LEGACY_LOC.foo(namespaceURI)) {
-                return NAMESPACES_LEGACY_LOC;
-            } else if (NAMESPACES_OASIS.foo(namespaceURI)) {
-                return NAMESPACES_OASIS;
+            SRUNamespaces namespace;
+            if (NAMESPACES_LEGACY_LOC.matchNamespace(namespaceURI)) {
+                namespace = NAMESPACES_LEGACY_LOC;
+            } else if (NAMESPACES_OASIS.matchNamespace(namespaceURI)) {
+                namespace = NAMESPACES_OASIS;
             } else {
                 throw new SRUClientException(
                         "invalid namespace '" + reader.getNamespaceURI() + "'");
             }
+
+            if (requestedVersion != null) {
+                if (!namespace.compatibleWithVersion(requestedVersion)) {
+                    throw new SRUClientException("Server did not honour " +
+                            "requested SRU version and responded with " +
+                            "different version (requested version was " +
+                            requestedVersion + ")");
+                }
+            }
+            return namespace;
         } catch (XMLStreamException e) {
             throw new SRUClientException("error detecting namespace", e);
         }
@@ -1472,13 +1483,15 @@ public class SRUSimpleClient {
 
 
     private interface SRUNamespaces {
+        public boolean compatibleWithVersion(SRUVersion version);
+
         public String sruNS();
 
         public String scanNS();
 
         public String diagnosticNS();
 
-        public boolean foo(String namespaceURI);
+        public boolean matchNamespace(String namespaceURI);
 
     } // interface SRUNamespace
 
@@ -1488,6 +1501,13 @@ public class SRUSimpleClient {
                 "http://www.loc.gov/zing/srw/";
         private static final String SRU_DIAGNOSIC_NS =
                 "http://www.loc.gov/zing/srw/diagnostic/";
+
+
+        @Override
+        public boolean compatibleWithVersion(SRUVersion version) {
+            return SRUVersion.VERSION_1_1.equals(version) ||
+                    SRUVersion.VERSION_1_2.equals(version);
+        }
 
 
         @Override
@@ -1509,7 +1529,7 @@ public class SRUSimpleClient {
 
 
         @Override
-        public boolean foo(String namespaceURI) {
+        public boolean matchNamespace(String namespaceURI) {
             return SRU_NS.equals(namespaceURI);
         }
     };
@@ -1522,6 +1542,12 @@ public class SRUSimpleClient {
                 "http://docs.oasis-open.org/ns/search-ws/scan";
         private static final String SRU_DIAGNOSIC_NS =
                 "http://docs.oasis-open.org/ns/search-ws/diagnostic";
+
+
+        @Override
+        public boolean compatibleWithVersion(SRUVersion version) {
+            return SRUVersion.VERSION_2_0.equals(version);
+        }
 
 
         @Override
@@ -1544,7 +1570,7 @@ public class SRUSimpleClient {
 
 
         @Override
-        public boolean foo(String namespaceURI) {
+        public boolean matchNamespace(String namespaceURI) {
             return SRU_NS.equals(namespaceURI) || SRU_SCAN_NS.equals(namespaceURI);
         }
     };
