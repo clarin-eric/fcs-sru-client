@@ -19,12 +19,38 @@ package eu.clarin.sru.client;
 /**
  * Some constants for the SRUClient.
  */
-public class SRUClientConstants {
+public final class SRUClientConstants {
 
     /** constant record data schema parser to match any schema */
     public static final String RECORD_DATA_PARSER_SCHEMA_ANY = "*";
 
     /** constant for CQL query type */
     public static final String QUERY_TYPE_CQL = "cql";
+
+    /**
+     * constant for extra request parameter "x-unlimited-resultset" (NB: only
+     * applicable for SRUServer implementation)
+     */
+    public static final String X_UNLIMITED_RESULTSET =
+            "x-unlimited-resultset";
+
+    /**
+     * constant for extra request parameter "x-unlimited-termlist" (NB: only
+     * applicable for SRUServer implementation)
+     */
+    public static final String X_UNLIMITED_TERMLIST =
+            "x-unlimited-termlist";
+
+    /**
+     * constant for extra request parameter "x-indent-response" (NB: only
+     * applicable for SRUServer implementation)
+     */
+    public static final String X_INDENT_RESPONSE =
+            "x-indent-response";
+
+
+    /* hide constructor */
+    private SRUClientConstants() {
+    }
 
 } // class SRUClientConstants

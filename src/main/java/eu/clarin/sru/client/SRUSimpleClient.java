@@ -68,10 +68,6 @@ import org.slf4j.LoggerFactory;
 public class SRUSimpleClient {
     private static final String USER_AGENT = "SRU-Client/1.0.0";
     /** default version the client will use, if not otherwise specified */
-//    private static final String SRU_NS =
-//            "http://www.loc.gov/zing/srw/";
-//    private static final String SRU_DIAGNOSIC_NS =
-//            "http://www.loc.gov/zing/srw/diagnostic/";
     private static final String SRU_DIAGNOSTIC_RECORD_SCHEMA =
             "info:srw/schema/1/diagnostics-v1.1";
     private static final String VERSION_1_1 = "1.1";
@@ -514,11 +510,12 @@ public class SRUSimpleClient {
                 // (SRU 2.0) recordPacking (optional)
                 // XXX: what to do with it?
                 SRURecordPacking recordPacking = null;
-                if (version == SRUVersion.VERSION_2_0) {
+                if (version.isVersion(SRUVersion.VERSION_2_0)) {
                     recordPacking = parseRecordPacking(reader,
                             ns.sruNS(), strictMode);
                 }
 
+                // recordXmlEscaping (used to be recordPacking in SRU 1.0/1.2)
                 if (recordXmlEscaping == null) {
                     recordXmlEscaping = parseRecordXmlEscaping(reader, ns,
                             request.getRequestedVersion(), strictMode);
@@ -574,7 +571,8 @@ public class SRUSimpleClient {
                 reader.consumeWhitespace();
                 reader.readEnd(ns.sruNS(), "recordData", true);
 
-                if (version == SRUVersion.VERSION_1_2) {
+                if (version.isVersion(SRUVersion.VERSION_1_2,
+                        SRUVersion.VERSION_2_0)) {
                     reader.readContent(ns.sruNS(), "recordIdentifier", false);
                 }
                 reader.readContent(ns.sruNS(), "recordPosition", false, -1);
@@ -970,7 +968,7 @@ public class SRUSimpleClient {
                             // (SRU 2.0) recordPacking (optional)
                             // XXX: what to do with it?
                             SRURecordPacking recordPacking = null;
-                            if (version == SRUVersion.VERSION_2_0) {
+                            if (version.isVersion(SRUVersion.VERSION_2_0)) {
                                 recordPacking = parseRecordPacking(reader,
                                         ns.sruNS(), strictMode);
                             }
@@ -1088,7 +1086,8 @@ public class SRUSimpleClient {
                             reader.readEnd(ns.sruNS(), "recordData", true);
 
                             String identifier = null;
-                            if (version == SRUVersion.VERSION_1_2) {
+                            if (version.isVersion(SRUVersion.VERSION_1_2,
+                                    SRUVersion.VERSION_2_0)) {
                                 identifier = reader.readContent(ns.sruNS(),
                                         "recordIdentifier", false);
                             }
@@ -1224,7 +1223,7 @@ public class SRUSimpleClient {
                     reader.readEnd(ns.sruNS(), "extraResponseData", true);
                 }
 
-                if (version == SRUVersion.VERSION_2_0) {
+                if (version.isVersion(SRUVersion.VERSION_2_0)) {
                     // SRU (2.0) arbitrary stuff
                     // SRU (2.0) resultSetTTL (replaces resultSetIdleTime)
                     // SRU (2.0) resultCountPrecision
@@ -1376,7 +1375,7 @@ public class SRUSimpleClient {
             SRUXMLStreamReader reader, SRUNamespaces ns, SRUVersion version, boolean strictMode)
             throws XMLStreamException, SRUClientException {
 
-        final String name = (version == SRUVersion.VERSION_2_0)
+        final String name = version.isVersion(SRUVersion.VERSION_2_0)
                           ? "recordXMLEscaping" : "recordPacking";
         final String s = reader.readContent(ns.sruNS(), name, true);
 
@@ -1461,14 +1460,25 @@ public class SRUSimpleClient {
             logger.debug("found namespace URI '{}', requested version = {}",
                     namespaceURI, requestedVersion);
 
-            if (NAMESPACES_LEGACY_LOC.foo(namespaceURI)) {
-                return NAMESPACES_LEGACY_LOC;
-            } else if (NAMESPACES_OASIS.foo(namespaceURI)) {
-                return NAMESPACES_OASIS;
+            SRUNamespaces namespace;
+            if (NAMESPACES_LEGACY_LOC.matchNamespace(namespaceURI)) {
+                namespace = NAMESPACES_LEGACY_LOC;
+            } else if (NAMESPACES_OASIS.matchNamespace(namespaceURI)) {
+                namespace = NAMESPACES_OASIS;
             } else {
                 throw new SRUClientException(
                         "invalid namespace '" + reader.getNamespaceURI() + "'");
             }
+
+            if (requestedVersion != null) {
+                if (!namespace.compatibleWithVersion(requestedVersion)) {
+                    throw new SRUClientException("Server did not honour " +
+                            "requested SRU version and responded with " +
+                            "different version (requested version was " +
+                            requestedVersion + ")");
+                }
+            }
+            return namespace;
         } catch (XMLStreamException e) {
             throw new SRUClientException("error detecting namespace", e);
         }
@@ -1476,13 +1486,15 @@ public class SRUSimpleClient {
 
 
     private interface SRUNamespaces {
+        public boolean compatibleWithVersion(SRUVersion version);
+
         public String sruNS();
 
         public String scanNS();
 
         public String diagnosticNS();
 
-        public boolean foo(String namespaceURI);
+        public boolean matchNamespace(String namespaceURI);
 
     } // interface SRUNamespace
 
@@ -1492,6 +1504,13 @@ public class SRUSimpleClient {
                 "http://www.loc.gov/zing/srw/";
         private static final String SRU_DIAGNOSIC_NS =
                 "http://www.loc.gov/zing/srw/diagnostic/";
+
+
+        @Override
+        public boolean compatibleWithVersion(SRUVersion version) {
+            return SRUVersion.VERSION_1_1.equals(version) ||
+                    SRUVersion.VERSION_1_2.equals(version);
+        }
 
 
         @Override
@@ -1513,7 +1532,7 @@ public class SRUSimpleClient {
 
 
         @Override
-        public boolean foo(String namespaceURI) {
+        public boolean matchNamespace(String namespaceURI) {
             return SRU_NS.equals(namespaceURI);
         }
     };
@@ -1526,6 +1545,12 @@ public class SRUSimpleClient {
                 "http://docs.oasis-open.org/ns/search-ws/scan";
         private static final String SRU_DIAGNOSIC_NS =
                 "http://docs.oasis-open.org/ns/search-ws/diagnostic";
+
+
+        @Override
+        public boolean compatibleWithVersion(SRUVersion version) {
+            return SRUVersion.VERSION_2_0.equals(version);
+        }
 
 
         @Override
@@ -1548,7 +1573,7 @@ public class SRUSimpleClient {
 
 
         @Override
-        public boolean foo(String namespaceURI) {
+        public boolean matchNamespace(String namespaceURI) {
             return SRU_NS.equals(namespaceURI) || SRU_SCAN_NS.equals(namespaceURI);
         }
     };
