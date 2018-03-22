@@ -510,11 +510,12 @@ public class SRUSimpleClient {
                 // (SRU 2.0) recordPacking (optional)
                 // XXX: what to do with it?
                 SRURecordPacking recordPacking = null;
-                if (version == SRUVersion.VERSION_2_0) {
+                if (version.isVersion(SRUVersion.VERSION_2_0)) {
                     recordPacking = parseRecordPacking(reader,
                             ns.sruNS(), strictMode);
                 }
 
+                // recordXmlEscaping (used to be recordPacking in SRU 1.0/1.2)
                 if (recordXmlEscaping == null) {
                     recordXmlEscaping = parseRecordXmlEscaping(reader, ns,
                             request.getRequestedVersion(), strictMode);
@@ -570,7 +571,8 @@ public class SRUSimpleClient {
                 reader.consumeWhitespace();
                 reader.readEnd(ns.sruNS(), "recordData", true);
 
-                if (version == SRUVersion.VERSION_1_2) {
+                if (version.isVersion(SRUVersion.VERSION_1_2,
+                        SRUVersion.VERSION_2_0)) {
                     reader.readContent(ns.sruNS(), "recordIdentifier", false);
                 }
                 reader.readContent(ns.sruNS(), "recordPosition", false, -1);
@@ -966,7 +968,7 @@ public class SRUSimpleClient {
                             // (SRU 2.0) recordPacking (optional)
                             // XXX: what to do with it?
                             SRURecordPacking recordPacking = null;
-                            if (version == SRUVersion.VERSION_2_0) {
+                            if (version.isVersion(SRUVersion.VERSION_2_0)) {
                                 recordPacking = parseRecordPacking(reader,
                                         ns.sruNS(), strictMode);
                             }
@@ -1084,7 +1086,8 @@ public class SRUSimpleClient {
                             reader.readEnd(ns.sruNS(), "recordData", true);
 
                             String identifier = null;
-                            if (version == SRUVersion.VERSION_1_2) {
+                            if (version.isVersion(SRUVersion.VERSION_1_2,
+                                    SRUVersion.VERSION_2_0)) {
                                 identifier = reader.readContent(ns.sruNS(),
                                         "recordIdentifier", false);
                             }
@@ -1220,7 +1223,7 @@ public class SRUSimpleClient {
                     reader.readEnd(ns.sruNS(), "extraResponseData", true);
                 }
 
-                if (version == SRUVersion.VERSION_2_0) {
+                if (version.isVersion(SRUVersion.VERSION_2_0)) {
                     // SRU (2.0) arbitrary stuff
                     // SRU (2.0) resultSetTTL (replaces resultSetIdleTime)
                     // SRU (2.0) resultCountPrecision
@@ -1372,7 +1375,7 @@ public class SRUSimpleClient {
             SRUXMLStreamReader reader, SRUNamespaces ns, SRUVersion version, boolean strictMode)
             throws XMLStreamException, SRUClientException {
 
-        final String name = (version == SRUVersion.VERSION_2_0)
+        final String name = version.isVersion(SRUVersion.VERSION_2_0)
                           ? "recordXMLEscaping" : "recordPacking";
         final String s = reader.readContent(ns.sruNS(), name, true);
 
