@@ -74,7 +74,7 @@ public enum SRUVersion {
         if (max == null) {
             throw new NullPointerException("max == null");
         }
-        return ((this.getVersionNumber() >= min.getVersionNumber()) &
+        return ((this.getVersionNumber() >= min.getVersionNumber()) &&
                 (this.getVersionNumber() <= max.getVersionNumber()));
     }
 
