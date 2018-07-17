@@ -979,7 +979,7 @@ public class SRUSimpleClient {
                                                 version, strictMode);
                             }
 
-                            logger.debug("schema = {}, escpaing = {}, " +
+                            logger.debug("schema = {}, escaping = {}, " +
                                     "packing = {}, requested escaping = {}, " +
                                     "requested packing = {}",
                                     schema, recordXmlEscaping, recordPacking,
