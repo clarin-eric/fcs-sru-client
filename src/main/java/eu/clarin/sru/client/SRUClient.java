@@ -391,6 +391,7 @@ public class SRUClient {
         @Override
         public void onStartRecords(int numberOfRecords, String resultSetId,
                 int resultSetIdleTime) throws SRUClientException {
+            SRUClient.this.numberOfRecords = numberOfRecords;
             SRUClient.this.resultSetId = resultSetId;
             SRUClient.this.resultSetIdleTime = resultSetIdleTime;
         }
