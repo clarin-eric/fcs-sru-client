@@ -43,6 +43,7 @@ import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,6 +83,7 @@ public class SRUSimpleClient {
     private final SRUVersion defaultVersion;
     private final Map<String, SRURecordDataParser> parsers;
     private final CloseableHttpClient httpClient;
+    private final HttpContext httpContext;
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
     private final SRUExplainRecordDataParser explainRecordParser =
             new SRUExplainRecordDataParser();
@@ -122,9 +124,17 @@ public class SRUSimpleClient {
             }
         }
 
-        // create HTTP client
-        httpClient = createHttpClient(config.getConnectTimeout(),
-                                      config.getSocketTimeout());
+        final CloseableHttpClient client = config.getCustomizedHttpClient();
+        if (client != null) {
+            // use customized http client
+            this.httpClient = client;
+            this.httpContext = config.getHttpClientContext();
+        } else {
+            // create HTTP client
+            httpClient = createHttpClient(config.getConnectTimeout(),
+                    config.getSocketTimeout());
+            httpContext = null;
+        }
     }
 
 
@@ -404,7 +414,7 @@ public class SRUSimpleClient {
             logger.debug("submitting HTTP request: {}", uri.toString());
             try {
                 HttpGet request = new HttpGet(uri);
-                response        = httpClient.execute(request);
+                response = httpClient.execute(request, httpContext);
                 StatusLine status = response.getStatusLine();
                 if (status.getStatusCode() != HttpStatus.SC_OK) {
                     if (status.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
@@ -1436,7 +1446,6 @@ public class SRUSimpleClient {
                 .setConnectTimeout(connectTimeout)
                 .setSocketTimeout(socketTimeout)
                 .setConnectionRequestTimeout(0) /* infinite */
-                .setStaleConnectionCheckEnabled(false)
                 .build();
 
         return HttpClients.custom()

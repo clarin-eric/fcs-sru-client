@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.CloseableHttpClient;
+
 /**
  * A class for encapsulating the configuration of an SRU client.
  */
@@ -33,6 +36,8 @@ public class SRUClientConfig {
     private final SRUVersion defaultVersion;
     private final int connectTimeout;
     private final int socketTimeout;
+    private final CloseableHttpClient httpClient;
+    private final HttpClientContext httpContext;
     private final int threadCount;
     private final List<SRURecordDataParser> recordParsers;
     private final List<SRUExtraResponseDataParser> extraDataParsers;
@@ -49,7 +54,8 @@ public class SRUClientConfig {
 
 
     /**
-     * Get the connect timeout.
+     * Get the connect timeout. This value is ignored if a customized HTTP
+     * client is provided.
      *
      * @return the connect timeout
      */
@@ -59,12 +65,34 @@ public class SRUClientConfig {
 
 
     /**
-     * Get the socket timeout.
+     * Get the socket timeout. This value is ignored if a customized HTTP client
+     * is provided.
      *
      * @return the connect timeout
      */
     public int getSocketTimeout() {
         return socketTimeout;
+    }
+
+
+    /**
+     * Get the customized HTTP client which is to be used.
+     * 
+     * @return a configured HTTP client instance or <code>null</code>
+     */
+    public CloseableHttpClient getCustomizedHttpClient() {
+        return httpClient;
+    }
+
+
+    /**
+     * Get the HTTP client context which is to be used. Only relevant, if a
+     * customized HTTP client is set, see {{@link #getCustomizedHttpClient()}.
+     * 
+     * @return a HTTP client context instance or <code>null</code>
+     */
+    public HttpClientContext getHttpClientContext() {
+        return httpContext;
     }
 
 
@@ -103,12 +131,39 @@ public class SRUClientConfig {
         if (builder == null) {
             throw new NullPointerException("builder == null");
         }
-        this.defaultVersion   = builder.getDefaultVersion();
-        this.connectTimeout   = builder.getConnectTimeout();
-        this.socketTimeout    = builder.getSocketTimeout();
-        this.threadCount      = builder.getThreadCount();
-        this.recordParsers    = builder.getRecordDataParsers();
-        this.extraDataParsers = builder.getExtraResponseDataParsers();
+        this.defaultVersion   = builder.defaultVersion;
+        this.connectTimeout   = builder.connectTimeout;
+        this.socketTimeout    = builder.socketTimeout;
+        if (builder.httpClient != null) {
+            this.httpClient  = builder.httpClient;
+            this.httpContext = builder.httpContext;
+        } else {
+            this.httpClient  = null;
+            this.httpContext = null;
+        }
+        this.threadCount      = builder.threadCount;
+        if (builder.recordParsers != null) {
+            this.recordParsers =
+                    Collections.unmodifiableList(builder.recordParsers);
+        } else {
+            this.recordParsers = null;
+        }
+        if (builder.extraDataParsers != null) {
+            this.extraDataParsers =
+                    Collections.unmodifiableList(builder.extraDataParsers);
+        } else {
+            this.extraDataParsers = null;
+        }
+    }
+
+
+    /**
+     * Get a new builder for creating a new {@link SRUClientConfig} instance.
+     * 
+     * @return a builder instance
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
 
@@ -120,9 +175,11 @@ public class SRUClientConfig {
      */
     public static class Builder {
         private SRUVersion defaultVersion = DEFAULT_SRU_VERSION;
-        private int connectTimeout        = DEFAULT_CONNECT_TIMEOUT;
-        private int socketTimeout         = DEFAULT_SOCKET_TIMEOUT;
-        private int threadCount           =
+        private int connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+        private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
+        private CloseableHttpClient httpClient = null;
+        private HttpClientContext httpContext = null;
+        private int threadCount =
                 Runtime.getRuntime().availableProcessors() * 2;
         private List<SRURecordDataParser> recordParsers =
                 new ArrayList<SRURecordDataParser>();
@@ -134,16 +191,6 @@ public class SRUClientConfig {
          *
          */
         public Builder() {
-        }
-
-
-        /**
-         * Get the default SRU version to be used
-         *
-         * @return the defaultSRU version to be used
-         */
-        public SRUVersion getDefaultVersion() {
-            return defaultVersion;
         }
 
 
@@ -166,16 +213,6 @@ public class SRUClientConfig {
 
 
         /**
-         * Get the connect timeout.
-         *
-         * @return the connect timeout.
-         */
-        public int getConnectTimeout() {
-            return connectTimeout;
-        }
-
-
-        /**
          * Set the timeout in milliseconds until a connection is established.
          * <p>
          * A timeout value of <code>0</code> is interpreted as an infinite
@@ -192,17 +229,6 @@ public class SRUClientConfig {
             }
             this.connectTimeout = connectTimeout;
             return this;
-        }
-
-
-        /**
-         * Get the socket timeout (<code>SO_TIMEOUT</code>) in milliseconds,
-         * which is the timeout for waiting for data.
-         *
-         * @return the socket timeout in milliseconds
-         */
-        public int getSocketTimeout() {
-            return socketTimeout;
         }
 
 
@@ -228,13 +254,29 @@ public class SRUClientConfig {
 
 
         /**
-         * Get the number of worker threads. This value is only relevant for the
-         * {@link SRUThreadedClient}.
-         *
-         * @return the number of worker threads
+         * Set a customized HTTP client which is to be used.
+         * 
+         * @param httpClient
+         *            a configured HTTP client instance
+         * @return this {@link Builder} instance
          */
-        public int getThreadCount() {
-            return threadCount;
+        public Builder setCustomizedHttpClient(CloseableHttpClient httpClient) {
+            this.httpClient = httpClient;
+            return this;
+        }
+
+
+        /**
+         * Optionally set the HTTP context which is to be used by the customized
+         * HTTP client.
+         * 
+         * @param httpContext
+         *            a HTTP context instance
+         * @return this {@link Builder} instance
+         */
+        public Builder setHttpContext(HttpClientContext httpContext) {
+            this.httpContext = httpContext;
+            return this;
         }
 
 
@@ -252,32 +294,6 @@ public class SRUClientConfig {
             }
             this.threadCount = threadCount;
             return this;
-        }
-
-
-        /**
-         * Get the list of record data parsers.
-         *
-         * @return the list of record data parsers
-         * @see SRURecordDataParser
-         */
-        public List<SRURecordDataParser> getRecordDataParsers() {
-            return Collections.unmodifiableList(recordParsers);
-        }
-
-
-        /**
-         * Get the list of extra response data parsers.
-         *
-         * @return the list of extra response data parsers
-         * @see SRUExtraResponseDataParser
-         */
-        public List<SRUExtraResponseDataParser> getExtraResponseDataParsers() {
-            if (extraDataParsers != null) {
-                return Collections.unmodifiableList(extraDataParsers);
-            } else {
-                return null;
-            }
         }
 
 
