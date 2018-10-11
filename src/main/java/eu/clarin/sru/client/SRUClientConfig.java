@@ -158,16 +158,6 @@ public class SRUClientConfig {
 
 
     /**
-     * Get a new builder for creating a new {@link SRUClientConfig} instance.
-     * 
-     * @return a builder instance
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-
-    /**
      * A class that implements the builder pattern to create
      * {@link SRUClientConfig} instances.
      *
