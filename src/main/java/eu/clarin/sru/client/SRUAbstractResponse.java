@@ -124,6 +124,20 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
 
 
     /**
+     * Get the number of diagnostics in the response.
+     * 
+     * <p>
+     * NB: Surrogate diagnostics are not covered by this.
+     * </p>
+     *
+     * @return the number of diagnostics or <code>0</code> is none
+     */
+    public int getDiagnosticsCount() {
+        return (diagnostics != null) ? diagnostics.size() : 0;
+    }
+
+
+    /**
      * Get the extra response data for this result.
      *
      * @return get a list of {@link SRUExtraResponseData} instances for the
@@ -136,7 +150,8 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
 
 
     /**
-     * Check, if this response has any extra response data attached to it.
+     * Check, if this response has any extra response data attached to the
+     * response.
      *
      * @return <code>true</code> if extra response is attached,
      *         <code>false</code> otherwise
@@ -147,6 +162,17 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
 
 
     /**
+     * Return the number of extra response data records attached to the
+     * response.
+     * 
+     * @return the number of records, or <code>0</code> is none
+     */
+    public int getExtraResponseDataCount() {
+        return (extraResponseData != null) ? extraResponseData.size() : 0;
+    }
+    
+    
+    /**
      * Get the extra response data of a specific class for this result.
      *
      * @param clazz
@@ -154,7 +180,7 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
      * @param <V>
      *            the type of {@link SRUExtraResponseData} to check for
      *
-     * @return a {@link SRUExtraResponseData} instances for the
+     * @return a list of {@link SRUExtraResponseData} instances for the
      *         extra response data from the SRU response or <code>null</code> if
      *         none are available
      */
@@ -164,12 +190,14 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
             throw new NullPointerException("clazz == null");
         }
         List<V> result = null;
-        for (SRUExtraResponseData i : extraResponseData) {
-            if (clazz.isInstance(i)) {
-                if (result == null) {
-                    result = new ArrayList<V>();
+        if (extraResponseData != null) {
+            for (SRUExtraResponseData i : extraResponseData) {
+                if (clazz.isInstance(i)) {
+                    if (result == null) {
+                        result = new ArrayList<V>();
+                    }
+                    result.add(clazz.cast(i));
                 }
-                result.add(clazz.cast(i));
             }
         }
         if (result != null) {

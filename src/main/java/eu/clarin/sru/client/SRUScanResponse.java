@@ -66,4 +66,14 @@ public final class SRUScanResponse extends SRUAbstractResponse<SRUScanRequest> {
         return terms != null;
     }
 
+
+    /**
+     * Get the number of terms returned by the request.
+     * 
+     * @return the number of terms or <code>0</code> if none
+     */
+    public int getTermsCount() {
+        return (terms != null) ? terms.size() : 0;
+    }
+
 } // class SRUScanResponse

@@ -110,6 +110,16 @@ public final class SRUSearchRetrieveResponse extends
 
 
     /**
+     * Get the number of records returned by the request.
+     * 
+     * @return number of records or <code>0</code> if none
+     */
+    public int getRecordsCount() {
+        return (records != null) ? records.size() : 0;
+    }
+
+
+    /**
      * Get the next record position.
      *
      * @return the next record position or <code>-1</code> if not available
