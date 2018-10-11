@@ -354,16 +354,6 @@ public class SRUClientConfig {
             extraDataParsers.add(parser);
             return this;
         }
-
-
-        /**
-         * Create a configuration instance object for configuring SRU clients
-         *
-         * @return a immutable configuration instance
-         */
-        public SRUClientConfig build() {
-            return new SRUClientConfig(this);
-        }
     } // inner class Builder
 
 } // class SRUClientConfig
