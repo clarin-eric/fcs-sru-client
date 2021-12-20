@@ -93,7 +93,7 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>CLARIN-snapshot</id>
+            <id>CLARIN-Snapshot</id>
             <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
         </snapshotRepository>
 
