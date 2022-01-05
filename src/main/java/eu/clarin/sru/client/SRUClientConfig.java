@@ -38,6 +38,7 @@ public class SRUClientConfig {
     private final int socketTimeout;
     private final CloseableHttpClient httpClient;
     private final HttpClientContext httpContext;
+    private final SRURequestAuthenticator requestAuthenticator;
     private final int threadCount;
     private final List<SRURecordDataParser> recordParsers;
     private final List<SRUExtraResponseDataParser> extraDataParsers;
@@ -82,6 +83,16 @@ public class SRUClientConfig {
      */
     public CloseableHttpClient getCustomizedHttpClient() {
         return httpClient;
+    }
+
+
+    /**
+     * Get the request authenticator
+     * 
+     * @return the configured request authenticator or <code>null</code>
+     */
+    public SRURequestAuthenticator getRequestAuthenticator() {
+        return requestAuthenticator;
     }
 
 
@@ -141,6 +152,7 @@ public class SRUClientConfig {
             this.httpClient  = null;
             this.httpContext = null;
         }
+        this.requestAuthenticator = builder.requestAuthenticator;
         this.threadCount      = builder.threadCount;
         if (builder.recordParsers != null) {
             this.recordParsers =
@@ -169,6 +181,7 @@ public class SRUClientConfig {
         private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
         private CloseableHttpClient httpClient = null;
         private HttpClientContext httpContext = null;
+        private SRURequestAuthenticator requestAuthenticator;
         private int threadCount =
                 Runtime.getRuntime().availableProcessors() * 2;
         private List<SRURecordDataParser> recordParsers =
@@ -266,6 +279,13 @@ public class SRUClientConfig {
          */
         public Builder setHttpContext(HttpClientContext httpContext) {
             this.httpContext = httpContext;
+            return this;
+        }
+
+
+        public Builder setRequestAuthenticator(
+                SRURequestAuthenticator requestAuthenticator) {
+            this.requestAuthenticator = requestAuthenticator;
             return this;
         }
 

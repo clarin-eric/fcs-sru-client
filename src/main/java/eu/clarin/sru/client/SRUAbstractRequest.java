@@ -80,11 +80,6 @@ abstract class SRUAbstractRequest {
     private static final String MALFORMED_KEY_PREFIX   = "x-malformed";
 
 
-    enum SRUOperation {
-        EXPLAIN, SCAN, SEARCH_RETRIEVE
-    } // enum SRUOperation
-
-
     protected static class URIHelper {
         private final URIBuilder uriBuilder;
 
@@ -476,7 +471,7 @@ abstract class SRUAbstractRequest {
      * <em>Note: this method is not a part of public API.</em>
      * @return a operation constant for this request
      */
-    abstract SRUOperation getOperation();
+    public abstract SRUOperation getOperation();
 
 
     abstract void addParametersToURI(URIHelper uriBuilder, SRUVersion version)

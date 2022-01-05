@@ -84,6 +84,7 @@ public class SRUSimpleClient {
     private final Map<String, SRURecordDataParser> parsers;
     private final CloseableHttpClient httpClient;
     private final HttpContext httpContext;
+    private final SRURequestAuthenticator requestAuthenticator;
     private final XmlStreamReaderProxy proxy = new XmlStreamReaderProxy();
     private final SRUExplainRecordDataParser explainRecordParser =
             new SRUExplainRecordDataParser();
@@ -123,7 +124,6 @@ public class SRUSimpleClient {
                                 recordSchema);
             }
         }
-
         final CloseableHttpClient client = config.getCustomizedHttpClient();
         if (client != null) {
             // use customized http client
@@ -135,6 +135,7 @@ public class SRUSimpleClient {
                     config.getSocketTimeout());
             httpContext = null;
         }
+        this.requestAuthenticator = config.getRequestAuthenticator();
     }
 
 
@@ -167,7 +168,7 @@ public class SRUSimpleClient {
 
         // create URI and perform request
         final URI uri = request.makeURI(defaultVersion);
-        CloseableHttpResponse response = executeRequest(uri);
+        CloseableHttpResponse response = executeRequest(uri, request);
         InputStream stream             = null;
         SRUXMLStreamReader reader      = null;
         try {
@@ -257,7 +258,7 @@ public class SRUSimpleClient {
 
         // create URI and perform request
         final URI uri = request.makeURI(defaultVersion);
-        CloseableHttpResponse response = executeRequest(uri);
+        CloseableHttpResponse response = executeRequest(uri, request);
         InputStream stream             = null;
         SRUXMLStreamReader reader      = null;
         try {
@@ -346,7 +347,7 @@ public class SRUSimpleClient {
 
         // create URI and perform request
         final URI uri = request.makeURI(defaultVersion);
-        CloseableHttpResponse response = executeRequest(uri);
+        CloseableHttpResponse response = executeRequest(uri, request);
         InputStream stream             = null;
         SRUXMLStreamReader reader      = null;
         try {
@@ -406,19 +407,33 @@ public class SRUSimpleClient {
     }
 
 
-    private CloseableHttpResponse executeRequest(URI uri)
-            throws SRUClientException {
+    private CloseableHttpResponse executeRequest(URI requestUri,
+            SRUAbstractRequest sruRequest) throws SRUClientException {
         CloseableHttpResponse response = null;
         boolean forceClose             = true;
         try {
-            logger.debug("submitting HTTP request: {}", uri.toString());
             try {
-                HttpGet request = new HttpGet(uri);
+                HttpGet request = new HttpGet(requestUri);
+                if (requestAuthenticator != null) {
+                    String value = requestAuthenticator.createAuthenticationHeaderValue(
+                            sruRequest.getOperation(),
+                            sruRequest.getBaseURI().toString());
+                    if (value != null) {
+                        value = value.trim();
+                        if (!value.isEmpty()) {
+                            logger.debug("adding HTTP authentication header with value: {}", value);
+                            request.addHeader("Authentication", value);
+                        } else {
+                            logger.error("request authenticator returned an empty header value!");
+                        }
+                    }
+                }
+                logger.debug("submitting HTTP request: {}", requestUri.toString());
                 response = httpClient.execute(request, httpContext);
                 StatusLine status = response.getStatusLine();
                 if (status.getStatusCode() != HttpStatus.SC_OK) {
                     if (status.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-                        throw new SRUClientException("not found: " + uri);
+                        throw new SRUClientException("not found: " + requestUri);
                     } else {
                         throw new SRUClientException("unexpected status: " +
                                 status.getStatusCode());
@@ -430,7 +445,7 @@ public class SRUSimpleClient {
                 throw new SRUClientException("client protocol exception", e);
             } catch (UnknownHostException e) {
                 throw new SRUClientException(
-                        "unknown host: " + uri.getHost(), e);
+                        "unknown host: " + requestUri.getHost(), e);
             } catch (IOException e) {
                 String msg = null;
                 if ((e.getMessage() != null) && !e.getMessage().isEmpty()) {
@@ -1278,7 +1293,7 @@ public class SRUSimpleClient {
             while ((diagnostic = parseDiagnostic(reader, ns,
                     (diagnostics == null), strictMode)) != null) {
                 if (diagnostics == null) {
-                    diagnostics = new ArrayList<SRUDiagnostic>();
+                    diagnostics = new ArrayList<>();
                 }
                 diagnostics.add(diagnostic);
             } // while

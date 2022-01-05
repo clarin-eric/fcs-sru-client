@@ -151,7 +151,7 @@ public class SRUScanRequest extends SRUAbstractRequest {
 
 
     @Override
-    SRUOperation getOperation() {
+    public SRUOperation getOperation() {
         return SRUOperation.SCAN;
     }
 

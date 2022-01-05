@@ -104,7 +104,7 @@ public class SRUExplainRequest extends SRUAbstractRequest {
 
 
     @Override
-    SRUOperation getOperation() {
+    public SRUOperation getOperation() {
         return SRUOperation.EXPLAIN;
     }
 
