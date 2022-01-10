@@ -9,7 +9,7 @@
     <name>SRU/CQL Client</name>
     <description>A SRU/CQL client implementation conforming to SRU/CQL protocol version 1.1, 1.2 and (partially) 2.0</description>
     <organization>
-        <name>IDS Mannheim</name>
+        <name>Leibniz-Institut für Deutsche Sprache</name>
         <url>http://www.ids-mannheim.de/</url>
     </organization>
 
