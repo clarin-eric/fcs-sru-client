@@ -190,7 +190,7 @@ class SRUExplainRecordDataParser {
             }
         }
 
-        Set<String> transports = new HashSet<String>();
+        Set<String> transports = new HashSet<>();
         s = XmlStreamReaderUtils.readAttributeValue(reader, null, "transport");
         if (s != null) {
             for (String i : s.split("\\s+")) {
@@ -295,7 +295,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "title", true);
                 if (title == null) {
-                    title = new ArrayList<LocalizedString>();
+                    title = new ArrayList<>();
                 }
                 title.add(s);
                 mode = 1;
@@ -325,7 +325,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "description", true);
                 if (description == null) {
-                    description = new ArrayList<LocalizedString>();
+                    description = new ArrayList<>();
                 }
                 description.add(s);
                 mode = 2;
@@ -333,7 +333,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "author", true);
                 if (author == null) {
-                    author = new ArrayList<LocalizedString>();
+                    author = new ArrayList<>();
                 }
                 author.add(s);
                 mode = 3;
@@ -341,7 +341,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "contact", true);
                 if (contact == null) {
-                    contact = new ArrayList<LocalizedString>();
+                    contact = new ArrayList<>();
                 }
                 contact.add(s);
                 mode = 3;
@@ -349,7 +349,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "extent", true);
                 if (extent == null) {
-                    extent = new ArrayList<LocalizedString>();
+                    extent = new ArrayList<>();
                 }
                 extent.add(s);
                 mode = 3;
@@ -357,7 +357,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "history", true);
                 if (history == null) {
-                    history = new ArrayList<LocalizedString>();
+                    history = new ArrayList<>();
                 }
                 history.add(s);
                 mode = 3;
@@ -366,7 +366,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "restrictions", true);
                 if (restrictions == null) {
-                    restrictions = new ArrayList<LocalizedString>();
+                    restrictions = new ArrayList<>();
                 }
                 restrictions.add(s);
                 mode = 3;
@@ -374,7 +374,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "subjects", true);
                 if (subjects == null) {
-                    subjects = new ArrayList<LocalizedString>();
+                    subjects = new ArrayList<>();
                 }
                 subjects.add(s);
                 mode = 3;
@@ -382,7 +382,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "links", true);
                 if (links == null) {
-                    links = new ArrayList<LocalizedString>();
+                    links = new ArrayList<>();
                 }
                 links.add(s);
                 mode = 3;
@@ -391,7 +391,7 @@ class SRUExplainRecordDataParser {
                 LocalizedString s =
                         parseStringI18N(reader, strict, ns, "implementation", true);
                 if (implementation == null) {
-                    implementation = new ArrayList<LocalizedString>();
+                    implementation = new ArrayList<>();
                 }
                 implementation.add(s);
                 mode = 3;
@@ -438,14 +438,14 @@ class SRUExplainRecordDataParser {
                         break;
                     }
                     if (titles == null) {
-                        titles = new ArrayList<LocalizedString>();
+                        titles = new ArrayList<>();
                     }
                     titles.add(title);
                 } // for
                 XmlStreamReaderUtils.readEnd(reader, ns, "set");
 
                 if (sets == null) {
-                    sets = new ArrayList<IndexInfo.Set>();
+                    sets = new ArrayList<>();
                 }
                 sets.add(new IndexInfo.Set(identifier, name, titles));
                 found = true;
@@ -470,7 +470,7 @@ class SRUExplainRecordDataParser {
                         break;
                     }
                     if (titles == null) {
-                        titles = new ArrayList<LocalizedString>();
+                        titles = new ArrayList<>();
                     }
                     titles.add(title);
                 } // for
@@ -507,7 +507,7 @@ class SRUExplainRecordDataParser {
                         XmlStreamReaderUtils.readEnd(reader, ns, "name");
                         if ((set != null) && (name != null)) {
                             if (maps == null) {
-                                maps = new ArrayList<IndexInfo.Index.Map>();
+                                maps = new ArrayList<>();
                             }
                             maps.add(new IndexInfo.Index.Map(primary, set, name));
                         }
@@ -530,7 +530,7 @@ class SRUExplainRecordDataParser {
 
                 XmlStreamReaderUtils.readEnd(reader, ns, "index");
                 if (indexes == null) {
-                    indexes = new ArrayList<IndexInfo.Index>();
+                    indexes = new ArrayList<>();
                 }
                 indexes.add(new IndexInfo.Index(id, titles, can_search,
                         can_scan, can_sort, maps));
@@ -680,14 +680,14 @@ class SRUExplainRecordDataParser {
                     break;
                 }
                 if (titles == null) {
-                    titles = new ArrayList<LocalizedString>();
+                    titles = new ArrayList<>();
                 }
                 titles.add(title);
             } // for
             XmlStreamReaderUtils.readEnd(reader, ns, "schema");
 
             if (schemaInfo == null) {
-                schemaInfo = new ArrayList<Schema>();
+                schemaInfo = new ArrayList<>();
             }
             schemaInfo.add(new Schema(identifier, name, location, sort,
                     retrieve, titles));
@@ -710,7 +710,7 @@ class SRUExplainRecordDataParser {
 
         if ((type != null) && (value != null)) {
             if (map == null) {
-                map = new HashMap<String, String>();
+                map = new HashMap<>();
             }
             if (map.containsKey(type)) {
                 logger.warn(

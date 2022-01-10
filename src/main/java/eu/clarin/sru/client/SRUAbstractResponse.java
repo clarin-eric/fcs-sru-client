@@ -125,7 +125,7 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
 
     /**
      * Get the number of diagnostics in the response.
-     * 
+     *
      * <p>
      * NB: Surrogate diagnostics are not covered by this.
      * </p>
@@ -164,14 +164,14 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
     /**
      * Return the number of extra response data records attached to the
      * response.
-     * 
+     *
      * @return the number of records, or <code>0</code> is none
      */
     public int getExtraResponseDataCount() {
         return (extraResponseData != null) ? extraResponseData.size() : 0;
     }
-    
-    
+
+
     /**
      * Get the extra response data of a specific class for this result.
      *
@@ -194,7 +194,7 @@ class SRUAbstractResponse<T extends SRUAbstractRequest> {
             for (SRUExtraResponseData i : extraResponseData) {
                 if (clazz.isInstance(i)) {
                     if (result == null) {
-                        result = new ArrayList<V>();
+                        result = new ArrayList<>();
                     }
                     result.add(clazz.cast(i));
                 }

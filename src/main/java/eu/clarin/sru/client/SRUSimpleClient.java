@@ -113,7 +113,7 @@ public class SRUSimpleClient {
             throw new IllegalArgumentException(
                     "no record data parsers registered");
         }
-        this.parsers = new HashMap<String, SRURecordDataParser>();
+        this.parsers = new HashMap<>();
         for (SRURecordDataParser parser : list) {
             final String recordSchema = parser.getRecordSchema();
             if (!parsers.containsKey(recordSchema)) {

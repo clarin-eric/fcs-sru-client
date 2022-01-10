@@ -75,7 +75,7 @@ public class SRUClient {
     private long timeParsing;
     /* other fields */
     private final DocumentBuilder documentBuilder;
-    private final Deque<Node> stack = new ArrayDeque<Node>();
+    private final Deque<Node> stack = new ArrayDeque<>();
 
 
     /**
@@ -250,7 +250,7 @@ public class SRUClient {
 
     private void addTerm(SRUTerm term) {
         if (terms == null) {
-            terms = new LinkedList<SRUTerm>();
+            terms = new LinkedList<>();
         }
         terms.add(term);
     }
@@ -258,7 +258,7 @@ public class SRUClient {
 
     private void addRecord(SRURecord record) {
         if (records == null) {
-            records = new LinkedList<SRURecord>();
+            records = new LinkedList<>();
         }
         records.add(record);
     }
@@ -352,7 +352,7 @@ public class SRUClient {
                 if (data != null) {
                     if (SRUClient.this.extraResponseData == null) {
                         SRUClient.this.extraResponseData =
-                                new ArrayList<SRUExtraResponseData>();
+                                new ArrayList<>();
                     }
                     SRUClient.this.extraResponseData.add(data);
                 }

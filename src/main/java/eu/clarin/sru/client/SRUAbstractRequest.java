@@ -268,7 +268,7 @@ abstract class SRUAbstractRequest {
             throw new IllegalArgumentException("value is an empty string");
         }
         if (extraRequestData == null) {
-            extraRequestData = new HashMap<String, String>();
+            extraRequestData = new HashMap<>();
         }
         extraRequestData.put(name, value);
     }

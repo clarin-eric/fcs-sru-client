@@ -78,7 +78,7 @@ public class SRUClientConfig {
 
     /**
      * Get the customized HTTP client which is to be used.
-     * 
+     *
      * @return a configured HTTP client instance or <code>null</code>
      */
     public CloseableHttpClient getCustomizedHttpClient() {
@@ -88,7 +88,7 @@ public class SRUClientConfig {
 
     /**
      * Get the request authenticator
-     * 
+     *
      * @return the configured request authenticator or <code>null</code>
      */
     public SRURequestAuthenticator getRequestAuthenticator() {
@@ -99,7 +99,7 @@ public class SRUClientConfig {
     /**
      * Get the HTTP client context which is to be used. Only relevant, if a
      * customized HTTP client is set, see {{@link #getCustomizedHttpClient()}.
-     * 
+     *
      * @return a HTTP client context instance or <code>null</code>
      */
     public HttpClientContext getHttpClientContext() {
@@ -185,7 +185,7 @@ public class SRUClientConfig {
         private int threadCount =
                 Runtime.getRuntime().availableProcessors() * 2;
         private List<SRURecordDataParser> recordParsers =
-                new ArrayList<SRURecordDataParser>();
+                new ArrayList<>();
         private List<SRUExtraResponseDataParser> extraDataParsers = null;
 
 
@@ -258,7 +258,7 @@ public class SRUClientConfig {
 
         /**
          * Set a customized HTTP client which is to be used.
-         * 
+         *
          * @param httpClient
          *            a configured HTTP client instance
          * @return this {@link Builder} instance
@@ -272,7 +272,7 @@ public class SRUClientConfig {
         /**
          * Optionally set the HTTP context which is to be used by the customized
          * HTTP client.
-         * 
+         *
          * @param httpContext
          *            a HTTP context instance
          * @return this {@link Builder} instance
@@ -359,7 +359,7 @@ public class SRUClientConfig {
                 throw new NullPointerException("parser == null");
             }
             if (extraDataParsers == null) {
-                extraDataParsers = new ArrayList<SRUExtraResponseDataParser>();
+                extraDataParsers = new ArrayList<>();
             }
             extraDataParsers.add(parser);
             return this;

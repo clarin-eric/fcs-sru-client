@@ -50,14 +50,14 @@ public enum SRUVersion {
         }
     };
 
-    
+
     /**
      * Get a numerical representation of the version.
-     * 
+     *
      * @return numerical representation of the version
      */
     public abstract int getVersionNumber();
-    
+
 
     public boolean isVersion(SRUVersion version) {
         if (version == null) {

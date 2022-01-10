@@ -111,7 +111,7 @@ public final class SRUSearchRetrieveResponse extends
 
     /**
      * Get the number of records returned by the request.
-     * 
+     *
      * @return number of records or <code>0</code> if none
      */
     public int getRecordsCount() {
