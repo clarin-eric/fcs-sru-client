@@ -835,6 +835,11 @@ class SRUXMLStreamReader implements XMLStreamReader {
 
     static {
         factory = (XMLInputFactory2) XMLInputFactory.newInstance();
+        // prevent XML eXternal Entity injection (XXE)
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,
+                Boolean.FALSE);
+        
         // Stax settings
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
 
