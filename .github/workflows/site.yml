@@ -33,7 +33,7 @@ jobs:
           cache: 'maven'
 
       - name: Generate site (project info and javadoc)
-        run: mvn clean site
+        run: mvn -B clean site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
