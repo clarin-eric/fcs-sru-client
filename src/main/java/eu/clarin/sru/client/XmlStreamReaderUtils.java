@@ -17,9 +17,19 @@
 package eu.clarin.sru.client;
 
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.stax.StAXSource;
 
+import org.w3c.dom.Document;
 
 /**
  * Helper class for dealing with {@link XMLStreamReader}.
@@ -28,6 +38,9 @@ import javax.xml.stream.XMLStreamReader;
  * </p>
  */
 public final class XmlStreamReaderUtils {
+    private static final DocumentBuilderFactory builderFactory;
+    private static final TransformerFactory transformerFactory;
+
     private XmlStreamReaderUtils() {
     }
 
@@ -283,6 +296,44 @@ public final class XmlStreamReaderUtils {
             reader.next();
             continue;
         }
+    }
+
+
+    public static Document parseToDocument(XMLStreamReader reader)
+            throws XMLStreamException {
+        DocumentBuilder builder;
+        Transformer transformer;
+        try {
+            builder = builderFactory.newDocumentBuilder();
+            transformer = transformerFactory.newTransformer();
+        } catch (ParserConfigurationException e) {
+            throw new InternalError("unexpected error creating new document builder");
+        } catch (TransformerConfigurationException e) {
+            throw new InternalError("unexpected error creating new document builder");
+        }
+
+        // parse StAX to DOM fragment
+        Document document = builder.newDocument();
+        DOMResult result = new DOMResult(document);
+        try {
+            transformer.transform(new StAXSource(reader), result);
+        } catch (TransformerException e) {
+            throw new XMLStreamException("Error transforming XML subtree",
+                    reader.getLocation(), e);
+        }
+        return document;
+    }
+
+
+    static {
+        // required so end user applications do not attempt to use e.g. net.sf.saxon.TransformerFactoryImpl
+        // which can cause: org.w3c.dom.DOMException: HIERARCHY_REQUEST_ERR: An attempt was made to insert a node
+        System.clearProperty("javax.xml.transform.TransformerFactory");
+        System.setProperty("javax.xml.transform.TransformerFactory",
+                "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
+
+        builderFactory = DocumentBuilderFactory.newInstance();
+        transformerFactory = TransformerFactory.newInstance();
     }
 
 } // class XmlStreamReaderUtils
