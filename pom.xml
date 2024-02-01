@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.clarin.sru</groupId>
     <artifactId>sru-client</artifactId>
-    <version>2.2.0</version>
+    <version>2.3.0-SNAPSHOT</version>
     <name>SRU/CQL Client</name>
     <description>A SRU/CQL client implementation conforming to SRU/CQL protocol version 1.1, 1.2 and (partially) 2.0</description>
     <organization>
@@ -15,8 +15,7 @@
         <connection>scm:git:https://github.com/clarin-eric/fcs-sru-client</connection>
         <developerConnection>scm:git:git@github.com:clarin-eric/fcs-sru-client.git</developerConnection>
         <url>https://github.com/clarin-eric/fcs-sru-client</url>
-      <tag>SRUClient-2.2.0</tag>
-  </scm>
+    </scm>
 
     <properties>
         <!-- project settings -->
