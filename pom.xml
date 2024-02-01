@@ -13,6 +13,12 @@
         <url>http://www.ids-mannheim.de/</url>
     </organization>
 
+    <scm>
+        <connection>scm:git:https://github.com/clarin-eric/fcs-sru-client</connection>
+        <developerConnection>scm:git:git@github.com:clarin-eric/fcs-sru-client.git</developerConnection>
+        <url>https://github.com/clarin-eric/fcs-sru-client</url>
+    </scm>
+
     <properties>
         <!-- project settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
