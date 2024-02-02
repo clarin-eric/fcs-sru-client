@@ -1,13 +1,13 @@
 # Changelog
 
-# [2.2.1](https://github.com/clarin-eric/fcs-sru-client/releases/tag/2.2.1) - 2024-02-02
+# [2.2.1](https://github.com/clarin-eric/fcs-sru-client/releases/tag/SRUClient-2.2.1) - 2024-02-02
 
 - Dependencies:
   - Add `maven-release-plugin`
   - Bump Maven build plugin versions
   - Bump `org.slf4j` to `1.7.36`
 
-# [2.2.0](https://github.com/clarin-eric/fcs-sru-client/releases/tag/2.2.0) - 2024-02-01
+# [2.2.0](https://github.com/clarin-eric/fcs-sru-client/releases/tag/SRUClient-2.2.0) - 2024-02-01
 
 - Additions:
   - Add `parseToDocument(XMLStreamReader)` helper method to `XmlStreamReaderUtils`.
