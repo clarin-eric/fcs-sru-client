@@ -203,7 +203,7 @@ class SRUExplainRecordDataParser {
                     throw new SRUClientException("invalid value '" + i +
                             "' for attribute 'transport' on element '" +
                             reader.getName() +
-                            " (use either 'http' of 'https' or both " +
+                            " (use either 'http' or 'https' or both " +
                             "seperated by whitespace");
                 }
                 if (t != null) {

@@ -19,7 +19,7 @@ package eu.clarin.sru.client;
 public interface SRURequestAuthenticator {
 
     /**
-     * Make an HTTP Authentication header value fur a SRU request. This method
+     * Make an HTTP Authentication header value for a SRU request. This method
      * must return a valid HTTP Authentication header value or <code>null</code>
      * if no authentication for this endpoint and/or operation is required.
      *
