@@ -16,6 +16,8 @@
  */
 package eu.clarin.sru.client;
 
+import java.util.Map;
+
 public interface SRURequestAuthenticator {
 
     /**
@@ -27,8 +29,11 @@ public interface SRURequestAuthenticator {
      *            the SRU operation for the request
      * @param endpointURI
      *            the endpoint base URI
+     * @param context
+     *            additional authentication context data to provide additional
+     *            information per SRU requests, may be <code>null</code>
      * @return or authentication header value or <code>null</code>
      */
-    public String createAuthenticationHeaderValue(SRUOperation operation, String endpointURI);
+    public String createAuthenticationHeaderValue(SRUOperation operation, String endpointURI, Map<String, String> context);
 
 } // interface SRURequestAuthenticator

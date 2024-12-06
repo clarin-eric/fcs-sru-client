@@ -414,10 +414,11 @@ public class SRUSimpleClient {
         try {
             try {
                 HttpGet request = new HttpGet(requestUri);
-                if (requestAuthenticator != null) {
+                if (requestAuthenticator != null && sruRequest.isSendAuthentication()) {
                     String value = requestAuthenticator.createAuthenticationHeaderValue(
                             sruRequest.getOperation(),
-                            sruRequest.getBaseURI().toString());
+                            sruRequest.getBaseURI().toString(),
+                            sruRequest.getAuthenticationContext());
                     if (value != null) {
                         value = value.trim();
                         if (!value.isEmpty()) {

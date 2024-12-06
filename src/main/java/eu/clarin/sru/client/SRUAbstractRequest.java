@@ -18,6 +18,7 @@ package eu.clarin.sru.client;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -117,6 +118,8 @@ abstract class SRUAbstractRequest {
             return uriBuilder.build();
         }
     } // class URIHelper
+
+
     /** The baseURI of the SRU server. */
     protected final URI baseURI;
     /**
@@ -128,6 +131,10 @@ abstract class SRUAbstractRequest {
     protected SRUVersion version;
     /** A map of extra request data parameters. */
     protected Map<String, String> extraRequestData;
+    /** Whether a authentication header should be sent. */
+    private boolean sendAuthentication = false;
+    /** A map of extra authentication context data. */
+    protected Map<String, String> authenticationContext;
     /*
      * The version that was used to perform the request.
      * It is set as a side-effect of makeURI().
@@ -339,6 +346,77 @@ abstract class SRUAbstractRequest {
                     "The request was not yet carried out");
         }
         return versionRequested;
+    }
+
+
+    /**
+     * Get the authentication mode for this request
+     *
+     * @return <code>true</code> if the request will try to send authentication
+     *         data (header), <code>false</code> if the request will not send
+     *         send authentication information
+     */
+    public boolean isSendAuthentication() {
+        return sendAuthentication;
+    }
+
+
+    /**
+     * Set whether authentication information should be sent for this request
+     *
+     * @param sendAuthentication
+     *            <code>true</code> if the request should try to send
+     *            authentication information, <code>false</code> if sending
+     *            should be suppressed
+     */
+    public void setSendAuthentication(boolean sendAuthentication) {
+        this.sendAuthentication = sendAuthentication;
+    }
+
+
+    /**
+     * Returns a nullable read-only map of authentication context data.
+     * 
+     * @return the authentication context map or <code>null</code> if no
+     *             entries were created
+     */
+    public Map<String, String> getAuthenticationContext() {
+        if (authenticationContext != null) {
+            return Collections.unmodifiableMap(authenticationContext);
+        }
+        return null;
+    }
+
+
+    /**
+     * Set an authentication context entry for this request.
+     *
+     * @param name
+     *            the name for the context entry parameter
+     * @param value
+     *            the value for the context entry parameter
+     * @throws NullPointerException
+     *             if any required argument is <code>null</code>
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     */
+    public void setAuthenticationContext(String name, String value) {
+        if (name == null) {
+            throw new NullPointerException("name == null");
+        }
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("name is an empty string");
+        }
+        // if (value == null) {
+        //     throw new NullPointerException("value == null");
+        // }
+        // if (value.isEmpty()) {
+        //     throw new IllegalArgumentException("value is an empty string");
+        // }
+        if (authenticationContext == null) {
+            authenticationContext = new HashMap<>();
+        }
+        authenticationContext.put(name, value);
     }
 
 
