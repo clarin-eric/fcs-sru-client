@@ -1,5 +1,18 @@
 # Changelog
 
+# [2.3.0](https://github.com/clarin-eric/fcs-sru-client/releases/tag/SRUClient-2.3.0) - 2024-12-06
+
+- Additions:
+  - Add context map and send flag to the authentication workflow to allow for more fine-grained requesting logic by holding request specific attributes, e.g. Resource availability restriction etc.  
+    (primarily required for FCS SRU Aggregator that uses a shared client for all endpoints/resources)
+    - `authenticationContext` map and `sendAuthentication` flag in `SRUAbstractRequest`
+    - evaluation of `sendAuthentication` flag in `SRUSimpleClient#executeRequest` with forwarding the `authenticationContext` map
+    - context map parameter for `SRURequestAuthenticator#createAuthenticationHeaderValue` function (for custom implementations)
+
+- Dependencies:
+  - Bump `org.slf4j` to `2.0.16`
+  - Bump `org.apache.httpcomponents:httpclient` to `4.5.14`
+
 # [2.2.1](https://github.com/clarin-eric/fcs-sru-client/releases/tag/SRUClient-2.2.1) - 2024-02-02
 
 - Dependencies:
