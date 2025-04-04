@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.4.0](https://github.com/clarin-eric/fcs-sru-client/releases/tag/SRUClient-2.4.0) - 2025-04-04
+
+- Dependencies:
+  - Bump Github Actions CI script actions versions
+  - Bump Maven build plugin versions
+  - Bump `org.slf4j` to `2.0.17`
+
 # [2.3.0](https://github.com/clarin-eric/fcs-sru-client/releases/tag/SRUClient-2.3.0) - 2024-12-06
 
 - Additions:
