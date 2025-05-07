@@ -1161,6 +1161,9 @@ public class SRUSimpleClient {
                         logger.error("endpoint declared {} results, but response contained no <record> elements (behavior may violate SRU specification)", numberOfRecords);
                     } else if ((request.getMaximumRecords() != -1) && (recordCount > request.getMaximumRecords())) {
                         logger.error("endpoint did not honour 'maximumRecords' request parameter and responded with {} records instead of a maximum of {}", recordCount, request.getMaximumRecords());
+                    } else if (numberOfRecords < recordCount) {
+                        logger.error("endpoint declared {} results, but responded with more records (found {} <record> elements)", numberOfRecords, recordCount);
+                        // TODO: check with SRU (2.0) resultCountPrecision ?
                     }
                 } else {
                     /*
