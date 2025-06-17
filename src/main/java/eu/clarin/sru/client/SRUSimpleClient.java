@@ -1477,9 +1477,9 @@ public class SRUSimpleClient {
     }
 
 
-    private static SRUNamespaces detectNamespace(XMLStreamReader reader,
+    private static SRUNamespaces detectNamespace(final SRUXMLStreamReader reader,
             SRUVersion requestedVersion)
-                    throws SRUClientException {
+            throws SRUClientException {
         try {
             // skip to first start tag
             reader.nextTag();
@@ -1500,10 +1500,22 @@ public class SRUSimpleClient {
 
             if (requestedVersion != null) {
                 if (!namespace.compatibleWithVersion(requestedVersion)) {
-                    throw new SRUClientException("Server did not honour " +
+                    // try to extract SRUVersion from response
+                    SRUVersion detectedVersion = null;
+                    try {
+                        // explainResponse
+                        reader.readStart(namespace.sruNS(), "explainResponse", true);
+                        // explainResponse/version
+                        detectedVersion = parseVersion(reader, namespace.sruNS());
+                        // reader.readEnd(namespace.sruNS(), "explainResponse", true);
+                    } catch (Exception ex) {
+                        /* IGNORE */
+                    }
+
+                    throw new SRUInvalidVersionException("Server did not honour " +
                             "requested SRU version and responded with " +
                             "different version (requested version was " +
-                            requestedVersion + ")");
+                            requestedVersion + ")", requestedVersion, detectedVersion);
                 }
             }
             return namespace;
