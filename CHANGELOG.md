@@ -1,5 +1,11 @@
 # Changelog
 
+# [2.5.0](https://github.com/clarin-eric/fcs-sru-client/releases/tag/SRUClient-2.5.0) - 2025-06-17
+
+- Additions:
+  - Add `SRUInvalidVersionException` to allow handling of SRU endpoints that do not support requests with specific SRU versions. Raised in `SRUSimpleClient.detectNamespace()` when SRU response namespaces are not compatible with the requested SRU version.
+  - Logging searchRetrieve record counts when `numberOfRecords < recordCount`
+
 # [2.4.0](https://github.com/clarin-eric/fcs-sru-client/releases/tag/SRUClient-2.4.0) - 2025-04-04
 
 - Dependencies:
